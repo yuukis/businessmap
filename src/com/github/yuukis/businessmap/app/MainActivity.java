@@ -1,4 +1,8 @@
-package com.github.yuukis.businessmap;
+package com.github.yuukis.businessmap.app;
+
+import com.github.yuukis.businessmap.R;
+import com.github.yuukis.businessmap.R.layout;
+import com.github.yuukis.businessmap.R.menu;
 
 import android.os.Bundle;
 import android.app.Activity;
