@@ -7,7 +7,9 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
-import android.widget.ArrayAdapter;
+import android.widget.CursorAdapter;
+import android.widget.ListAdapter;
+import android.widget.SimpleCursorAdapter;
 
 public class ContactsListFragment extends ListFragment {
 
@@ -17,14 +19,14 @@ public class ContactsListFragment extends ListFragment {
 
 		Context context = getActivity();
 
-		ArrayAdapter<String> adapter = new ArrayAdapter<String>(context,
-				android.R.layout.simple_list_item_1);
-
 		// コンテンツプロバイダーを識別するURI
-		Uri uri = ContactsContract.Contacts.CONTENT_URI;
+		Uri uri = ContactsContract.CommonDataKinds.StructuredPostal.CONTENT_URI;
 
 		// 取得するフィールド名
-		String[] fields = { ContactsContract.Contacts.DISPLAY_NAME };
+		String[] fields = {
+				ContactsContract.CommonDataKinds.StructuredPostal._ID,
+				ContactsContract.CommonDataKinds.StructuredPostal.DISPLAY_NAME,
+				ContactsContract.CommonDataKinds.StructuredPostal.FORMATTED_ADDRESS };
 
 		// 並び替える基準のフィールド名
 		String sortOrder = ContactsContract.Contacts.DISPLAY_NAME;
@@ -36,10 +38,15 @@ public class ContactsListFragment extends ListFragment {
 		Cursor cursor = resolver.query(uri, fields, null, null, sortOrder);
 
 		// 検索結果
-		while (cursor.moveToNext()) {
-			String displayName = cursor.getString(0);
-			adapter.add(displayName);
-		}
+		ListAdapter adapter = new SimpleCursorAdapter(
+				context,
+				android.R.layout.simple_list_item_2,
+				cursor,
+				new String[] {
+						ContactsContract.CommonDataKinds.StructuredPostal.DISPLAY_NAME,
+						ContactsContract.CommonDataKinds.StructuredPostal.FORMATTED_ADDRESS },
+				new int[] { android.R.id.text1, android.R.id.text2 },
+				CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER);
 
 		setListAdapter(adapter);
 	}
