@@ -29,7 +29,7 @@ public class ContactsListFragment extends ListFragment {
 				ContactsContract.CommonDataKinds.StructuredPostal.FORMATTED_ADDRESS };
 
 		// 並び替える基準のフィールド名
-		String sortOrder = ContactsContract.Contacts.DISPLAY_NAME;
+		String sortOrder = ContactsContract.Contacts.PHONETIC_NAME;
 
 		// コンテンツリゾルバーの取得
 		ContentResolver resolver = context.getContentResolver();
