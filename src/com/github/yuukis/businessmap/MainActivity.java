@@ -2,7 +2,7 @@ package com.github.yuukis.businessmap;
 
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.ContactsContract;
+import android.provider.ContactsContract.Groups;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.content.ContentResolver;
@@ -20,19 +20,19 @@ public class MainActivity extends Activity implements
 		setContentView(R.layout.activity_main);
 
 		// コンテンツプロバイダーを識別するURI
-		Uri uri = ContactsContract.Groups.CONTENT_URI;
+		Uri uri = Groups.CONTENT_URI;
 
 		// 取得するフィールド名
 		String[] fields = {
-				ContactsContract.Groups._ID,
-				ContactsContract.Groups.TITLE,
-				ContactsContract.Groups.ACCOUNT_NAME };
+				Groups._ID,
+				Groups.TITLE,
+				Groups.ACCOUNT_NAME };
 
 		// コンテンツリゾルバーの取得
 		ContentResolver resolver = getContentResolver();
 
 		// 検索条件
-		String selection = ContactsContract.Groups.DELETED + "=0";
+		String selection = Groups.DELETED + "=0";
 
 		// 検索の実行
 		Cursor cursor = resolver.query(uri, fields, selection, null, null);
@@ -43,8 +43,8 @@ public class MainActivity extends Activity implements
 				android.R.layout.simple_list_item_2,
 				cursor,
 				new String[] {
-						ContactsContract.Groups.TITLE,
-						ContactsContract.Groups.ACCOUNT_NAME },
+						Groups.TITLE,
+						Groups.ACCOUNT_NAME },
 				new int[] { android.R.id.text1, android.R.id.text2 },
 				CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER);
 
