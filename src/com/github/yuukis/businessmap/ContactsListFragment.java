@@ -12,14 +12,32 @@ import android.os.Bundle;
 import android.provider.ContactsContract.CommonDataKinds.GroupMembership;
 import android.provider.ContactsContract.CommonDataKinds.StructuredPostal;
 import android.provider.ContactsContract.Data;
-import android.widget.ListAdapter;
 import android.widget.SimpleAdapter;
 
 public class ContactsListFragment extends ListFragment {
 
+	private static final String K = "key";
+	private static final String V = "value";
+
+	private List<Map<String, String>> mContactsList;
+	private SimpleAdapter mContactsAdapter;
+
+
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
+
+		mContactsList = new ArrayList<Map<String, String>>();
+		mContactsAdapter = new SimpleAdapter(
+				getActivity(),
+				mContactsList,
+				android.R.layout.simple_list_item_2,
+				new String[] { K, V },
+				new int[] { android.R.id.text1, android.R.id.text2 });
+		setListAdapter(mContactsAdapter);
+	}
+
+	public void loadContactsByGroupId(long gid) {
 
 		Context context = getActivity();
 
@@ -32,7 +50,7 @@ public class ContactsListFragment extends ListFragment {
 						GroupMembership.GROUP_ROW_ID + "=?",
 				new String[] {
 						GroupMembership.CONTENT_ITEM_TYPE,
-						String.valueOf(6)},
+						String.valueOf(gid)},
 				Data.RAW_CONTACT_ID);
 
 		Cursor postalCursor = context.getContentResolver().query(
@@ -48,9 +66,7 @@ public class ContactsListFragment extends ListFragment {
 				groupCursor, new String[] { Data.RAW_CONTACT_ID },
 				postalCursor, new String[] { Data.RAW_CONTACT_ID });
 
-		List<Map<String, String>> list = new ArrayList<Map<String, String>>();
-		final String K = "key";
-		final String V = "value";
+		mContactsList.clear();
 		for (CursorJoinerWithIntKey.Result result : joiner) {
 			Map<String,String> map = new HashMap<String, String>();
 			String name, address;
@@ -72,20 +88,13 @@ public class ContactsListFragment extends ListFragment {
 
 			map.put(K, name);
 			map.put(V, address);
-			list.add(map);
+			mContactsList.add(map);
 		}
 
 		groupCursor.close();
 		postalCursor.close();
 
-		ListAdapter adapter = new SimpleAdapter(
-				context,
-				list,
-				android.R.layout.simple_list_item_2,
-				new String[] { K, V },
-				new int[] { android.R.id.text1, android.R.id.text2 });
-
-		setListAdapter(adapter);
+		mContactsAdapter.notifyDataSetChanged();
 	}
 
 }
