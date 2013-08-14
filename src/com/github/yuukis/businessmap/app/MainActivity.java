@@ -10,14 +10,19 @@ import android.os.Bundle;
 import android.provider.ContactsContract.Groups;
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.Fragment;
+import android.app.FragmentManager;
 import android.database.Cursor;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Toast;
 
 public class MainActivity extends Activity implements
 		ActionBar.OnNavigationListener {
 
+	Fragment mMapFragment, mListFragment;
 	List<ContactsGroup> mGroupList;
 
 	@Override
@@ -35,6 +40,9 @@ public class MainActivity extends Activity implements
 				null,
 				null);
 
+		FragmentManager fm = getFragmentManager();
+		mMapFragment = fm.findFragmentById(R.id.map);
+		mListFragment = fm.findFragmentById(R.id.contacts_list);
 		mGroupList = new ArrayList<ContactsGroup>();
 
 		while (groupCursor.moveToNext()) {
@@ -61,8 +69,17 @@ public class MainActivity extends Activity implements
 
 	@Override
 	public boolean onMenuItemSelected(int featureId, MenuItem item) {
+
 		switch (item.getItemId()) {
-		case R.id.contacts_list:
+		case R.id.action_contacts:
+			View listContainer = findViewById(R.id.list_container);
+			if (listContainer.getVisibility() == View.VISIBLE) {
+				listContainer.setVisibility(View.INVISIBLE);
+				item.setIcon(R.drawable.ic_action_list);
+			} else {
+				listContainer.setVisibility(View.VISIBLE);
+				item.setIcon(R.drawable.ic_action_list_on);
+			}
 			return true;
 		}
 		return false;
@@ -74,8 +91,8 @@ public class MainActivity extends Activity implements
 			return false;
 		}
 		ContactsGroup group = mGroupList.get(itemPosition);
-		((ContactsListFragment) getFragmentManager().findFragmentById(
-				R.id.contacts_list)).loadContactsByGroupId(group.getId());
+		long gid = group.getId();
+		((ContactsListFragment) mListFragment).loadContactsByGroupId(gid);
 		return true;
 	}
 

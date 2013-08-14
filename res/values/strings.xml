@@ -2,7 +2,7 @@
 <resources>
 
     <string name="app_name" translatable="false">BusinessMap</string>
-    <string name="action_contacts" translatable="false">Show contacts</string>
+    <string name="action_list" translatable="false">Show contacts</string>
     <string name="action_settings" translatable="false">Settings</string>
 
 </resources>
