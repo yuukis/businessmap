@@ -11,6 +11,7 @@ import android.database.Cursor;
 import android.location.Address;
 import android.location.Geocoder;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.ContactsContract.CommonDataKinds.GroupMembership;
 import android.provider.ContactsContract.CommonDataKinds.StructuredPostal;
 import android.provider.ContactsContract.Data;
@@ -23,6 +24,7 @@ public class ContactsListFragment extends ListFragment {
 
 	private List<ContactsItem> mContactsList;
 	private ContactsAdapter mContactsAdapter;
+	private Handler mHandler = new Handler();
 
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
@@ -63,6 +65,7 @@ public class ContactsListFragment extends ListFragment {
 				postalCursor, new String[] { Data.RAW_CONTACT_ID });
 
 		mContactsList.clear();
+
 		for (CursorJoinerWithIntKey.Result result : joiner) {
 			String name, address;
 
@@ -87,12 +90,23 @@ public class ContactsListFragment extends ListFragment {
 		groupCursor.close();
 		postalCursor.close();
 
-		findLatLng();
-		mContactsAdapter.notifyDataSetChanged();
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				findLatLng();
+				mHandler.post(new Runnable() {
+					@Override
+					public void run() {
+						mContactsAdapter.notifyDataSetChanged();
+					}
+				});
+			}
+		}).start();
 	}
 
 	private void findLatLng() {
-		for (int i = 0; i < mContactsList.size(); i++) {
+		int listSize = mContactsList.size();
+		for (int i = 0; i < listSize; i++) {
 			ContactsItem contact = mContactsList.get(i);
 			String address = contact.getAddress();
 			if (address == null) {
