@@ -1,6 +1,8 @@
-package com.github.yuukis.businessmap;
+package com.github.yuukis.businessmap.app;
 
 import java.util.List;
+
+import com.github.yuukis.businessmap.model.ContactsItem;
 
 import android.app.ListFragment;
 import android.os.Bundle;
@@ -36,8 +38,6 @@ public class ContactsListFragment extends ListFragment {
 	}
 
 	private class ContactsAdapter extends BaseAdapter {
-
-
 
 		@Override
 		public int getCount() {

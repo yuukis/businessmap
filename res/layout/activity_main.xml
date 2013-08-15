@@ -1,5 +1,25 @@
-<fragment xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/contacts_list"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    class="com.github.yuukis.businessmap.ContactsListFragment" />
+    android:layout_height="match_parent" >
+
+    <fragment
+        android:id="@+id/map"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        class="com.google.android.gms.maps.MapFragment" />
+
+    <FrameLayout
+        android:id="@+id/list_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#FFF"
+        android:visibility="invisible" >
+
+        <fragment
+            android:id="@+id/contacts_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            class="com.github.yuukis.businessmap.app.ContactsListFragment" />
+    </FrameLayout>
+
+</RelativeLayout>

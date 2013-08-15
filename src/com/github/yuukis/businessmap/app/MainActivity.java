@@ -1,9 +1,16 @@
-package com.github.yuukis.businessmap;
+package com.github.yuukis.businessmap.app;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+
+import com.github.yuukis.businessmap.R;
+import com.github.yuukis.businessmap.model.ContactsGroup;
+import com.github.yuukis.businessmap.model.ContactsItem;
+import com.github.yuukis.businessmap.utils.CursorJoinerWithIntKey;
+
+import com.google.android.gms.maps.MapFragment;
 
 import android.location.Address;
 import android.location.Geocoder;
@@ -18,6 +25,8 @@ import android.app.Activity;
 import android.app.FragmentManager;
 import android.database.Cursor;
 import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
 import android.view.Window;
 import android.widget.ArrayAdapter;
 
@@ -28,6 +37,7 @@ public class MainActivity extends Activity implements
 
 	private List<ContactsGroup> mGroupList;
 	private List<ContactsItem> mContactsList;
+	private MapFragment mMapFragment;
 	private ContactsListFragment mListFragment;
 	private Handler mHandler = new Handler();
 
@@ -40,6 +50,7 @@ public class MainActivity extends Activity implements
 		setProgressBarVisibility(false);
 
 		FragmentManager fm = getFragmentManager();
+		mMapFragment = (MapFragment) fm.findFragmentById(R.id.map);
 		mListFragment = (ContactsListFragment) fm
 				.findFragmentById(R.id.contacts_list);
 
@@ -77,6 +88,24 @@ public class MainActivity extends Activity implements
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.main, menu);
 		return true;
+	}
+
+	@Override
+	public boolean onMenuItemSelected(int featureId, MenuItem item) {
+
+		switch (item.getItemId()) {
+		case R.id.action_contacts:
+			View listContainer = findViewById(R.id.list_container);
+			if (listContainer.getVisibility() == View.VISIBLE) {
+				listContainer.setVisibility(View.INVISIBLE);
+				item.setIcon(R.drawable.ic_action_list);
+			} else {
+				listContainer.setVisibility(View.VISIBLE);
+				item.setIcon(R.drawable.ic_action_list_on);
+			}
+			return true;
+		}
+		return false;
 	}
 
 	@Override
