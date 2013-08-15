@@ -1,9 +1,7 @@
 package com.github.yuukis.businessmap;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import android.app.ListFragment;
 import android.content.Context;
@@ -12,28 +10,22 @@ import android.os.Bundle;
 import android.provider.ContactsContract.CommonDataKinds.GroupMembership;
 import android.provider.ContactsContract.CommonDataKinds.StructuredPostal;
 import android.provider.ContactsContract.Data;
-import android.widget.SimpleAdapter;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.TextView;
 
 public class ContactsListFragment extends ListFragment {
 
-	private static final String K = "key";
-	private static final String V = "value";
-
-	private List<Map<String, String>> mContactsList;
-	private SimpleAdapter mContactsAdapter;
-
+	private List<ContactsItem> mContactsList;
+	private ContactsAdapter mContactsAdapter;
 
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
-		mContactsList = new ArrayList<Map<String, String>>();
-		mContactsAdapter = new SimpleAdapter(
-				getActivity(),
-				mContactsList,
-				android.R.layout.simple_list_item_2,
-				new String[] { K, V },
-				new int[] { android.R.id.text1, android.R.id.text2 });
+		mContactsList = new ArrayList<ContactsItem>();
+		mContactsAdapter = new ContactsAdapter();
 		setListAdapter(mContactsAdapter);
 	}
 
@@ -68,13 +60,12 @@ public class ContactsListFragment extends ListFragment {
 
 		mContactsList.clear();
 		for (CursorJoinerWithIntKey.Result result : joiner) {
-			Map<String,String> map = new HashMap<String, String>();
 			String name, address;
 
 			switch (result) {
 			case LEFT:
 				name = groupCursor.getString(1);
-				address = "(未登録)";
+				address = null;
 				break;
 
 			case BOTH:
@@ -86,9 +77,7 @@ public class ContactsListFragment extends ListFragment {
 				continue;
 			}
 
-			map.put(K, name);
-			map.put(V, address);
-			mContactsList.add(map);
+			mContactsList.add(new ContactsItem(name, address));
 		}
 
 		groupCursor.close();
@@ -97,4 +86,51 @@ public class ContactsListFragment extends ListFragment {
 		mContactsAdapter.notifyDataSetChanged();
 	}
 
+	private static class ViewHolder {
+		TextView textView1;
+		TextView textView2;
+	}
+
+	private class ContactsAdapter extends BaseAdapter {
+
+		@Override
+		public int getCount() {
+			return mContactsList.size();
+		}
+
+		@Override
+		public Object getItem(int position) {
+			return mContactsList.get(position);
+		}
+
+		@Override
+		public long getItemId(int position) {
+			return position;
+		}
+
+		@Override
+		public View getView(int position, View convertView, ViewGroup parent) {
+			ViewHolder holder;
+
+			if (convertView == null) {
+				convertView = getActivity().getLayoutInflater().inflate(
+						android.R.layout.simple_list_item_2, null);
+				holder = new ViewHolder();
+				holder.textView1 = (TextView) convertView
+						.findViewById(android.R.id.text1);
+				holder.textView2 = (TextView) convertView
+						.findViewById(android.R.id.text2);
+				convertView.setTag(holder);
+			} else {
+				holder = (ViewHolder) convertView.getTag();
+			}
+
+			ContactsItem contact = (ContactsItem) getItem(position);
+			holder.textView1.setText(contact.getName());
+			holder.textView2.setText(contact.getAddress());
+
+			return convertView;
+		}
+
+	}
 }
