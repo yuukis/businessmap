@@ -1,5 +1,7 @@
 package com.github.yuukis.businessmap;
 
+import java.util.Locale;
+
 public class ContactsItem {
 
 	private String name;
@@ -19,6 +21,10 @@ public class ContactsItem {
 	}
 
 	public String getAddress() {
+		return address;
+	}
+
+	public String getDisplayAddress() {
 		if (address == null) {
 			return "(未登録)";
 		}
@@ -47,6 +53,15 @@ public class ContactsItem {
 
 	public void setLng(double lng) {
 		this.lng = lng;
+	}
+
+	@Override
+	public String toString() {
+		if (lat == null || lng == null) {
+			return getDisplayAddress();
+		}
+		return String.format(Locale.getDefault(), "%s (%f,%f)",
+				getDisplayAddress(), lat, lng);
 	}
 
 }

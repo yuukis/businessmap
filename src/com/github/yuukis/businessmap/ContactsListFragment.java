@@ -1,11 +1,15 @@
 package com.github.yuukis.businessmap;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import android.app.ListFragment;
 import android.content.Context;
 import android.database.Cursor;
+import android.location.Address;
+import android.location.Geocoder;
 import android.os.Bundle;
 import android.provider.ContactsContract.CommonDataKinds.GroupMembership;
 import android.provider.ContactsContract.CommonDataKinds.StructuredPostal;
@@ -83,7 +87,29 @@ public class ContactsListFragment extends ListFragment {
 		groupCursor.close();
 		postalCursor.close();
 
+		findLatLng();
 		mContactsAdapter.notifyDataSetChanged();
+	}
+
+	private void findLatLng() {
+		for (int i = 0; i < mContactsList.size(); i++) {
+			ContactsItem contact = mContactsList.get(i);
+			String address = contact.getAddress();
+			if (address == null) {
+				continue;
+			}
+			try {
+				List<Address> list = new Geocoder(getActivity(),
+						Locale.getDefault()).getFromLocationName(address, 1);
+				if (list.size() > 0) {
+					Address addr = list.get(0);
+					contact.setLat(addr.getLatitude());
+					contact.setLng(addr.getLongitude());
+					mContactsList.set(i, contact);
+				}
+			} catch (IOException e) {
+			}
+		}
 	}
 
 	private static class ViewHolder {
@@ -127,7 +153,7 @@ public class ContactsListFragment extends ListFragment {
 
 			ContactsItem contact = (ContactsItem) getItem(position);
 			holder.textView1.setText(contact.getName());
-			holder.textView2.setText(contact.getAddress());
+			holder.textView2.setText(contact.toString());
 
 			return convertView;
 		}
