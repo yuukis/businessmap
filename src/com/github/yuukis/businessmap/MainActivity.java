@@ -18,10 +18,13 @@ import android.app.Activity;
 import android.app.FragmentManager;
 import android.database.Cursor;
 import android.view.Menu;
+import android.view.Window;
 import android.widget.ArrayAdapter;
 
 public class MainActivity extends Activity implements
 		ActionBar.OnNavigationListener {
+
+	private static final int PROGRESS_MAX = 10000;
 
 	private List<ContactsGroup> mGroupList;
 	private List<ContactsItem> mContactsList;
@@ -31,7 +34,10 @@ public class MainActivity extends Activity implements
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		requestWindowFeature(Window.FEATURE_PROGRESS);
 		setContentView(R.layout.activity_main);
+
+		setProgressBarVisibility(false);
 
 		FragmentManager fm = getFragmentManager();
 		mListFragment = (ContactsListFragment) fm
@@ -110,6 +116,12 @@ public class MainActivity extends Activity implements
 				postalCursor, new String[] { Data.RAW_CONTACT_ID });
 
 		mContactsList.clear();
+		mHandler.post(new Runnable() {
+			@Override
+			public void run() {
+				mListFragment.notifyDataSetChanged();
+			}
+		});
 
 		for (CursorJoinerWithIntKey.Result result : joiner) {
 			String name, address;
@@ -154,8 +166,16 @@ public class MainActivity extends Activity implements
 	}
 
 	private void findLatLng() {
-		int listSize = mContactsList.size();
+		final int listSize = mContactsList.size();
 		for (int i = 0; i < listSize; i++) {
+			final int progress = i * PROGRESS_MAX / listSize;
+			mHandler.post(new Runnable() {
+				@Override
+				public void run() {
+					setProgress(progress);
+				}
+			});
+
 			ContactsItem contact = mContactsList.get(i);
 			String address = contact.getAddress();
 			if (address == null) {
@@ -173,6 +193,12 @@ public class MainActivity extends Activity implements
 			} catch (IOException e) {
 			}
 		}
+		mHandler.post(new Runnable() {
+			@Override
+			public void run() {
+				setProgress(PROGRESS_MAX);
+			}
+		});
 	}
 
 }
