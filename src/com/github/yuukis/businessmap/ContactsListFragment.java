@@ -25,6 +25,7 @@ public class ContactsListFragment extends ListFragment {
 	private List<ContactsItem> mContactsList;
 	private ContactsAdapter mContactsAdapter;
 	private Handler mHandler = new Handler();
+	private GeocodingThread mThread;
 
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
@@ -35,10 +36,20 @@ public class ContactsListFragment extends ListFragment {
 		setListAdapter(mContactsAdapter);
 	}
 
+	@Override
+	public void onDetach() {
+		if (mThread != null) {
+			mThread.halt();
+		}
+		super.onDetach();
+	}
+
 	public void loadContactsByGroupId(long gid) {
+		if (mThread != null) {
+			mThread.halt();
+		}
 
 		Context context = getActivity();
-
 		Cursor groupCursor = context.getContentResolver().query(
 				Data.CONTENT_URI,
 				new String[]{
@@ -90,7 +101,8 @@ public class ContactsListFragment extends ListFragment {
 		groupCursor.close();
 		postalCursor.close();
 
-		new GeocodingThread().start();
+		mThread = new GeocodingThread();
+		mThread.start();
 	}
 
 	private static class ViewHolder {
@@ -143,20 +155,35 @@ public class ContactsListFragment extends ListFragment {
 
 	private class GeocodingThread extends Thread {
 
+		private boolean halt;
+
+		public GeocodingThread() {
+			halt = false;
+		}
+
 		@Override
 		public void run() {
 			findLatLng();
 			mHandler.post(new Runnable() {
 				@Override
 				public void run() {
-					mContactsAdapter.notifyDataSetChanged();
+					if (!halt) {
+						mContactsAdapter.notifyDataSetChanged();
+					}
 				}
 			});
+		}
+
+		public void halt() {
+			halt = true;
+			interrupt();
 		}
 
 		private void findLatLng() {
 			int listSize = mContactsList.size();
 			for (int i = 0; i < listSize; i++) {
+				if (halt) { return; }
+
 				ContactsItem contact = mContactsList.get(i);
 				String address = contact.getAddress();
 				if (address == null) {
@@ -166,6 +193,7 @@ public class ContactsListFragment extends ListFragment {
 					List<Address> list = new Geocoder(getActivity(),
 							Locale.getDefault())
 							.getFromLocationName(address, 1);
+					if (halt) { return; }
 					if (list.size() > 0) {
 						Address addr = list.get(0);
 						contact.setLat(addr.getLatitude());
