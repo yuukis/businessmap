@@ -40,6 +40,7 @@ public class MainActivity extends Activity implements
 	private MapFragment mMapFragment;
 	private ContactsListFragment mListFragment;
 	private Handler mHandler = new Handler();
+	private GeocodingThread mThread;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -84,6 +85,14 @@ public class MainActivity extends Activity implements
 	}
 
 	@Override
+	protected void onDestroy() {
+		if (mThread != null) {
+			mThread.halt();
+		}
+		super.onDestroy();
+	}
+
+	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.main, menu);
@@ -119,6 +128,10 @@ public class MainActivity extends Activity implements
 	}
 
 	public void loadContactsByGroupId(long gid) {
+		if (mThread != null) {
+			mThread.halt();
+		}
+
 		Cursor groupCursor = getContentResolver().query(
 				Data.CONTENT_URI,
 				new String[]{
@@ -176,58 +189,80 @@ public class MainActivity extends Activity implements
 		groupCursor.close();
 		postalCursor.close();
 
-		new Thread(new Runnable() {
-			@Override
-			public void run() {
-				findLatLng();
-				mHandler.post(new Runnable() {
-					@Override
-					public void run() {
-						mListFragment.notifyDataSetChanged();
-					}
-				});
-			}
-		}).start();
+		mThread = new GeocodingThread();
+		mThread.start();
 	}
 
 	public List<ContactsItem> getContactsList() {
 		return mContactsList;
 	}
 
-	private void findLatLng() {
-		final int listSize = mContactsList.size();
-		for (int i = 0; i < listSize; i++) {
-			final int progress = i * PROGRESS_MAX / listSize;
+	private class GeocodingThread extends Thread {
+
+		private boolean halt;
+
+		public GeocodingThread() {
+			halt = false;
+		}
+
+		@Override
+		public void run() {
+			findLatLng();
 			mHandler.post(new Runnable() {
 				@Override
 				public void run() {
-					setProgress(progress);
+					if (!halt) {
+						mListFragment.notifyDataSetChanged();
+					}
 				}
 			});
-
-			ContactsItem contact = mContactsList.get(i);
-			String address = contact.getAddress();
-			if (address == null) {
-				continue;
-			}
-			try {
-				List<Address> list = new Geocoder(this,
-						Locale.getDefault()).getFromLocationName(address, 1);
-				if (list.size() > 0) {
-					Address addr = list.get(0);
-					contact.setLat(addr.getLatitude());
-					contact.setLng(addr.getLongitude());
-					mContactsList.set(i, contact);
-				}
-			} catch (IOException e) {
-			}
 		}
-		mHandler.post(new Runnable() {
-			@Override
-			public void run() {
-				setProgress(PROGRESS_MAX);
-			}
-		});
-	}
 
+		public void halt() {
+			halt = true;
+			interrupt();
+		}
+
+		private void findLatLng() {
+			final int listSize = mContactsList.size();
+			for (int i = 0; i < listSize; i++) {
+				if (halt) { return; }
+				final int progress = i * PROGRESS_MAX / listSize;
+				mHandler.post(new Runnable() {
+					@Override
+					public void run() {
+						setProgress(progress);
+					}
+				});
+
+				ContactsItem contact = mContactsList.get(i);
+				String address = contact.getAddress();
+				if (address == null) {
+					continue;
+				}
+				try {
+					List<Address> list = new Geocoder(MainActivity.this,
+							Locale.getDefault())
+							.getFromLocationName(address, 1);
+					if (halt) {
+						return;
+					}
+					if (list.size() > 0) {
+						Address addr = list.get(0);
+						contact.setLat(addr.getLatitude());
+						contact.setLng(addr.getLongitude());
+						mContactsList.set(i, contact);
+					}
+				} catch (IOException e) {
+				}
+			}
+			mHandler.post(new Runnable() {
+				@Override
+				public void run() {
+					setProgress(PROGRESS_MAX);
+				}
+			});
+		}
+
+	}
 }
