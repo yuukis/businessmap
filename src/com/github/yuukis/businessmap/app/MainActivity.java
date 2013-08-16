@@ -207,8 +207,10 @@ public class MainActivity extends Activity implements
 				continue;
 			}
 			LatLng latLng = new LatLng(contact.getLat(), contact.getLng());
-			mMap.addMarker(new MarkerOptions().position(latLng).title(
-					contact.getName()));
+			mMap.addMarker(new MarkerOptions()
+					.position(latLng)
+					.title(contact.getName())
+					.snippet(contact.getDisplayAddress()));
 		}
 	}
 
