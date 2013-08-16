@@ -10,7 +10,10 @@ import com.github.yuukis.businessmap.model.ContactsGroup;
 import com.github.yuukis.businessmap.model.ContactsItem;
 import com.github.yuukis.businessmap.utils.CursorJoinerWithIntKey;
 
+import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 import android.location.Address;
 import android.location.Geocoder;
@@ -37,8 +40,8 @@ public class MainActivity extends Activity implements
 
 	private List<ContactsGroup> mGroupList;
 	private List<ContactsItem> mContactsList;
-	private MapFragment mMapFragment;
 	private ContactsListFragment mListFragment;
+	private GoogleMap mMap;
 	private Handler mHandler = new Handler();
 	private GeocodingThread mThread;
 
@@ -51,9 +54,9 @@ public class MainActivity extends Activity implements
 		setProgressBarVisibility(false);
 
 		FragmentManager fm = getFragmentManager();
-		mMapFragment = (MapFragment) fm.findFragmentById(R.id.map);
 		mListFragment = (ContactsListFragment) fm
 				.findFragmentById(R.id.contacts_list);
+		mMap = ((MapFragment) fm.findFragmentById(R.id.map)).getMap();
 
 		Cursor groupCursor = getContentResolver().query(
 				Groups.CONTENT_URI,
@@ -127,6 +130,10 @@ public class MainActivity extends Activity implements
 		return true;
 	}
 
+	public List<ContactsItem> getContactsList() {
+		return mContactsList;
+	}
+
 	public void loadContactsByGroupId(long gid) {
 		if (mThread != null) {
 			mThread.halt();
@@ -193,8 +200,16 @@ public class MainActivity extends Activity implements
 		mThread.start();
 	}
 
-	public List<ContactsItem> getContactsList() {
-		return mContactsList;
+	private void setUpMap() {
+		mMap.clear();
+		for (ContactsItem contact : mContactsList) {
+			if (contact.getLat() == null || contact.getLng() == null) {
+				continue;
+			}
+			LatLng latLng = new LatLng(contact.getLat(), contact.getLng());
+			mMap.addMarker(new MarkerOptions().position(latLng).title(
+					contact.getName()));
+		}
 	}
 
 	private class GeocodingThread extends Thread {
@@ -213,6 +228,7 @@ public class MainActivity extends Activity implements
 				public void run() {
 					if (!halt) {
 						mListFragment.notifyDataSetChanged();
+						setUpMap();
 					}
 				}
 			});

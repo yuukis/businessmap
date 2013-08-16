@@ -31,11 +31,11 @@ public class ContactsItem {
 		return address;
 	}
 
-	public double getLat() {
+	public Double getLat() {
 		return lat;
 	}
 
-	public double getLng() {
+	public Double getLng() {
 		return lng;
 	}
 
