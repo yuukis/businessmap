@@ -90,40 +90,7 @@ public class ContactsListFragment extends ListFragment {
 		groupCursor.close();
 		postalCursor.close();
 
-		new Thread(new Runnable() {
-			@Override
-			public void run() {
-				findLatLng();
-				mHandler.post(new Runnable() {
-					@Override
-					public void run() {
-						mContactsAdapter.notifyDataSetChanged();
-					}
-				});
-			}
-		}).start();
-	}
-
-	private void findLatLng() {
-		int listSize = mContactsList.size();
-		for (int i = 0; i < listSize; i++) {
-			ContactsItem contact = mContactsList.get(i);
-			String address = contact.getAddress();
-			if (address == null) {
-				continue;
-			}
-			try {
-				List<Address> list = new Geocoder(getActivity(),
-						Locale.getDefault()).getFromLocationName(address, 1);
-				if (list.size() > 0) {
-					Address addr = list.get(0);
-					contact.setLat(addr.getLatitude());
-					contact.setLng(addr.getLongitude());
-					mContactsList.set(i, contact);
-				}
-			} catch (IOException e) {
-			}
-		}
+		new GeocodingThread().start();
 	}
 
 	private static class ViewHolder {
@@ -170,6 +137,44 @@ public class ContactsListFragment extends ListFragment {
 			holder.textView2.setText(contact.toString());
 
 			return convertView;
+		}
+
+	}
+
+	private class GeocodingThread extends Thread {
+
+		@Override
+		public void run() {
+			findLatLng();
+			mHandler.post(new Runnable() {
+				@Override
+				public void run() {
+					mContactsAdapter.notifyDataSetChanged();
+				}
+			});
+		}
+
+		private void findLatLng() {
+			int listSize = mContactsList.size();
+			for (int i = 0; i < listSize; i++) {
+				ContactsItem contact = mContactsList.get(i);
+				String address = contact.getAddress();
+				if (address == null) {
+					continue;
+				}
+				try {
+					List<Address> list = new Geocoder(getActivity(),
+							Locale.getDefault())
+							.getFromLocationName(address, 1);
+					if (list.size() > 0) {
+						Address addr = list.get(0);
+						contact.setLat(addr.getLatitude());
+						contact.setLng(addr.getLongitude());
+						mContactsList.set(i, contact);
+					}
+				} catch (IOException e) {
+				}
+			}
 		}
 
 	}
