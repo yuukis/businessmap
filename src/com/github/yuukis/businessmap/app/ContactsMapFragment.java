@@ -37,8 +37,11 @@ public class ContactsMapFragment extends MapFragment implements
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		getMap().setInfoWindowAdapter(new MyInfoWindowAdapter());
-		getMap().setOnInfoWindowClickListener(this);
+		GoogleMap map = getMap();
+		map.setInfoWindowAdapter(new MyInfoWindowAdapter());
+		map.setOnInfoWindowClickListener(this);
+		map.setIndoorEnabled(true);
+		map.setMyLocationEnabled(true);
 	}
 
 	public void notifyDataSetChanged() {
