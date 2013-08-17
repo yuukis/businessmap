@@ -139,6 +139,7 @@ public class MainActivity extends Activity implements
 				Data.CONTENT_URI,
 				new String[]{
 						GroupMembership.RAW_CONTACT_ID,
+						GroupMembership.CONTACT_ID,
 						GroupMembership.DISPLAY_NAME },
 				Data.MIMETYPE + "=? AND " +
 						GroupMembership.GROUP_ROW_ID + "=?",
@@ -170,16 +171,19 @@ public class MainActivity extends Activity implements
 		});
 
 		for (CursorJoinerWithIntKey.Result result : joiner) {
+			long cid;
 			String name, address;
 
 			switch (result) {
 			case LEFT:
-				name = groupCursor.getString(1);
+				cid = groupCursor.getLong(1);
+				name = groupCursor.getString(2);
 				address = null;
 				break;
 
 			case BOTH:
-				name = groupCursor.getString(1);
+				cid = groupCursor.getLong(1);
+				name = groupCursor.getString(2);
 				address = postalCursor.getString(1);
 				break;
 
@@ -187,7 +191,7 @@ public class MainActivity extends Activity implements
 				continue;
 			}
 
-			mContactsList.add(new ContactsItem(name, address));
+			mContactsList.add(new ContactsItem(cid, name, address));
 		}
 
 		groupCursor.close();
