@@ -4,7 +4,10 @@ import java.util.List;
 
 import com.github.yuukis.businessmap.model.ContactsItem;
 
+import android.app.AlertDialog;
 import android.app.ListFragment;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +16,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.github.yuukis.businessmap.R;
+import com.github.yuukis.businessmap.utils.ActionUtils;
 
 public class ContactsListFragment extends ListFragment {
 
@@ -32,14 +36,36 @@ public class ContactsListFragment extends ListFragment {
 
 	@Override
 	public void onListItemClick(ListView l, View v, int position, long id) {
-		ContactsItem contact = (ContactsItem) mContactsAdapter
+		final ContactsItem contact = (ContactsItem) mContactsAdapter
 				.getItem(position);
 		ContactsMapFragment mapFragment = (ContactsMapFragment) getFragmentManager()
 				.findFragmentById(R.id.contacts_map);
 		if (mapFragment != null) {
-			mapFragment.showMarkerInfoWindow(contact);
+			boolean result = mapFragment.showMarkerInfoWindow(contact);
+			if (result) {
+				return;
+			}
 		}
-	}
+
+		final Context context = getActivity();
+		String title = contact.getName();
+		final String[] items = new String[] {
+				"Show contacts"
+		};
+		new AlertDialog.Builder(getActivity())
+				.setTitle(title)
+				.setItems(items, new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						switch (which) {
+						case 0:
+							ActionUtils.doShowContact(context, contact);
+							break;
+						}
+					}
+				})
+				.show();
+		}
 
 	private List<ContactsItem> getContactsList() {
 		MainActivity activity = (MainActivity) getActivity();

@@ -1,21 +1,18 @@
 package com.github.yuukis.businessmap.app;
 
 import java.util.List;
-import java.util.Locale;
 
 import android.app.AlertDialog;
-import android.content.ContentUris;
+import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
-import android.provider.ContactsContract.Contacts;
 import android.util.SparseArray;
 import android.view.View;
 import android.widget.TextView;
 
 import com.github.yuukis.businessmap.R;
 import com.github.yuukis.businessmap.model.ContactsItem;
+import com.github.yuukis.businessmap.utils.ActionUtils;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.CancelableCallback;
@@ -97,6 +94,8 @@ public class ContactsMapFragment extends MapFragment implements
 		if (contact == null) {
 			return;
 		}
+		
+		final Context context = getActivity();
 		String title = contact.getName();
 		final String[] items = new String[] {
 				"Show contacts",
@@ -110,42 +109,18 @@ public class ContactsMapFragment extends MapFragment implements
 					public void onClick(DialogInterface dialog, int which) {
 						switch (which) {
 						case 0:
-							doShowContact(contact);
+							ActionUtils.doShowContact(context, contact);
 							break;
 						case 1:
-							doShowDirections(contact);
+							ActionUtils.doShowDirections(context, contact);
 							break;
 						case 2:
-							doStartDriveNavigation(contact);
+							ActionUtils
+									.doStartDriveNavigation(context, contact);
 						}
 					}
 				})
 				.show();
-	}
-
-	private void doShowContact(ContactsItem contact) {
-		Uri contactUri = ContentUris.withAppendedId(Contacts.CONTENT_URI,
-				contact.getCID());
-		Intent intent = new Intent(Intent.ACTION_VIEW, contactUri);
-		startActivity(intent);
-	}
-
-	private void doShowDirections(ContactsItem contact) {
-		Uri uri = Uri.parse(String.format(Locale.getDefault(),
-				"http://maps.google.com/maps?saddr=&daddr=%f,%f",
-				contact.getLat(), contact.getLng()));
-		Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-		startActivity(intent);
-	}
-
-	private void doStartDriveNavigation(ContactsItem contact) {
-		Uri uri = Uri.parse(String.format(Locale.getDefault(),
-				"google.navigation:///?ll=%f,%f&q=%s",
-				contact.getLat(), contact.getLng(), contact.getName()));
-		Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-		intent.setClassName("com.google.android.apps.maps",
-				"com.google.android.maps.driveabout.app.NavigationActivity");
-		startActivity(intent);
 	}
 
 	private List<ContactsItem> getContactsList() {
