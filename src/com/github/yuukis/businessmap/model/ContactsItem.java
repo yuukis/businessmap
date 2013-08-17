@@ -4,16 +4,22 @@ import java.util.Locale;
 
 public class ContactsItem {
 
+	private long cid;
 	private String name;
 	private String address;
 	private Double lat;
 	private Double lng;
 
-	public ContactsItem(String name, String address) {
+	public ContactsItem(long cid, String name, String address) {
+		this.cid = cid;
 		this.name = name;
 		this.address = address;
 		this.lat = null;
 		this.lng = null;
+	}
+
+	public long getCID() {
+		return cid;
 	}
 
 	public String getName() {

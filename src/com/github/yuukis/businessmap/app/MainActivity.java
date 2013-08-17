@@ -18,22 +18,28 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 import android.location.Address;
 import android.location.Geocoder;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.ContactsContract.Contacts;
 import android.provider.ContactsContract.Data;
 import android.provider.ContactsContract.Groups;
 import android.provider.ContactsContract.CommonDataKinds.GroupMembership;
 import android.provider.ContactsContract.CommonDataKinds.StructuredPostal;
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.FragmentManager;
+import android.content.ContentUris;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.database.Cursor;
+import android.util.SparseArray;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.widget.ArrayAdapter;
-import android.widget.Toast;
 
 public class MainActivity extends Activity implements
 		ActionBar.OnNavigationListener, GoogleMap.OnInfoWindowClickListener {
@@ -42,6 +48,7 @@ public class MainActivity extends Activity implements
 
 	private List<ContactsGroup> mGroupList;
 	private List<ContactsItem> mContactsList;
+	private SparseArray<ContactsItem> mMarkerHashMap;
 	private ContactsListFragment mListFragment;
 	private GoogleMap mMap;
 	private Handler mHandler = new Handler();
@@ -73,6 +80,7 @@ public class MainActivity extends Activity implements
 
 		mGroupList = new ArrayList<ContactsGroup>();
 		mContactsList = new ArrayList<ContactsItem>();
+		mMarkerHashMap = new SparseArray<ContactsItem>();
 
 		while (groupCursor.moveToNext()) {
 			long _id = groupCursor.getLong(0);
@@ -146,6 +154,7 @@ public class MainActivity extends Activity implements
 				Data.CONTENT_URI,
 				new String[]{
 						GroupMembership.RAW_CONTACT_ID,
+						GroupMembership.CONTACT_ID,
 						GroupMembership.DISPLAY_NAME },
 				Data.MIMETYPE + "=? AND " +
 						GroupMembership.GROUP_ROW_ID + "=?",
@@ -176,16 +185,19 @@ public class MainActivity extends Activity implements
 		});
 
 		for (CursorJoinerWithIntKey.Result result : joiner) {
+			long cid;
 			String name, address;
 
 			switch (result) {
 			case LEFT:
-				name = groupCursor.getString(1);
+				cid = groupCursor.getLong(1);
+				name = groupCursor.getString(2);
 				address = null;
 				break;
 
 			case BOTH:
-				name = groupCursor.getString(1);
+				cid = groupCursor.getLong(1);
+				name = groupCursor.getString(2);
 				address = postalCursor.getString(1);
 				break;
 
@@ -193,7 +205,7 @@ public class MainActivity extends Activity implements
 				continue;
 			}
 
-			mContactsList.add(new ContactsItem(name, address));
+			mContactsList.add(new ContactsItem(cid, name, address));
 		}
 
 		groupCursor.close();
@@ -205,15 +217,17 @@ public class MainActivity extends Activity implements
 
 	private void setUpMap() {
 		mMap.clear();
+		mMarkerHashMap.clear();
 		for (ContactsItem contact : mContactsList) {
 			if (contact.getLat() == null || contact.getLng() == null) {
 				continue;
 			}
 			LatLng latLng = new LatLng(contact.getLat(), contact.getLng());
-			mMap.addMarker(new MarkerOptions()
+			Marker marker = mMap.addMarker(new MarkerOptions()
 					.position(latLng)
 					.title(contact.getName())
 					.snippet(contact.getDisplayAddress()));
+			mMarkerHashMap.put(marker.hashCode(), contact);
 		}
 	}
 
@@ -289,6 +303,58 @@ public class MainActivity extends Activity implements
 
 	@Override
 	public void onInfoWindowClick(Marker marker) {
-		Toast.makeText(this, marker.getTitle(), Toast.LENGTH_SHORT).show();
+		final ContactsItem contact = mMarkerHashMap.get(marker.hashCode());
+		if (contact == null) {
+			return;
+		}
+		String title = contact.getName();
+		final String[] items = new String[] {
+				"Show contacts",
+				"Show directions",
+				"Start drive navigation"
+		};
+		new AlertDialog.Builder(this)
+				.setTitle(title)
+				.setItems(items, new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						switch (which) {
+						case 0:
+							doShowContact(contact);
+							break;
+						case 1:
+							doShowDirections(contact);
+							break;
+						case 2:
+							doStartDriveNavigation(contact);
+						}
+					}
+				})
+				.show();
+	}
+
+	private void doShowContact(ContactsItem contact) {
+		Uri contactUri = ContentUris.withAppendedId(Contacts.CONTENT_URI,
+				contact.getCID());
+		Intent intent = new Intent(Intent.ACTION_VIEW, contactUri);
+		startActivity(intent);
+	}
+
+	private void doShowDirections(ContactsItem contact) {
+		Uri uri = Uri.parse(String.format(Locale.getDefault(),
+				"http://maps.google.com/maps?saddr=&daddr=%f,%f",
+				contact.getLat(), contact.getLng()));
+		Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+		startActivity(intent);
+	}
+
+	private void doStartDriveNavigation(ContactsItem contact) {
+		Uri uri = Uri.parse(String.format(Locale.getDefault(),
+				"google.navigation:///?ll=%f,%f&q=%s",
+				contact.getLat(), contact.getLng(), contact.getName()));
+		Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+		intent.setClassName("com.google.android.apps.maps",
+				"com.google.android.maps.driveabout.app.NavigationActivity");
+		startActivity(intent);
 	}
 }
