@@ -3,10 +3,10 @@
     android:layout_height="match_parent" >
 
     <fragment
-        android:id="@+id/map"
+        android:id="@+id/contacts_map"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        class="com.google.android.gms.maps.MapFragment" />
+        class="com.github.yuukis.businessmap.app.ContactsMapFragment" />
 
     <FrameLayout
         android:id="@+id/list_container"

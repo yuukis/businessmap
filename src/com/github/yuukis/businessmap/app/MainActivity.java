@@ -10,13 +10,6 @@ import com.github.yuukis.businessmap.model.ContactsGroup;
 import com.github.yuukis.businessmap.model.ContactsItem;
 import com.github.yuukis.businessmap.utils.CursorJoinerWithIntKey;
 
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.GoogleMap.InfoWindowAdapter;
-import com.google.android.gms.maps.MapFragment;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
-
 import android.location.Address;
 import android.location.Geocoder;
 import android.os.Bundle;
@@ -34,7 +27,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.widget.ArrayAdapter;
-import android.widget.TextView;
 
 public class MainActivity extends Activity implements
 		ActionBar.OnNavigationListener {
@@ -43,8 +35,8 @@ public class MainActivity extends Activity implements
 
 	private List<ContactsGroup> mGroupList;
 	private List<ContactsItem> mContactsList;
+	private ContactsMapFragment mMapFragment;
 	private ContactsListFragment mListFragment;
-	private GoogleMap mMap;
 	private Handler mHandler = new Handler();
 	private GeocodingThread mThread;
 
@@ -57,28 +49,10 @@ public class MainActivity extends Activity implements
 		setProgressBarVisibility(false);
 
 		FragmentManager fm = getFragmentManager();
+		mMapFragment = (ContactsMapFragment) fm
+				.findFragmentById(R.id.contacts_map);
 		mListFragment = (ContactsListFragment) fm
 				.findFragmentById(R.id.contacts_list);
-		mMap = ((MapFragment) fm.findFragmentById(R.id.map)).getMap();
-		mMap.setInfoWindowAdapter(new InfoWindowAdapter() {
-			@Override
-			public View getInfoWindow(Marker marker) {
-				return null;
-			}
-
-			@Override
-			public View getInfoContents(Marker marker) {
-				View view = getLayoutInflater().inflate(
-						R.layout.marker_info_contents, null);
-				TextView tvTitle = (TextView) view.findViewById(R.id.title);
-				TextView tvSnippet = (TextView) view.findViewById(R.id.snippet);
-				String title = marker.getTitle();
-				String snippet = marker.getSnippet();
-				tvTitle.setText(title);
-				tvSnippet.setText(snippet);
-				return view;
-			}
-	    });
 
 		Cursor groupCursor = getContentResolver().query(
 				Groups.CONTENT_URI,
@@ -190,6 +164,7 @@ public class MainActivity extends Activity implements
 		mHandler.post(new Runnable() {
 			@Override
 			public void run() {
+				mMapFragment.notifyDataSetChanged();
 				mListFragment.notifyDataSetChanged();
 			}
 		});
@@ -222,20 +197,6 @@ public class MainActivity extends Activity implements
 		mThread.start();
 	}
 
-	private void setUpMap() {
-		mMap.clear();
-		for (ContactsItem contact : mContactsList) {
-			if (contact.getLat() == null || contact.getLng() == null) {
-				continue;
-			}
-			LatLng latLng = new LatLng(contact.getLat(), contact.getLng());
-			mMap.addMarker(new MarkerOptions()
-					.position(latLng)
-					.title(contact.getName())
-					.snippet(contact.getDisplayAddress()));
-		}
-	}
-
 	private class GeocodingThread extends Thread {
 
 		private boolean halt;
@@ -251,8 +212,8 @@ public class MainActivity extends Activity implements
 				@Override
 				public void run() {
 					if (!halt) {
+						mMapFragment.notifyDataSetChanged();
 						mListFragment.notifyDataSetChanged();
-						setUpMap();
 					}
 				}
 			});
