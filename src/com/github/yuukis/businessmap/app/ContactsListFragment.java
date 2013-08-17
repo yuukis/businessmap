@@ -9,7 +9,10 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
+
+import com.github.yuukis.businessmap.R;
 
 public class ContactsListFragment extends ListFragment {
 
@@ -25,6 +28,17 @@ public class ContactsListFragment extends ListFragment {
 
 	public void notifyDataSetChanged() {
 		mContactsAdapter.notifyDataSetChanged();
+	}
+
+	@Override
+	public void onListItemClick(ListView l, View v, int position, long id) {
+		ContactsItem contact = (ContactsItem) mContactsAdapter
+				.getItem(position);
+		ContactsMapFragment mapFragment = (ContactsMapFragment) getFragmentManager()
+				.findFragmentById(R.id.contacts_map);
+		if (mapFragment != null) {
+			mapFragment.showMarkerInfoWindow(contact);
+		}
 	}
 
 	private List<ContactsItem> getContactsList() {

@@ -16,9 +16,12 @@ import android.widget.TextView;
 
 import com.github.yuukis.businessmap.R;
 import com.github.yuukis.businessmap.model.ContactsItem;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.GoogleMap.CancelableCallback;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.GoogleMap.InfoWindowAdapter;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -26,12 +29,14 @@ import com.google.android.gms.maps.model.MarkerOptions;
 public class ContactsMapFragment extends MapFragment implements
 		GoogleMap.OnInfoWindowClickListener {
 
-	private SparseArray<ContactsItem> mMarkerHashMap;
+	private SparseArray<Marker> mMarkerHashMap;
+	private SparseArray<ContactsItem> mContactHashMap;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		mMarkerHashMap = new SparseArray<ContactsItem>();
+		mMarkerHashMap = new SparseArray<Marker>();
+		mContactHashMap = new SparseArray<ContactsItem>();
 	}
 
 	@Override
@@ -47,6 +52,7 @@ public class ContactsMapFragment extends MapFragment implements
 	public void notifyDataSetChanged() {
 		getMap().clear();
 		mMarkerHashMap.clear();
+		mContactHashMap.clear();
 		for (ContactsItem contact : getContactsList()) {
 			if (contact.getLat() == null || contact.getLng() == null) {
 				continue;
@@ -56,13 +62,38 @@ public class ContactsMapFragment extends MapFragment implements
 					.position(latLng)
 					.title(contact.getName())
 					.snippet(contact.getDisplayAddress()));
-			mMarkerHashMap.put(marker.hashCode(), contact);
+			mMarkerHashMap.put(contact.hashCode(), marker);
+			mContactHashMap.put(marker.hashCode(), contact);
 		}
+	}
+
+	public boolean showMarkerInfoWindow(ContactsItem contact) {
+		final Marker marker = mMarkerHashMap.get(contact.hashCode());
+		if (marker == null) {
+			return false;
+		}
+		getMap().animateCamera(
+				CameraUpdateFactory.newCameraPosition(
+				new CameraPosition.Builder()
+						.target(marker.getPosition())
+						.zoom(15.5f)
+						.build()),
+				new CancelableCallback() {
+					@Override
+					public void onCancel() {
+					}
+
+					@Override
+					public void onFinish() {
+						marker.showInfoWindow();
+					}
+				});
+		return true;
 	}
 
 	@Override
 	public void onInfoWindowClick(Marker marker) {
-		final ContactsItem contact = mMarkerHashMap.get(marker.hashCode());
+		final ContactsItem contact = mContactHashMap.get(marker.hashCode());
 		if (contact == null) {
 			return;
 		}
