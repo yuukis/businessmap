@@ -13,6 +13,7 @@ import com.github.yuukis.businessmap.utils.CursorJoinerWithIntKey;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import android.location.Address;
@@ -32,9 +33,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.widget.ArrayAdapter;
+import android.widget.Toast;
 
 public class MainActivity extends Activity implements
-		ActionBar.OnNavigationListener {
+		ActionBar.OnNavigationListener, GoogleMap.OnInfoWindowClickListener {
 
 	private static final int PROGRESS_MAX = 10000;
 
@@ -57,6 +59,7 @@ public class MainActivity extends Activity implements
 		mListFragment = (ContactsListFragment) fm
 				.findFragmentById(R.id.contacts_list);
 		mMap = ((MapFragment) fm.findFragmentById(R.id.map)).getMap();
+        mMap.setOnInfoWindowClickListener(this);
 
 		Cursor groupCursor = getContentResolver().query(
 				Groups.CONTENT_URI,
@@ -282,5 +285,10 @@ public class MainActivity extends Activity implements
 			});
 		}
 
+	}
+
+	@Override
+	public void onInfoWindowClick(Marker marker) {
+		Toast.makeText(this, marker.getTitle(), Toast.LENGTH_SHORT).show();
 	}
 }
