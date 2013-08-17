@@ -11,8 +11,10 @@ import com.github.yuukis.businessmap.model.ContactsItem;
 import com.github.yuukis.businessmap.utils.CursorJoinerWithIntKey;
 
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.GoogleMap.InfoWindowAdapter;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import android.location.Address;
@@ -32,6 +34,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.widget.ArrayAdapter;
+import android.widget.TextView;
 
 public class MainActivity extends Activity implements
 		ActionBar.OnNavigationListener {
@@ -57,6 +60,25 @@ public class MainActivity extends Activity implements
 		mListFragment = (ContactsListFragment) fm
 				.findFragmentById(R.id.contacts_list);
 		mMap = ((MapFragment) fm.findFragmentById(R.id.map)).getMap();
+		mMap.setInfoWindowAdapter(new InfoWindowAdapter() {
+			@Override
+			public View getInfoWindow(Marker marker) {
+				return null;
+			}
+
+			@Override
+			public View getInfoContents(Marker marker) {
+				View view = getLayoutInflater().inflate(
+						R.layout.marker_info_contents, null);
+				TextView tvTitle = (TextView) view.findViewById(R.id.title);
+				TextView tvSnippet = (TextView) view.findViewById(R.id.snippet);
+				String title = marker.getTitle();
+				String snippet = marker.getSnippet();
+				tvTitle.setText(title);
+				tvSnippet.setText(snippet);
+				return view;
+			}
+	    });
 
 		Cursor groupCursor = getContentResolver().query(
 				Groups.CONTENT_URI,
