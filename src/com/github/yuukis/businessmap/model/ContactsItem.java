@@ -6,13 +6,15 @@ public class ContactsItem {
 
 	private long cid;
 	private String name;
+	private String phonetic;
 	private String address;
 	private Double lat;
 	private Double lng;
 
-	public ContactsItem(long cid, String name, String address) {
+	public ContactsItem(long cid, String name, String phonetic, String address) {
 		this.cid = cid;
 		this.name = name;
+		this.phonetic = phonetic;
 		this.address = address;
 		this.lat = null;
 		this.lng = null;
@@ -24,6 +26,10 @@ public class ContactsItem {
 
 	public String getName() {
 		return name;
+	}
+
+	public String getPhontic() {
+		return phonetic;
 	}
 
 	public String getAddress() {
@@ -49,6 +55,10 @@ public class ContactsItem {
 		this.name = name;
 	}
 
+	public void setPhonetic(String phonetic) {
+		this.phonetic = phonetic;
+	}
+
 	public void setAddress(String address) {
 		this.address = address;
 	}
@@ -66,8 +76,12 @@ public class ContactsItem {
 		if (lat == null || lng == null) {
 			return getDisplayAddress();
 		}
-		return String.format(Locale.getDefault(), "%s (%f,%f)",
-				getDisplayAddress(), lat, lng);
+		if (phonetic == null) {
+			return String.format(Locale.getDefault(), "%s (%f,%f)",
+					getDisplayAddress(), lat, lng);
+		}
+		return String.format(Locale.getDefault(), "%s (%f,%f) | %s",
+				getDisplayAddress(), lat, lng, phonetic);
 	}
 
 }
