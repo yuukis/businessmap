@@ -97,6 +97,7 @@ public class ContactsListFragment extends ListFragment {
 		if (mapFragment != null) {
 			boolean result = mapFragment.showMarkerInfoWindow(contact);
 			if (result) {
+				setVisibility(false);
 				return;
 			}
 		}
