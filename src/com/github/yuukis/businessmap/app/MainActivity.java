@@ -2,6 +2,7 @@ package com.github.yuukis.businessmap.app;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -9,6 +10,7 @@ import com.github.yuukis.businessmap.R;
 import com.github.yuukis.businessmap.model.ContactsGroup;
 import com.github.yuukis.businessmap.model.ContactsItem;
 import com.github.yuukis.businessmap.utils.CursorJoinerWithIntKey;
+import com.github.yuukis.businessmap.utils.ContactsItemComparator;
 
 import android.location.Address;
 import android.location.Geocoder;
@@ -112,7 +114,8 @@ public class MainActivity extends Activity implements
 				new String[]{
 						GroupMembership.RAW_CONTACT_ID,
 						GroupMembership.CONTACT_ID,
-						GroupMembership.DISPLAY_NAME },
+						GroupMembership.DISPLAY_NAME,
+						GroupMembership.PHONETIC_NAME},
 				Data.MIMETYPE + "=? AND " +
 						GroupMembership.GROUP_ROW_ID + "=?",
 				new String[] {
@@ -144,18 +147,20 @@ public class MainActivity extends Activity implements
 
 		for (CursorJoinerWithIntKey.Result result : joiner) {
 			long cid;
-			String name, address;
+			String name, phonetic, address;
 
 			switch (result) {
 			case LEFT:
 				cid = groupCursor.getLong(1);
 				name = groupCursor.getString(2);
+				phonetic = groupCursor.getString(3);
 				address = null;
 				break;
 
 			case BOTH:
 				cid = groupCursor.getLong(1);
 				name = groupCursor.getString(2);
+				phonetic = groupCursor.getString(3);
 				address = postalCursor.getString(1);
 				break;
 
@@ -163,11 +168,13 @@ public class MainActivity extends Activity implements
 				continue;
 			}
 
-			mContactsList.add(new ContactsItem(cid, name, address));
+			mContactsList.add(new ContactsItem(cid, name, phonetic, address));
 		}
 
 		groupCursor.close();
 		postalCursor.close();
+
+		Collections.sort(mContactsList, new ContactsItemComparator());
 
 		mThread = new GeocodingThread();
 		mThread.start();
