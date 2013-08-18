@@ -2,6 +2,7 @@ package com.github.yuukis.businessmap.app;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -9,6 +10,7 @@ import com.github.yuukis.businessmap.R;
 import com.github.yuukis.businessmap.model.ContactsGroup;
 import com.github.yuukis.businessmap.model.ContactsItem;
 import com.github.yuukis.businessmap.utils.CursorJoinerWithIntKey;
+import com.github.yuukis.businessmap.utils.ContactsItemComparator;
 
 import android.location.Address;
 import android.location.Geocoder;
@@ -199,6 +201,8 @@ public class MainActivity extends Activity implements
 
 		groupCursor.close();
 		postalCursor.close();
+
+		Collections.sort(mContactsList, new ContactsItemComparator());
 
 		mThread = new GeocodingThread();
 		mThread.start();
