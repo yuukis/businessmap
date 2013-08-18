@@ -48,24 +48,44 @@ public class ContactsListFragment extends ListFragment {
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		inflater.inflate(R.menu.contacts_list, menu);
+
+		MenuItem menuItem = menu.findItem(R.id.action_contacts);
+		if (getVisibility()) {
+			menuItem.setIcon(R.drawable.ic_action_list_on);
+		} else {
+			menuItem.setIcon(R.drawable.ic_action_list);
+		}
 	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		MainActivity activity = (MainActivity) getActivity();
 		switch (item.getItemId()) {
 		case R.id.action_contacts:
-			View listContainer = activity.findViewById(R.id.list_container);
-			if (listContainer.getVisibility() == View.VISIBLE) {
-				listContainer.setVisibility(View.INVISIBLE);
-				item.setIcon(R.drawable.ic_action_list);
+			if (getVisibility()) {
+				setVisibility(false);
 			} else {
-				listContainer.setVisibility(View.VISIBLE);
-				item.setIcon(R.drawable.ic_action_list_on);
+				setVisibility(true);
 			}
 			return true;
 		}
 		return false;
+	}
+
+	public boolean getVisibility() {
+		MainActivity activity = (MainActivity) getActivity();
+		View listContainer = activity.findViewById(R.id.list_container);
+		return listContainer.getVisibility() == View.VISIBLE;
+	}
+
+	public void setVisibility(boolean visible) {
+		MainActivity activity = (MainActivity) getActivity();
+		View listContainer = activity.findViewById(R.id.list_container);
+		if (visible) {
+			listContainer.setVisibility(View.VISIBLE);
+		} else {
+			listContainer.setVisibility(View.INVISIBLE);
+		}
+		getFragmentManager().invalidateOptionsMenu();
 	}
 
 	@Override
