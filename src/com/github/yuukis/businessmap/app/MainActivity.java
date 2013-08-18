@@ -22,9 +22,6 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.app.FragmentManager;
 import android.database.Cursor;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
 import android.view.Window;
 import android.widget.ArrayAdapter;
 
@@ -89,31 +86,6 @@ public class MainActivity extends Activity implements
 			mThread.halt();
 		}
 		super.onDestroy();
-	}
-
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.main, menu);
-		return true;
-	}
-
-	@Override
-	public boolean onMenuItemSelected(int featureId, MenuItem item) {
-
-		switch (item.getItemId()) {
-		case R.id.action_contacts:
-			View listContainer = findViewById(R.id.list_container);
-			if (listContainer.getVisibility() == View.VISIBLE) {
-				listContainer.setVisibility(View.INVISIBLE);
-				item.setIcon(R.drawable.ic_action_list);
-			} else {
-				listContainer.setVisibility(View.VISIBLE);
-				item.setIcon(R.drawable.ic_action_list_on);
-			}
-			return true;
-		}
-		return false;
 	}
 
 	@Override

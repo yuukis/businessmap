@@ -9,6 +9,10 @@ import android.app.ListFragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -23,6 +27,13 @@ public class ContactsListFragment extends ListFragment {
 	private ContactsAdapter mContactsAdapter;
 
 	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container,
+			Bundle savedInstanceState) {
+		setHasOptionsMenu(true);
+		return super.onCreateView(inflater, container, savedInstanceState);
+	}
+
+	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
@@ -32,6 +43,29 @@ public class ContactsListFragment extends ListFragment {
 
 	public void notifyDataSetChanged() {
 		mContactsAdapter.notifyDataSetChanged();
+	}
+
+	@Override
+	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+		inflater.inflate(R.menu.contacts_list, menu);
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		MainActivity activity = (MainActivity) getActivity();
+		switch (item.getItemId()) {
+		case R.id.action_contacts:
+			View listContainer = activity.findViewById(R.id.list_container);
+			if (listContainer.getVisibility() == View.VISIBLE) {
+				listContainer.setVisibility(View.INVISIBLE);
+				item.setIcon(R.drawable.ic_action_list);
+			} else {
+				listContainer.setVisibility(View.VISIBLE);
+				item.setIcon(R.drawable.ic_action_list_on);
+			}
+			return true;
+		}
+		return false;
 	}
 
 	@Override
