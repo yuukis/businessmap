@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Locale;
 
 import com.github.yuukis.businessmap.R;
+import com.github.yuukis.businessmap.data.GeocodingCacheDatabase;
 import com.github.yuukis.businessmap.model.ContactsGroup;
 import com.github.yuukis.businessmap.model.ContactsItem;
 import com.github.yuukis.businessmap.utils.CursorJoinerWithIntKey;
@@ -208,6 +209,8 @@ public class MainActivity extends Activity implements
 		}
 
 		private void findLatLng() {
+			final GeocodingCacheDatabase db = new GeocodingCacheDatabase(
+					MainActivity.this);
 			final int listSize = mContactsList.size();
 			for (int i = 0; i < listSize; i++) {
 				if (halt) { return; }
@@ -224,22 +227,39 @@ public class MainActivity extends Activity implements
 				if (address == null) {
 					continue;
 				}
-				try {
-					List<Address> list = new Geocoder(MainActivity.this,
-							Locale.getDefault())
-							.getFromLocationName(address, 1);
-					if (halt) {
-						return;
+
+				double[] latlng = db.get(address);
+				if (latlng != null) {
+					contact.setLat(latlng[0]);
+					contact.setLng(latlng[1]);
+					mContactsList.set(i, contact);
+				} else {
+					List<Address> list;
+					try {
+						list = new Geocoder(MainActivity.this,
+								Locale.getDefault()).getFromLocationName(
+								address, 1);
+					} catch (IOException e) {
+						continue;
 					}
-					if (list.size() > 0) {
-						Address addr = list.get(0);
-						contact.setLat(addr.getLatitude());
-						contact.setLng(addr.getLongitude());
-						mContactsList.set(i, contact);
+					if (list.size() == 0) {
+						continue;
 					}
-				} catch (IOException e) {
+					Address addr = list.get(0);
+					double lat = addr.getLatitude();
+					double lng = addr.getLongitude();
+					contact.setLat(lat);
+					contact.setLng(lng);
+					db.put(address, new double[] { lat, lng });
 				}
+				if (halt) {
+					db.close();
+					return;
+				}
+				mContactsList.set(i, contact);
 			}
+			db.close();
+
 			mHandler.post(new Runnable() {
 				@Override
 				public void run() {
