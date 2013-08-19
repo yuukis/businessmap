@@ -167,6 +167,7 @@ public class MainActivity extends Activity implements
 
 	private void findLatLng() {
 		final int listSize = mContactsList.size();
+		GeocodingCacheDatabase db = new GeocodingCacheDatabase(this);
 		for (int i = 0; i < listSize; i++) {
 			final int progress = i * PROGRESS_MAX / listSize;
 			mHandler.post(new Runnable() {
@@ -181,18 +182,34 @@ public class MainActivity extends Activity implements
 			if (address == null) {
 				continue;
 			}
-			try {
-				List<Address> list = new Geocoder(this,
-						Locale.getDefault()).getFromLocationName(address, 1);
-				if (list.size() > 0) {
-					Address addr = list.get(0);
-					contact.setLat(addr.getLatitude());
-					contact.setLng(addr.getLongitude());
-					mContactsList.set(i, contact);
+
+			double[] latlng = db.get(address);
+			if (latlng != null) {
+				contact.setLat(latlng[0]);
+				contact.setLng(latlng[1]);
+				mContactsList.set(i, contact);
+			} else {
+				List<Address> list;
+				try {
+					list = new Geocoder(this, Locale.getDefault())
+							.getFromLocationName(address, 1);
+				} catch (IOException e) {
+					continue;
 				}
-			} catch (IOException e) {
+				if (list.size() == 0) {
+					continue;
+				}
+				Address addr = list.get(0);
+				double lat = addr.getLatitude();
+				double lng = addr.getLongitude();
+				contact.setLat(lat);
+				contact.setLng(lng);
+				db.put(address, new double[] { lat, lng });
 			}
+			mContactsList.set(i, contact);
 		}
+		db.close();
+
 		mHandler.post(new Runnable() {
 			@Override
 			public void run() {
