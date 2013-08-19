@@ -94,7 +94,7 @@ public class ContactsMapFragment extends MapFragment implements
 		if (contact == null) {
 			return;
 		}
-		
+
 		final Context context = getActivity();
 		String title = contact.getName();
 		final String[] items = new String[] {
@@ -138,6 +138,7 @@ public class ContactsMapFragment extends MapFragment implements
 			TextView tvSnippet = (TextView) view.findViewById(R.id.snippet);
 			String title = marker.getTitle();
 			String snippet = marker.getSnippet();
+			snippet = snippet.replaceAll("[ 　]", "\n");
 			tvTitle.setText(title);
 			tvSnippet.setText(snippet);
 			return view;
