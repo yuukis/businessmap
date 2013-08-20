@@ -105,7 +105,7 @@ public class ContactsListFragment extends ListFragment {
 		final Context context = getActivity();
 		String title = contact.getName();
 		final String[] items = new String[] {
-				"Show contacts"
+				getString(R.string.action_contacts_detail)
 		};
 		new AlertDialog.Builder(getActivity())
 				.setTitle(title)
@@ -167,8 +167,13 @@ public class ContactsListFragment extends ListFragment {
 			}
 
 			ContactsItem contact = (ContactsItem) getItem(position);
-			holder.textView1.setText(contact.getName());
-			holder.textView2.setText(contact.toString());
+			String name = contact.getName();
+			String address = contact.getAddress();
+			if (address == null) {
+				address = getString(R.string.message_no_address);
+			}
+			holder.textView1.setText(name);
+			holder.textView2.setText(address);
 
 			return convertView;
 		}

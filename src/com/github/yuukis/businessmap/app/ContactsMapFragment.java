@@ -54,11 +54,16 @@ public class ContactsMapFragment extends MapFragment implements
 			if (contact.getLat() == null || contact.getLng() == null) {
 				continue;
 			}
+			String name = contact.getName();
+			String address = contact.getAddress();
+			if (address == null) {
+				address = getString(R.string.message_no_address);
+			}
 			LatLng latLng = new LatLng(contact.getLat(), contact.getLng());
 			Marker marker = getMap().addMarker(new MarkerOptions()
 					.position(latLng)
-					.title(contact.getName())
-					.snippet(contact.getDisplayAddress()));
+					.title(name)
+					.snippet(address));
 			mMarkerHashMap.put(contact.hashCode(), marker);
 			mContactHashMap.put(marker.hashCode(), contact);
 		}
@@ -98,9 +103,9 @@ public class ContactsMapFragment extends MapFragment implements
 		final Context context = getActivity();
 		String title = contact.getName();
 		final String[] items = new String[] {
-				"Show contacts",
-				"Show directions",
-				"Start drive navigation"
+				getString(R.string.action_contacts_detail),
+				getString(R.string.action_directions),
+				getString(R.string.action_drive_navigation)
 		};
 		new AlertDialog.Builder(getActivity())
 				.setTitle(title)
