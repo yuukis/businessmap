@@ -1,6 +1,7 @@
 package com.github.yuukis.businessmap.app;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -31,6 +32,8 @@ import android.widget.ArrayAdapter;
 public class MainActivity extends Activity implements
 		ActionBar.OnNavigationListener {
 
+	private static final String KEY_GROUP_LIST = "group_list";
+	private static final String KEY_CONTACTS_LIST = "contacts_list";
 	private static final int PROGRESS_MAX = 10000;
 
 	private List<ContactsGroup> mGroupList;
@@ -40,6 +43,7 @@ public class MainActivity extends Activity implements
 	private Handler mHandler = new Handler();
 	private GeocodingThread mThread;
 
+	@SuppressWarnings("unchecked")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -54,25 +58,35 @@ public class MainActivity extends Activity implements
 		mListFragment = (ContactsListFragment) fm
 				.findFragmentById(R.id.contacts_list);
 
-		Cursor groupCursor = getContentResolver().query(
-				Groups.CONTENT_URI,
-				new String[] {
-						Groups._ID,
-						Groups.TITLE,
-						Groups.ACCOUNT_NAME },
-				Groups.DELETED + "=0",
-				null,
-				null);
+		if (savedInstanceState != null) {
+			mGroupList = (List<ContactsGroup>) savedInstanceState
+					.getSerializable(KEY_GROUP_LIST);
+			mContactsList = (List<ContactsItem>) savedInstanceState
+					.getSerializable(KEY_CONTACTS_LIST);
+		}
+		if (mGroupList == null) {
+			Cursor groupCursor = getContentResolver().query(
+					Groups.CONTENT_URI,
+					new String[] {
+							Groups._ID,
+							Groups.TITLE,
+							Groups.ACCOUNT_NAME },
+					Groups.DELETED + "=0",
+					null,
+					null);
 
-		mGroupList = new ArrayList<ContactsGroup>();
-		mContactsList = new ArrayList<ContactsItem>();
+			mGroupList = new ArrayList<ContactsGroup>();
 
-		while (groupCursor.moveToNext()) {
-			long _id = groupCursor.getLong(0);
-			String title = groupCursor.getString(1);
-			String accountName = groupCursor.getString(2);
-			ContactsGroup group = new ContactsGroup(_id, title, accountName);
-			mGroupList.add(group);
+			while (groupCursor.moveToNext()) {
+				long _id = groupCursor.getLong(0);
+				String title = groupCursor.getString(1);
+				String accountName = groupCursor.getString(2);
+				ContactsGroup group = new ContactsGroup(_id, title, accountName);
+				mGroupList.add(group);
+			}
+		}
+		if (mContactsList == null) {
+			mContactsList = new ArrayList<ContactsItem>();
 		}
 
 		ArrayAdapter<ContactsGroup> adapter = new ArrayAdapter<ContactsGroup>(
@@ -89,6 +103,13 @@ public class MainActivity extends Activity implements
 			mThread.halt();
 		}
 		super.onDestroy();
+	}
+
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		outState.putSerializable(KEY_GROUP_LIST, (Serializable) mGroupList);
+		outState.putSerializable(KEY_CONTACTS_LIST, (Serializable) mContactsList);
+		super.onSaveInstanceState(outState);
 	}
 
 	@Override
