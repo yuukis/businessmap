@@ -11,6 +11,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.github.yuukis.businessmap.R;
+import com.github.yuukis.businessmap.data.MapStatePreferences;
 import com.github.yuukis.businessmap.model.ContactsItem;
 import com.github.yuukis.businessmap.utils.ActionUtils;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -28,6 +29,7 @@ public class ContactsMapFragment extends MapFragment implements
 
 	private SparseArray<Marker> mMarkerHashMap;
 	private SparseArray<ContactsItem> mContactHashMap;
+	private MapStatePreferences mPreferences;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -39,11 +41,23 @@ public class ContactsMapFragment extends MapFragment implements
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
+		mPreferences = new MapStatePreferences(getActivity());
+		CameraPosition position = mPreferences.getCameraPosition();
+
 		GoogleMap map = getMap();
 		map.setInfoWindowAdapter(new MyInfoWindowAdapter());
 		map.setOnInfoWindowClickListener(this);
 		map.setIndoorEnabled(true);
 		map.setMyLocationEnabled(true);
+		map.moveCamera(CameraUpdateFactory.newCameraPosition(position));
+	}
+
+	@Override
+	public void onDestroyView() {
+		CameraPosition position = getMap().getCameraPosition();
+		mPreferences.setCameraPosition(position);
+
+		super.onDestroyView();
 	}
 
 	public void notifyDataSetChanged() {
