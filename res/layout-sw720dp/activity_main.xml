@@ -6,12 +6,15 @@
         android:id="@+id/contacts_map"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_toLeftOf="@+id/list_container"
         class="com.github.yuukis.businessmap.app.ContactsMapFragment" />
 
     <FrameLayout
         android:id="@+id/list_container"
-        android:layout_width="match_parent"
+        android:layout_width="@dimen/list_container_width"
         android:layout_height="match_parent"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
         android:background="#FFF"
         android:visibility="gone" >
 

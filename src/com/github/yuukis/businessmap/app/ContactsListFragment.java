@@ -83,7 +83,7 @@ public class ContactsListFragment extends ListFragment {
 		if (visible) {
 			listContainer.setVisibility(View.VISIBLE);
 		} else {
-			listContainer.setVisibility(View.INVISIBLE);
+			listContainer.setVisibility(View.GONE);
 		}
 		getFragmentManager().invalidateOptionsMenu();
 	}
@@ -97,7 +97,9 @@ public class ContactsListFragment extends ListFragment {
 		if (mapFragment != null) {
 			boolean result = mapFragment.showMarkerInfoWindow(contact);
 			if (result) {
-				setVisibility(false);
+				if (getResources().getDimension(R.dimen.list_container_width) == 0) {
+					setVisibility(false);
+				}
 				return;
 			}
 		}
@@ -120,7 +122,7 @@ public class ContactsListFragment extends ListFragment {
 					}
 				})
 				.show();
-		}
+	}
 
 	private List<ContactsItem> getContactsList() {
 		MainActivity activity = (MainActivity) getActivity();

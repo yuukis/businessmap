@@ -1,0 +1,5 @@
+<resources>
+
+    <dimen name="list_container_width">320dp</dimen>
+
+</resources>
