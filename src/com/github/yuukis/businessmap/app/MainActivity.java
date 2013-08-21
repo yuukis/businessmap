@@ -35,6 +35,7 @@ public class MainActivity extends Activity implements
 	private static final String KEY_GROUP_LIST = "group_list";
 	private static final String KEY_CONTACTS_LIST = "contacts_list";
 	private static final String KEY_SELECTED_NAV_INDEX = "selected_nav_item";
+	private static final String KEY_SHOW_LIST = "show_list";
 	private static final int PROGRESS_MAX = 10000;
 
 	private List<ContactsGroup> mGroupList;
@@ -66,6 +67,8 @@ public class MainActivity extends Activity implements
 			mContactsList = (List<ContactsItem>) savedInstanceState
 					.getSerializable(KEY_CONTACTS_LIST);
 			selectedNavIndex = savedInstanceState.getInt(KEY_SELECTED_NAV_INDEX, -1);
+			boolean showList = savedInstanceState.getBoolean(KEY_SHOW_LIST, false);
+			mListFragment.setVisibility(showList);
 		}
 		if (mGroupList == null) {
 			Cursor groupCursor = getContentResolver().query(
@@ -114,9 +117,11 @@ public class MainActivity extends Activity implements
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
 		int index = getActionBar().getSelectedNavigationIndex();
+		boolean showList = mListFragment.getVisibility();
 		outState.putSerializable(KEY_GROUP_LIST, (Serializable) mGroupList);
 		outState.putSerializable(KEY_CONTACTS_LIST, (Serializable) mContactsList);
 		outState.putInt(KEY_SELECTED_NAV_INDEX, index);
+		outState.putBoolean(KEY_SHOW_LIST, showList);
 		super.onSaveInstanceState(outState);
 	}
 
