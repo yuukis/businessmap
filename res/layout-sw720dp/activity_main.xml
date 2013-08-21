@@ -15,7 +15,7 @@
         android:layout_height="match_parent"
         android:layout_alignParentRight="true"
         android:layout_alignParentTop="true"
-        android:background="#FFF"
+        android:background="@drawable/list_container_background"
         android:visibility="gone" >
 
         <fragment
