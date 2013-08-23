@@ -21,6 +21,7 @@ import android.widget.TextView;
 
 import com.github.yuukis.businessmap.R;
 import com.github.yuukis.businessmap.utils.ActionUtils;
+import com.slidinglayer.SlidingLayer;
 
 public class ContactsListFragment extends ListFragment {
 
@@ -73,17 +74,19 @@ public class ContactsListFragment extends ListFragment {
 
 	public boolean getVisibility() {
 		MainActivity activity = (MainActivity) getActivity();
-		View listContainer = activity.findViewById(R.id.list_container);
-		return listContainer.getVisibility() == View.VISIBLE;
+		SlidingLayer listContainer = (SlidingLayer) activity
+				.findViewById(R.id.list_container);
+		return listContainer.isOpened();
 	}
 
 	public void setVisibility(boolean visible) {
 		MainActivity activity = (MainActivity) getActivity();
-		View listContainer = activity.findViewById(R.id.list_container);
+		SlidingLayer listContainer = (SlidingLayer) activity
+				.findViewById(R.id.list_container);
 		if (visible) {
-			listContainer.setVisibility(View.VISIBLE);
+			listContainer.openLayer(true);
 		} else {
-			listContainer.setVisibility(View.INVISIBLE);
+			listContainer.closeLayer(true);
 		}
 		getFragmentManager().invalidateOptionsMenu();
 	}

@@ -8,18 +8,29 @@
         android:layout_height="match_parent"
         class="com.github.yuukis.businessmap.app.ContactsMapFragment" />
 
-    <FrameLayout
+    <com.slidinglayer.SlidingLayer
+        xmlns:slidingLayer="http://schemas.android.com/apk/res-auto"
         android:id="@+id/list_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#FFF"
-        android:visibility="invisible" >
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        slidingLayer:closeOnTapEnabled="true"
+        slidingLayer:shadowDrawable="@drawable/sidebar_shadow"
+        slidingLayer:shadowWidth="4dp"
+        slidingLayer:stickTo="right" >
 
-        <fragment
-            android:id="@+id/contacts_list"
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            class="com.github.yuukis.businessmap.app.ContactsListFragment" />
-    </FrameLayout>
+            android:background="@android:color/background_light" >
+
+            <fragment
+                android:id="@+id/contacts_list"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                class="com.github.yuukis.businessmap.app.ContactsListFragment" />
+        </FrameLayout>
+    </com.slidinglayer.SlidingLayer>
 
 </RelativeLayout>
