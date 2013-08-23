@@ -53,6 +53,8 @@ public class MainActivity extends Activity implements
 
 		setProgressBarVisibility(false);
 
+		loadAllContacts();
+
 		FragmentManager fm = getFragmentManager();
 		mListFragment = (ContactsListFragment) fm
 				.findFragmentById(R.id.contacts_list);
@@ -126,7 +128,8 @@ public class MainActivity extends Activity implements
 			return false;
 		}
 		ContactsGroup group = mGroupList.get(itemPosition);
-		loadContactsByGroupId(group.getId());
+		// TODO: グループの切り替え
+		//loadContactsByGroupId(group.getId());
 		return true;
 	}
 
@@ -134,7 +137,7 @@ public class MainActivity extends Activity implements
 		return mContactsList;
 	}
 
-	public void loadContactsByGroupId(long gid) {
+	public void loadAllContacts() {
 		if (mThread != null) {
 			mThread.halt();
 		}
@@ -143,12 +146,11 @@ public class MainActivity extends Activity implements
 				Data.CONTENT_URI,
 				new String[]{
 						GroupMembership.RAW_CONTACT_ID,
-						GroupMembership.DISPLAY_NAME },
-				Data.MIMETYPE + "=? AND " +
-						GroupMembership.GROUP_ROW_ID + "=?",
+						GroupMembership.DISPLAY_NAME,
+						GroupMembership.GROUP_ROW_ID },
+				Data.MIMETYPE + "=?",
 				new String[] {
-						GroupMembership.CONTENT_ITEM_TYPE,
-						String.valueOf(gid)},
+						GroupMembership.CONTENT_ITEM_TYPE},
 				Data.RAW_CONTACT_ID);
 
 		Cursor postalCursor = getContentResolver().query(
@@ -174,15 +176,18 @@ public class MainActivity extends Activity implements
 
 		for (CursorJoinerWithIntKey.Result result : joiner) {
 			String name, address;
+			int groupId;
 
 			switch (result) {
 			case LEFT:
 				name = groupCursor.getString(1);
+				groupId = groupCursor.getInt(2);
 				address = null;
 				break;
 
 			case BOTH:
 				name = groupCursor.getString(1);
+				groupId = groupCursor.getInt(2);
 				address = postalCursor.getString(1);
 				break;
 
@@ -190,7 +195,7 @@ public class MainActivity extends Activity implements
 				continue;
 			}
 
-			mContactsList.add(new ContactsItem(name, address));
+			mContactsList.add(new ContactsItem(name, groupId, address));
 		}
 
 		groupCursor.close();

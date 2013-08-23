@@ -5,12 +5,14 @@ import java.util.Locale;
 public class ContactsItem {
 
 	private String name;
+	private int groupId;
 	private String address;
 	private Double lat;
 	private Double lng;
 
-	public ContactsItem(String name, String address) {
+	public ContactsItem(String name, int groupId, String address) {
 		this.name = name;
+		this.groupId = groupId;
 		this.address = address;
 		this.lat = null;
 		this.lng = null;
@@ -18,6 +20,10 @@ public class ContactsItem {
 
 	public String getName() {
 		return name;
+	}
+
+	public int getGroupId() {
+		return groupId;
 	}
 
 	public String getAddress() {
@@ -41,6 +47,10 @@ public class ContactsItem {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public void setGroupId(int groupId) {
+		this.groupId = groupId;
 	}
 
 	public void setAddress(String address) {
