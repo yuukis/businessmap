@@ -49,13 +49,6 @@ public class ContactsListFragment extends ListFragment {
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		inflater.inflate(R.menu.contacts_list, menu);
-
-		MenuItem menuItem = menu.findItem(R.id.action_contacts);
-		if (getVisibility()) {
-			menuItem.setIcon(R.drawable.ic_action_list_on);
-		} else {
-			menuItem.setIcon(R.drawable.ic_action_list);
-		}
 	}
 
 	@Override
