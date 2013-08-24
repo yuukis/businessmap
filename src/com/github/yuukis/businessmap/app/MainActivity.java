@@ -2,18 +2,16 @@ package com.github.yuukis.businessmap.app;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
 import com.github.yuukis.businessmap.R;
+import com.github.yuukis.businessmap.data.GeocodingCacheDatabase;
 import com.github.yuukis.businessmap.model.ContactsGroup;
 import com.github.yuukis.businessmap.model.ContactsItem;
 import com.github.yuukis.businessmap.utils.CursorJoinerWithIntKey;
-
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapFragment;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
+import com.github.yuukis.businessmap.utils.ContactsItemComparator;
 
 import android.location.Address;
 import android.location.Geocoder;
@@ -27,9 +25,6 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.app.FragmentManager;
 import android.database.Cursor;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
 import android.view.Window;
 import android.widget.ArrayAdapter;
 
@@ -40,8 +35,8 @@ public class MainActivity extends Activity implements
 
 	private List<ContactsGroup> mGroupList;
 	private List<ContactsItem> mContactsList;
+	private ContactsMapFragment mMapFragment;
 	private ContactsListFragment mListFragment;
-	private GoogleMap mMap;
 	private Handler mHandler = new Handler();
 	private GeocodingThread mThread;
 
@@ -54,9 +49,10 @@ public class MainActivity extends Activity implements
 		setProgressBarVisibility(false);
 
 		FragmentManager fm = getFragmentManager();
+		mMapFragment = (ContactsMapFragment) fm
+				.findFragmentById(R.id.contacts_map);
 		mListFragment = (ContactsListFragment) fm
 				.findFragmentById(R.id.contacts_list);
-		mMap = ((MapFragment) fm.findFragmentById(R.id.map)).getMap();
 
 		mGroupList = getContactsGroupList();
 		mContactsList = new ArrayList<ContactsItem>();
@@ -76,31 +72,6 @@ public class MainActivity extends Activity implements
 			mThread.halt();
 		}
 		super.onDestroy();
-	}
-
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.main, menu);
-		return true;
-	}
-
-	@Override
-	public boolean onMenuItemSelected(int featureId, MenuItem item) {
-
-		switch (item.getItemId()) {
-		case R.id.action_contacts:
-			View listContainer = findViewById(R.id.list_container);
-			if (listContainer.getVisibility() == View.VISIBLE) {
-				listContainer.setVisibility(View.INVISIBLE);
-				item.setIcon(R.drawable.ic_action_list);
-			} else {
-				listContainer.setVisibility(View.VISIBLE);
-				item.setIcon(R.drawable.ic_action_list_on);
-			}
-			return true;
-		}
-		return false;
 	}
 
 	@Override
@@ -150,8 +121,10 @@ public class MainActivity extends Activity implements
 				Data.CONTENT_URI,
 				new String[]{
 						GroupMembership.RAW_CONTACT_ID,
+						GroupMembership.CONTACT_ID,
 						GroupMembership.DISPLAY_NAME,
-						GroupMembership.GROUP_ROW_ID },
+						GroupMembership.PHONETIC_NAME,
+						GroupMembership.GROUP_ROW_ID},
 				Data.MIMETYPE + "=?",
 				new String[] {
 						GroupMembership.CONTENT_ITEM_TYPE},
@@ -174,24 +147,30 @@ public class MainActivity extends Activity implements
 		mHandler.post(new Runnable() {
 			@Override
 			public void run() {
+				mMapFragment.notifyDataSetChanged();
 				mListFragment.notifyDataSetChanged();
 			}
 		});
 
 		for (CursorJoinerWithIntKey.Result result : joiner) {
-			String name, address;
+			long cid;
+			String name, phonetic, address;
 			int groupId;
 
 			switch (result) {
 			case LEFT:
-				name = groupCursor.getString(1);
-				groupId = groupCursor.getInt(2);
+				cid = groupCursor.getLong(1);
+				name = groupCursor.getString(2);
+				phonetic = groupCursor.getString(3);
+				groupId = groupCursor.getInt(4);
 				address = null;
 				break;
 
 			case BOTH:
-				name = groupCursor.getString(1);
-				groupId = groupCursor.getInt(2);
+				cid = groupCursor.getLong(1);
+				name = groupCursor.getString(2);
+				phonetic = groupCursor.getString(3);
+				groupId = groupCursor.getInt(4);
 				address = postalCursor.getString(1);
 				break;
 
@@ -199,28 +178,16 @@ public class MainActivity extends Activity implements
 				continue;
 			}
 
-			mContactsList.add(new ContactsItem(name, groupId, address));
+			mContactsList.add(new ContactsItem(cid, name, phonetic, groupId, address));
 		}
 
 		groupCursor.close();
 		postalCursor.close();
 
+		Collections.sort(mContactsList, new ContactsItemComparator());
+
 		mThread = new GeocodingThread();
 		mThread.start();
-	}
-
-	private void setUpMap() {
-		mMap.clear();
-		for (ContactsItem contact : mContactsList) {
-			if (contact.getLat() == null || contact.getLng() == null) {
-				continue;
-			}
-			LatLng latLng = new LatLng(contact.getLat(), contact.getLng());
-			mMap.addMarker(new MarkerOptions()
-					.position(latLng)
-					.title(contact.getName())
-					.snippet(contact.getDisplayAddress()));
-		}
 	}
 
 	private class GeocodingThread extends Thread {
@@ -238,8 +205,8 @@ public class MainActivity extends Activity implements
 				@Override
 				public void run() {
 					if (!halt) {
+						mMapFragment.notifyDataSetChanged();
 						mListFragment.notifyDataSetChanged();
-						setUpMap();
 					}
 				}
 			});
@@ -251,6 +218,8 @@ public class MainActivity extends Activity implements
 		}
 
 		private void findLatLng() {
+			final GeocodingCacheDatabase db = new GeocodingCacheDatabase(
+					MainActivity.this);
 			final int listSize = mContactsList.size();
 			for (int i = 0; i < listSize; i++) {
 				if (halt) { return; }
@@ -267,22 +236,39 @@ public class MainActivity extends Activity implements
 				if (address == null) {
 					continue;
 				}
-				try {
-					List<Address> list = new Geocoder(MainActivity.this,
-							Locale.getDefault())
-							.getFromLocationName(address, 1);
-					if (halt) {
-						return;
+
+				double[] latlng = db.get(address);
+				if (latlng != null) {
+					contact.setLat(latlng[0]);
+					contact.setLng(latlng[1]);
+					mContactsList.set(i, contact);
+				} else {
+					List<Address> list;
+					try {
+						list = new Geocoder(MainActivity.this,
+								Locale.getDefault()).getFromLocationName(
+								address, 1);
+					} catch (IOException e) {
+						continue;
 					}
-					if (list.size() > 0) {
-						Address addr = list.get(0);
-						contact.setLat(addr.getLatitude());
-						contact.setLng(addr.getLongitude());
-						mContactsList.set(i, contact);
+					if (list.size() == 0) {
+						continue;
 					}
-				} catch (IOException e) {
+					Address addr = list.get(0);
+					double lat = addr.getLatitude();
+					double lng = addr.getLongitude();
+					contact.setLat(lat);
+					contact.setLng(lng);
+					db.put(address, new double[] { lat, lng });
 				}
+				if (halt) {
+					db.close();
+					return;
+				}
+				mContactsList.set(i, contact);
 			}
+			db.close();
+
 			mHandler.post(new Runnable() {
 				@Override
 				public void run() {

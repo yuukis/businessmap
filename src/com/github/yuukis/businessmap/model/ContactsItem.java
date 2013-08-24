@@ -4,22 +4,34 @@ import java.util.Locale;
 
 public class ContactsItem {
 
+	private long cid;
 	private String name;
+	private String phonetic;
 	private int groupId;
 	private String address;
 	private Double lat;
 	private Double lng;
 
-	public ContactsItem(String name, int groupId, String address) {
+	public ContactsItem(long cid, String name, String phonetic, int groupId, String address) {
+		this.cid = cid;
 		this.name = name;
+		this.phonetic = phonetic;
 		this.groupId = groupId;
 		this.address = address;
 		this.lat = null;
 		this.lng = null;
 	}
 
+	public long getCID() {
+		return cid;
+	}
+
 	public String getName() {
 		return name;
+	}
+
+	public String getPhontic() {
+		return phonetic;
 	}
 
 	public int getGroupId() {
@@ -49,6 +61,10 @@ public class ContactsItem {
 		this.name = name;
 	}
 
+	public void setPhonetic(String phonetic) {
+		this.phonetic = phonetic;
+	}
+
 	public void setGroupId(int groupId) {
 		this.groupId = groupId;
 	}
@@ -70,8 +86,12 @@ public class ContactsItem {
 		if (lat == null || lng == null) {
 			return getDisplayAddress();
 		}
-		return String.format(Locale.getDefault(), "%s (%f,%f)",
-				getDisplayAddress(), lat, lng);
+		if (phonetic == null) {
+			return String.format(Locale.getDefault(), "%s (%f,%f)",
+					getDisplayAddress(), lat, lng);
+		}
+		return String.format(Locale.getDefault(), "%s (%f,%f) | %s",
+				getDisplayAddress(), lat, lng, phonetic);
 	}
 
 }
