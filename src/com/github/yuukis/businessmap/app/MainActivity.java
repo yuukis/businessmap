@@ -53,33 +53,14 @@ public class MainActivity extends Activity implements
 
 		setProgressBarVisibility(false);
 
-		loadAllContacts();
-
 		FragmentManager fm = getFragmentManager();
 		mListFragment = (ContactsListFragment) fm
 				.findFragmentById(R.id.contacts_list);
 		mMap = ((MapFragment) fm.findFragmentById(R.id.map)).getMap();
 
-		Cursor groupCursor = getContentResolver().query(
-				Groups.CONTENT_URI,
-				new String[] {
-						Groups._ID,
-						Groups.TITLE,
-						Groups.ACCOUNT_NAME },
-				Groups.DELETED + "=0",
-				null,
-				null);
-
-		mGroupList = new ArrayList<ContactsGroup>();
+		mGroupList = getContactsGroupList();
 		mContactsList = new ArrayList<ContactsItem>();
-
-		while (groupCursor.moveToNext()) {
-			long _id = groupCursor.getLong(0);
-			String title = groupCursor.getString(1);
-			String accountName = groupCursor.getString(2);
-			ContactsGroup group = new ContactsGroup(_id, title, accountName);
-			mGroupList.add(group);
-		}
+		loadAllContacts();
 
 		ArrayAdapter<ContactsGroup> adapter = new ArrayAdapter<ContactsGroup>(
 				this, android.R.layout.simple_spinner_dropdown_item, mGroupList);
@@ -135,6 +116,29 @@ public class MainActivity extends Activity implements
 
 	public List<ContactsItem> getContactsList() {
 		return mContactsList;
+	}
+
+	public List<ContactsGroup> getContactsGroupList() {
+
+		Cursor groupCursor = getContentResolver().query(
+				Groups.CONTENT_URI,
+				new String[] {
+						Groups._ID,
+						Groups.TITLE,
+						Groups.ACCOUNT_NAME },
+				Groups.DELETED + "=0",
+				null,
+				null);
+
+		List<ContactsGroup> list = new ArrayList<ContactsGroup>();
+		while (groupCursor.moveToNext()) {
+			long _id = groupCursor.getLong(0);
+			String title = groupCursor.getString(1);
+			String accountName = groupCursor.getString(2);
+			ContactsGroup group = new ContactsGroup(_id, title, accountName);
+			list.add(group);
+		}
+		return list;
 	}
 
 	public void loadAllContacts() {
