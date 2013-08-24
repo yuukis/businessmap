@@ -153,16 +153,15 @@ public class MainActivity extends Activity implements
 		});
 
 		for (CursorJoinerWithIntKey.Result result : joiner) {
-			long cid;
+			long cid, groupId;
 			String name, phonetic, address;
-			int groupId;
 
 			switch (result) {
 			case LEFT:
 				cid = groupCursor.getLong(1);
 				name = groupCursor.getString(2);
 				phonetic = groupCursor.getString(3);
-				groupId = groupCursor.getInt(4);
+				groupId = groupCursor.getLong(4);
 				address = null;
 				break;
 
@@ -170,7 +169,7 @@ public class MainActivity extends Activity implements
 				cid = groupCursor.getLong(1);
 				name = groupCursor.getString(2);
 				phonetic = groupCursor.getString(3);
-				groupId = groupCursor.getInt(4);
+				groupId = groupCursor.getLong(4);
 				address = postalCursor.getString(1);
 				break;
 

@@ -7,12 +7,12 @@ public class ContactsItem {
 	private long cid;
 	private String name;
 	private String phonetic;
-	private int groupId;
+	private long groupId;
 	private String address;
 	private Double lat;
 	private Double lng;
 
-	public ContactsItem(long cid, String name, String phonetic, int groupId, String address) {
+	public ContactsItem(long cid, String name, String phonetic, long groupId, String address) {
 		this.cid = cid;
 		this.name = name;
 		this.phonetic = phonetic;
@@ -34,7 +34,7 @@ public class ContactsItem {
 		return phonetic;
 	}
 
-	public int getGroupId() {
+	public long getGroupId() {
 		return groupId;
 	}
 
@@ -65,7 +65,7 @@ public class ContactsItem {
 		this.phonetic = phonetic;
 	}
 
-	public void setGroupId(int groupId) {
+	public void setGroupId(long groupId) {
 		this.groupId = groupId;
 	}
 
