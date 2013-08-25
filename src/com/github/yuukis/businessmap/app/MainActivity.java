@@ -3,8 +3,10 @@ package com.github.yuukis.businessmap.app;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import com.github.yuukis.businessmap.R;
 import com.github.yuukis.businessmap.data.GeocodingCacheDatabase;
@@ -25,6 +27,7 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.app.FragmentManager;
 import android.database.Cursor;
+import android.util.Log;
 import android.view.Window;
 import android.widget.ArrayAdapter;
 
@@ -34,7 +37,8 @@ public class MainActivity extends Activity implements
 	private static final int PROGRESS_MAX = 10000;
 
 	private List<ContactsGroup> mGroupList;
-	private List<ContactsItem> mContactsList;
+	private List<ContactsItem> mCurrentContactsList;
+	private Map<Long, List<ContactsItem>> mContactsListMap;
 	private ContactsMapFragment mMapFragment;
 	private ContactsListFragment mListFragment;
 	private Handler mHandler = new Handler();
@@ -55,7 +59,8 @@ public class MainActivity extends Activity implements
 				.findFragmentById(R.id.contacts_list);
 
 		mGroupList = getContactsGroupList();
-		mContactsList = new ArrayList<ContactsItem>();
+		mCurrentContactsList = null;
+		mContactsListMap = new HashMap<Long, List<ContactsItem>>();
 		loadAllContacts();
 
 		ArrayAdapter<ContactsGroup> adapter = new ArrayAdapter<ContactsGroup>(
@@ -80,13 +85,26 @@ public class MainActivity extends Activity implements
 			return false;
 		}
 		ContactsGroup group = mGroupList.get(itemPosition);
-		// TODO: グループの切り替え
-		//loadContactsByGroupId(group.getId());
+		long groupId = group.getId();
+		List<ContactsItem> list = mContactsListMap.get(groupId);
+		if (list == null) {
+			return false;
+		}
+
+		Collections.sort(list, new ContactsItemComparator());
+		mContactsListMap.put(groupId, list);
+		mCurrentContactsList = list;
+
+		mMapFragment.notifyDataSetChanged();
+		mListFragment.notifyDataSetChanged();
+
+		// mThread = new GeocodingThread();
+		// mThread.start();
 		return true;
 	}
 
-	public List<ContactsItem> getContactsList() {
-		return mContactsList;
+	public List<ContactsItem> getCurrentContactsList() {
+		return mCurrentContactsList;
 	}
 
 	public List<ContactsGroup> getContactsGroupList() {
@@ -112,7 +130,7 @@ public class MainActivity extends Activity implements
 		return list;
 	}
 
-	public void loadAllContacts() {
+	private void loadAllContacts() {
 		if (mThread != null) {
 			mThread.halt();
 		}
@@ -143,7 +161,8 @@ public class MainActivity extends Activity implements
 				groupCursor, new String[] { Data.RAW_CONTACT_ID },
 				postalCursor, new String[] { Data.RAW_CONTACT_ID });
 
-		mContactsList.clear();
+/*
+		mCurrentContactsList.clear();
 		mHandler.post(new Runnable() {
 			@Override
 			public void run() {
@@ -151,7 +170,7 @@ public class MainActivity extends Activity implements
 				mListFragment.notifyDataSetChanged();
 			}
 		});
-
+*/
 		final GeocodingCacheDatabase db = new GeocodingCacheDatabase(this);
 		for (CursorJoinerWithIntKey.Result result : joiner) {
 			long cid, groupId;
@@ -180,7 +199,7 @@ public class MainActivity extends Activity implements
 
 			ContactsItem contact = new ContactsItem(cid, name, phonetic,
 					groupId, address);
-
+Log.d("contact", contact.toString());
 			if (address != null) {
 				double[] latlng = db.get(address);
 				if (latlng != null && latlng.length == 2) {
@@ -188,17 +207,18 @@ public class MainActivity extends Activity implements
 					contact.setLng(latlng[1]);
 				}
 			}
-			mContactsList.add(contact);
+
+			List<ContactsItem> list = mContactsListMap.get(groupId);
+			if (list == null) {
+				list = new ArrayList<ContactsItem>();
+			}
+			list.add(contact);
+			mContactsListMap.put(groupId, list);
 		}
 		db.close();
 
 		groupCursor.close();
 		postalCursor.close();
-
-		Collections.sort(mContactsList, new ContactsItemComparator());
-
-		mThread = new GeocodingThread();
-		mThread.start();
 	}
 
 	private class GeocodingThread extends Thread {
@@ -229,7 +249,7 @@ public class MainActivity extends Activity implements
 		}
 
 		private void findLatLng() {
-			final int listSize = mContactsList.size();
+			final int listSize = mCurrentContactsList.size();
 			final GeocodingCacheDatabase db = new GeocodingCacheDatabase(
 					MainActivity.this);
 			for (int i = 0; i < listSize; i++) {
@@ -242,7 +262,7 @@ public class MainActivity extends Activity implements
 					}
 				});
 
-				ContactsItem contact = mContactsList.get(i);
+				ContactsItem contact = mCurrentContactsList.get(i);
 				String address = contact.getAddress();
 				if (address == null) {
 					continue;
@@ -270,7 +290,7 @@ public class MainActivity extends Activity implements
 					db.close();
 					return;
 				}
-				mContactsList.set(i, contact);
+				mCurrentContactsList.set(i, contact);
 			}
 			db.close();
 

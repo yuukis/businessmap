@@ -50,7 +50,11 @@ public class ContactsMapFragment extends MapFragment implements
 		getMap().clear();
 		mMarkerHashMap.clear();
 		mContactHashMap.clear();
-		for (ContactsItem contact : getContactsList()) {
+		List<ContactsItem> list = getContactsList();
+		if (list == null) {
+			return;
+		}
+		for (ContactsItem contact : list) {
 			if (contact.getLat() == null || contact.getLng() == null) {
 				continue;
 			}
@@ -94,7 +98,7 @@ public class ContactsMapFragment extends MapFragment implements
 		if (contact == null) {
 			return;
 		}
-		
+
 		final Context context = getActivity();
 		String title = contact.getName();
 		final String[] items = new String[] {
@@ -125,7 +129,7 @@ public class ContactsMapFragment extends MapFragment implements
 
 	private List<ContactsItem> getContactsList() {
 		MainActivity activity = (MainActivity) getActivity();
-		return activity.getContactsList();
+		return activity.getCurrentContactsList();
 	}
 
 	private class MyInfoWindowAdapter implements InfoWindowAdapter {

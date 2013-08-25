@@ -124,7 +124,7 @@ public class ContactsListFragment extends ListFragment {
 
 	private List<ContactsItem> getContactsList() {
 		MainActivity activity = (MainActivity) getActivity();
-		return activity.getContactsList();
+		return activity.getCurrentContactsList();
 	}
 
 	private static class ViewHolder {
@@ -136,7 +136,11 @@ public class ContactsListFragment extends ListFragment {
 
 		@Override
 		public int getCount() {
-			return getContactsList().size();
+			List<ContactsItem> list = getContactsList();
+			if (list == null) {
+				return 0;
+			}
+			return list.size();
 		}
 
 		@Override
