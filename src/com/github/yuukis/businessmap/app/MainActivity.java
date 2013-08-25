@@ -152,6 +152,7 @@ public class MainActivity extends Activity implements
 			}
 		});
 
+		final GeocodingCacheDatabase db = new GeocodingCacheDatabase(this);
 		for (CursorJoinerWithIntKey.Result result : joiner) {
 			long cid, groupId;
 			String name, phonetic, address;
@@ -177,8 +178,19 @@ public class MainActivity extends Activity implements
 				continue;
 			}
 
-			mContactsList.add(new ContactsItem(cid, name, phonetic, groupId, address));
+			ContactsItem contact = new ContactsItem(cid, name, phonetic,
+					groupId, address);
+
+			if (address != null) {
+				double[] latlng = db.get(address);
+				if (latlng != null && latlng.length == 2) {
+					contact.setLat(latlng[0]);
+					contact.setLng(latlng[1]);
+				}
+			}
+			mContactsList.add(contact);
 		}
+		db.close();
 
 		groupCursor.close();
 		postalCursor.close();
@@ -217,9 +229,9 @@ public class MainActivity extends Activity implements
 		}
 
 		private void findLatLng() {
+			final int listSize = mContactsList.size();
 			final GeocodingCacheDatabase db = new GeocodingCacheDatabase(
 					MainActivity.this);
-			final int listSize = mContactsList.size();
 			for (int i = 0; i < listSize; i++) {
 				if (halt) { return; }
 				final int progress = i * PROGRESS_MAX / listSize;
@@ -236,30 +248,24 @@ public class MainActivity extends Activity implements
 					continue;
 				}
 
-				double[] latlng = db.get(address);
-				if (latlng != null) {
-					contact.setLat(latlng[0]);
-					contact.setLng(latlng[1]);
-					mContactsList.set(i, contact);
-				} else {
-					List<Address> list;
-					try {
-						list = new Geocoder(MainActivity.this,
-								Locale.getDefault()).getFromLocationName(
-								address, 1);
-					} catch (IOException e) {
-						continue;
-					}
-					if (list.size() == 0) {
-						continue;
-					}
-					Address addr = list.get(0);
-					double lat = addr.getLatitude();
-					double lng = addr.getLongitude();
-					contact.setLat(lat);
-					contact.setLng(lng);
-					db.put(address, new double[] { lat, lng });
+				List<Address> list;
+				try {
+					list = new Geocoder(MainActivity.this,
+							Locale.getDefault()).getFromLocationName(
+							address, 1);
+				} catch (IOException e) {
+					continue;
 				}
+				if (list.size() == 0) {
+					continue;
+				}
+				Address addr = list.get(0);
+				double lat = addr.getLatitude();
+				double lng = addr.getLongitude();
+				contact.setLat(lat);
+				contact.setLng(lng);
+				db.put(address, new double[] { lat, lng });
+
 				if (halt) {
 					db.close();
 					return;
