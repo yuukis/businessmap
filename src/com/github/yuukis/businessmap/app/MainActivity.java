@@ -37,8 +37,8 @@ public class MainActivity extends Activity implements
 	private static final int PROGRESS_MAX = 10000;
 
 	private List<ContactsGroup> mGroupList;
-	private List<ContactsItem> mCurrentContactsList;
-	private Map<Long, List<ContactsItem>> mContactsListMap;
+	private List<ContactsItem> mContactsList;
+	private List<ContactsItem> mCurrentGroupContactsList;
 	private ContactsMapFragment mMapFragment;
 	private ContactsListFragment mListFragment;
 	private Handler mHandler = new Handler();
@@ -59,8 +59,8 @@ public class MainActivity extends Activity implements
 				.findFragmentById(R.id.contacts_list);
 
 		mGroupList = getContactsGroupList();
-		mCurrentContactsList = null;
-		mContactsListMap = new HashMap<Long, List<ContactsItem>>();
+		mContactsList = null;
+		mCurrentGroupContactsList = null;
 		loadAllContacts();
 
 		ArrayAdapter<ContactsGroup> adapter = new ArrayAdapter<ContactsGroup>(
@@ -86,7 +86,12 @@ public class MainActivity extends Activity implements
 		}
 		ContactsGroup group = mGroupList.get(itemPosition);
 		long groupId = group.getId();
-		mCurrentContactsList = mContactsListMap.get(groupId);
+		mCurrentGroupContactsList = new ArrayList<ContactsItem>();
+		for (ContactsItem contact : mContactsList) {
+			if (contact.getGroupId() == groupId) {
+				mCurrentGroupContactsList.add(contact);
+			}
+		}
 
 		mMapFragment.notifyDataSetChanged();
 		mListFragment.notifyDataSetChanged();
@@ -97,7 +102,7 @@ public class MainActivity extends Activity implements
 	}
 
 	public List<ContactsItem> getCurrentContactsList() {
-		return mCurrentContactsList;
+		return mCurrentGroupContactsList;
 	}
 
 	public List<ContactsGroup> getContactsGroupList() {
@@ -164,6 +169,7 @@ public class MainActivity extends Activity implements
 			}
 		});
 */
+		final GeocodingCacheDatabase db = new GeocodingCacheDatabase(this);
 		List<ContactsItem> contactsList = new ArrayList<ContactsItem>();
 		long _rowId = -1, _cid = -1;
 		String _name = null, _phonetic = null;
@@ -205,8 +211,14 @@ public class MainActivity extends Activity implements
 						continue;
 					}
 					for (String addr : _address) {
-						contactsList.add(new ContactsItem(_cid, _name,
-								_phonetic, gid, addr));
+						ContactsItem contact = new ContactsItem(_cid, _name,
+								_phonetic, gid, addr);
+						double[] latlng = db.get(addr);
+						if (latlng != null && latlng.length == 2) {
+							contact.setLat(latlng[0]);
+							contact.setLng(latlng[1]);
+						}
+						contactsList.add(contact);
 					}
 				}
 				_rowId = rowId;
@@ -235,31 +247,11 @@ public class MainActivity extends Activity implements
 						_phonetic, gid, addr));
 			}
 		}
+		db.close();
 		groupCursor.close();
 		postalCursor.close();
 		Collections.sort(contactsList, new ContactsItemComparator());
-
-		final GeocodingCacheDatabase db = new GeocodingCacheDatabase(this);
-		for (ContactsItem contact : contactsList) {
-			Log.d("contact", contact.toString());
-			long groupId = contact.getGroupId();
-			String address = contact.getAddress();
-			if (address != null) {
-				double[] latlng = db.get(address);
-				if (latlng != null && latlng.length == 2) {
-					contact.setLat(latlng[0]);
-					contact.setLng(latlng[1]);
-				}
-			}
-
-			List<ContactsItem> list = mContactsListMap.get(groupId);
-			if (list == null) {
-				list = new ArrayList<ContactsItem>();
-			}
-			list.add(contact);
-			mContactsListMap.put(groupId, list);
-		}
-		db.close();
+		mContactsList = contactsList;
 	}
 
 	private class GeocodingThread extends Thread {
@@ -290,7 +282,7 @@ public class MainActivity extends Activity implements
 		}
 
 		private void findLatLng() {
-			final int listSize = mCurrentContactsList.size();
+			final int listSize = mCurrentGroupContactsList.size();
 			final GeocodingCacheDatabase db = new GeocodingCacheDatabase(
 					MainActivity.this);
 			for (int i = 0; i < listSize; i++) {
@@ -303,7 +295,7 @@ public class MainActivity extends Activity implements
 					}
 				});
 
-				ContactsItem contact = mCurrentContactsList.get(i);
+				ContactsItem contact = mCurrentGroupContactsList.get(i);
 				String address = contact.getAddress();
 				if (address == null) {
 					continue;
@@ -331,7 +323,7 @@ public class MainActivity extends Activity implements
 					db.close();
 					return;
 				}
-				mCurrentContactsList.set(i, contact);
+				mCurrentGroupContactsList.set(i, contact);
 			}
 			db.close();
 
