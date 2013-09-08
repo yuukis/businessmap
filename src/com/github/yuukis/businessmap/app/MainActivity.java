@@ -86,14 +86,7 @@ public class MainActivity extends Activity implements
 		}
 		ContactsGroup group = mGroupList.get(itemPosition);
 		long groupId = group.getId();
-		List<ContactsItem> list = mContactsListMap.get(groupId);
-		if (list == null) {
-			return false;
-		}
-
-		Collections.sort(list, new ContactsItemComparator());
-		mContactsListMap.put(groupId, list);
-		mCurrentContactsList = list;
+		mCurrentContactsList = mContactsListMap.get(groupId);
 
 		mMapFragment.notifyDataSetChanged();
 		mListFragment.notifyDataSetChanged();
@@ -171,13 +164,19 @@ public class MainActivity extends Activity implements
 			}
 		});
 */
-		final GeocodingCacheDatabase db = new GeocodingCacheDatabase(this);
+		List<ContactsItem> contactsList = new ArrayList<ContactsItem>();
+		long _rowId = -1, _cid = -1;
+		String _name = null, _phonetic = null;
+		List<Long> _groupIds = new ArrayList<Long>();
+		List<String> _address = new ArrayList<String>();
+
 		for (CursorJoinerWithIntKey.Result result : joiner) {
-			long cid, groupId;
+			long rowId, cid, groupId;
 			String name, phonetic, address;
 
 			switch (result) {
 			case LEFT:
+				rowId = groupCursor.getLong(0);
 				cid = groupCursor.getLong(1);
 				name = groupCursor.getString(2);
 				phonetic = groupCursor.getString(3);
@@ -186,6 +185,7 @@ public class MainActivity extends Activity implements
 				break;
 
 			case BOTH:
+				rowId = groupCursor.getLong(0);
 				cid = groupCursor.getLong(1);
 				name = groupCursor.getString(2);
 				phonetic = groupCursor.getString(3);
@@ -197,9 +197,53 @@ public class MainActivity extends Activity implements
 				continue;
 			}
 
-			ContactsItem contact = new ContactsItem(cid, name, phonetic,
-					groupId, address);
-Log.d("contact", contact.toString());
+			if (_rowId != rowId) {
+				for (long gid : _groupIds) {
+					if (_address.isEmpty()) {
+						contactsList.add(new ContactsItem(_cid, _name,
+								_phonetic, gid, null));
+						continue;
+					}
+					for (String addr : _address) {
+						contactsList.add(new ContactsItem(_cid, _name,
+								_phonetic, gid, addr));
+					}
+				}
+				_rowId = rowId;
+				_cid = cid;
+				_name = name;
+				_phonetic = phonetic;
+				_groupIds.clear();
+				_address.clear();
+			}
+
+			if (_groupIds.indexOf(groupId) < 0) {
+				_groupIds.add(groupId);
+			}
+			if (address != null && _address.indexOf(address) < 0) {
+				_address.add(address);
+			}
+		}
+		for (long gid : _groupIds) {
+			if (_address.isEmpty()) {
+				contactsList.add(new ContactsItem(_cid, _name,
+						_phonetic, gid, null));
+				continue;
+			}
+			for (String addr : _address) {
+				contactsList.add(new ContactsItem(_cid, _name,
+						_phonetic, gid, addr));
+			}
+		}
+		groupCursor.close();
+		postalCursor.close();
+		Collections.sort(contactsList, new ContactsItemComparator());
+
+		final GeocodingCacheDatabase db = new GeocodingCacheDatabase(this);
+		for (ContactsItem contact : contactsList) {
+			Log.d("contact", contact.toString());
+			long groupId = contact.getGroupId();
+			String address = contact.getAddress();
 			if (address != null) {
 				double[] latlng = db.get(address);
 				if (latlng != null && latlng.length == 2) {
@@ -216,9 +260,6 @@ Log.d("contact", contact.toString());
 			mContactsListMap.put(groupId, list);
 		}
 		db.close();
-
-		groupCursor.close();
-		postalCursor.close();
 	}
 
 	private class GeocodingThread extends Thread {
