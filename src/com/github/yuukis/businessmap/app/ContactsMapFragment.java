@@ -11,6 +11,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.github.yuukis.businessmap.R;
+import com.github.yuukis.businessmap.data.MapStatePreferences;
 import com.github.yuukis.businessmap.model.ContactsItem;
 import com.github.yuukis.businessmap.utils.ActionUtils;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -28,6 +29,7 @@ public class ContactsMapFragment extends MapFragment implements
 
 	private SparseArray<Marker> mMarkerHashMap;
 	private SparseArray<ContactsItem> mContactHashMap;
+	private MapStatePreferences mPreferences;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -39,11 +41,23 @@ public class ContactsMapFragment extends MapFragment implements
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
+		mPreferences = new MapStatePreferences(getActivity());
+		CameraPosition position = mPreferences.getCameraPosition();
+
 		GoogleMap map = getMap();
 		map.setInfoWindowAdapter(new MyInfoWindowAdapter());
 		map.setOnInfoWindowClickListener(this);
 		map.setIndoorEnabled(true);
 		map.setMyLocationEnabled(true);
+		map.moveCamera(CameraUpdateFactory.newCameraPosition(position));
+	}
+
+	@Override
+	public void onDestroyView() {
+		CameraPosition position = getMap().getCameraPosition();
+		mPreferences.setCameraPosition(position);
+
+		super.onDestroyView();
 	}
 
 	public void notifyDataSetChanged() {
@@ -58,11 +72,16 @@ public class ContactsMapFragment extends MapFragment implements
 			if (contact.getLat() == null || contact.getLng() == null) {
 				continue;
 			}
+			String name = contact.getName();
+			String address = contact.getAddress();
+			if (address == null) {
+				address = getString(R.string.message_no_address);
+			}
 			LatLng latLng = new LatLng(contact.getLat(), contact.getLng());
 			Marker marker = getMap().addMarker(new MarkerOptions()
 					.position(latLng)
-					.title(contact.getName())
-					.snippet(contact.getDisplayAddress()));
+					.title(name)
+					.snippet(address));
 			mMarkerHashMap.put(contact.hashCode(), marker);
 			mContactHashMap.put(marker.hashCode(), contact);
 		}
@@ -102,9 +121,9 @@ public class ContactsMapFragment extends MapFragment implements
 		final Context context = getActivity();
 		String title = contact.getName();
 		final String[] items = new String[] {
-				"Show contacts",
-				"Show directions",
-				"Start drive navigation"
+				getString(R.string.action_contacts_detail),
+				getString(R.string.action_directions),
+				getString(R.string.action_drive_navigation)
 		};
 		new AlertDialog.Builder(getActivity())
 				.setTitle(title)
@@ -142,6 +161,7 @@ public class ContactsMapFragment extends MapFragment implements
 			TextView tvSnippet = (TextView) view.findViewById(R.id.snippet);
 			String title = marker.getTitle();
 			String snippet = marker.getSnippet();
+			snippet = snippet.replaceAll("[ 　]", "\n");
 			tvTitle.setText(title);
 			tvSnippet.setText(snippet);
 			return view;

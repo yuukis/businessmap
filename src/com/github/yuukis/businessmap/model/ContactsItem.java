@@ -1,7 +1,5 @@
 package com.github.yuukis.businessmap.model;
 
-import java.util.Locale;
-
 public class ContactsItem {
 
 	private long cid;
@@ -42,13 +40,6 @@ public class ContactsItem {
 		return address;
 	}
 
-	public String getDisplayAddress() {
-		if (address == null) {
-			return "(未登録)";
-		}
-		return address;
-	}
-
 	public Double getLat() {
 		return lat;
 	}
@@ -79,19 +70,6 @@ public class ContactsItem {
 
 	public void setLng(double lng) {
 		this.lng = lng;
-	}
-
-	@Override
-	public String toString() {
-		if (lat == null || lng == null) {
-			return getDisplayAddress();
-		}
-		if (phonetic == null) {
-			return String.format(Locale.getDefault(), "%s (%f,%f)",
-					getDisplayAddress(), lat, lng);
-		}
-		return String.format(Locale.getDefault(), "%s (%f,%f) | %s",
-				getDisplayAddress(), lat, lng, phonetic);
 	}
 
 }
