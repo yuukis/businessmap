@@ -3,10 +3,8 @@ package com.github.yuukis.businessmap.app;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 import com.github.yuukis.businessmap.R;
 import com.github.yuukis.businessmap.data.GeocodingCacheDatabase;
@@ -27,7 +25,6 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.app.FragmentManager;
 import android.database.Cursor;
-import android.util.Log;
 import android.view.Window;
 import android.widget.ArrayAdapter;
 
@@ -59,9 +56,8 @@ public class MainActivity extends Activity implements
 				.findFragmentById(R.id.contacts_list);
 
 		mGroupList = getContactsGroupList();
-		mContactsList = null;
-		mCurrentGroupContactsList = null;
-		loadAllContacts();
+		mContactsList = new ArrayList<ContactsItem>();
+		mCurrentGroupContactsList = new ArrayList<ContactsItem>();
 
 		ArrayAdapter<ContactsGroup> adapter = new ArrayAdapter<ContactsGroup>(
 				this, android.R.layout.simple_spinner_dropdown_item, mGroupList);
@@ -69,6 +65,9 @@ public class MainActivity extends Activity implements
 		actionBar.setDisplayShowTitleEnabled(false);
 		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
 		actionBar.setListNavigationCallbacks(adapter, this);
+
+		 mThread = new GeocodingThread();
+		 mThread.start();
 	}
 
 	@Override
@@ -86,7 +85,7 @@ public class MainActivity extends Activity implements
 		}
 		ContactsGroup group = mGroupList.get(itemPosition);
 		long groupId = group.getId();
-		mCurrentGroupContactsList = new ArrayList<ContactsItem>();
+		mCurrentGroupContactsList.clear();
 		for (ContactsItem contact : mContactsList) {
 			if (contact.getGroupId() == groupId) {
 				mCurrentGroupContactsList.add(contact);
@@ -96,8 +95,6 @@ public class MainActivity extends Activity implements
 		mMapFragment.notifyDataSetChanged();
 		mListFragment.notifyDataSetChanged();
 
-		// mThread = new GeocodingThread();
-		// mThread.start();
 		return true;
 	}
 
@@ -129,10 +126,6 @@ public class MainActivity extends Activity implements
 	}
 
 	private void loadAllContacts() {
-		if (mThread != null) {
-			mThread.halt();
-		}
-
 		Cursor groupCursor = getContentResolver().query(
 				Data.CONTENT_URI,
 				new String[]{
@@ -159,16 +152,6 @@ public class MainActivity extends Activity implements
 				groupCursor, new String[] { Data.RAW_CONTACT_ID },
 				postalCursor, new String[] { Data.RAW_CONTACT_ID });
 
-/*
-		mCurrentContactsList.clear();
-		mHandler.post(new Runnable() {
-			@Override
-			public void run() {
-				mMapFragment.notifyDataSetChanged();
-				mListFragment.notifyDataSetChanged();
-			}
-		});
-*/
 		final GeocodingCacheDatabase db = new GeocodingCacheDatabase(this);
 		List<ContactsItem> contactsList = new ArrayList<ContactsItem>();
 		long _rowId = -1, _cid = -1;
@@ -264,6 +247,7 @@ public class MainActivity extends Activity implements
 
 		@Override
 		public void run() {
+			loadAllContacts();
 			findLatLng();
 			mHandler.post(new Runnable() {
 				@Override
@@ -282,7 +266,7 @@ public class MainActivity extends Activity implements
 		}
 
 		private void findLatLng() {
-			final int listSize = mCurrentGroupContactsList.size();
+			final int listSize = mContactsList.size();
 			final GeocodingCacheDatabase db = new GeocodingCacheDatabase(
 					MainActivity.this);
 			for (int i = 0; i < listSize; i++) {
@@ -295,9 +279,12 @@ public class MainActivity extends Activity implements
 					}
 				});
 
-				ContactsItem contact = mCurrentGroupContactsList.get(i);
+				ContactsItem contact = mContactsList.get(i);
 				String address = contact.getAddress();
 				if (address == null) {
+					continue;
+				}
+				if (contact.getLat() != null && contact.getLng() != null) {
 					continue;
 				}
 
@@ -323,7 +310,7 @@ public class MainActivity extends Activity implements
 					db.close();
 					return;
 				}
-				mCurrentGroupContactsList.set(i, contact);
+				mContactsList.set(i, contact);
 			}
 			db.close();
 
