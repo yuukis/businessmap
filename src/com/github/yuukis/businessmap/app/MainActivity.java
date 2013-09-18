@@ -24,6 +24,7 @@ import android.provider.ContactsContract.CommonDataKinds.StructuredPostal;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.FragmentManager;
+import android.app.ProgressDialog;
 import android.database.Cursor;
 import android.view.Window;
 import android.widget.ArrayAdapter;
@@ -38,6 +39,7 @@ public class MainActivity extends Activity implements
 	private List<ContactsItem> mCurrentGroupContactsList;
 	private ContactsMapFragment mMapFragment;
 	private ContactsListFragment mListFragment;
+	private ProgressDialog mProgressDialog;
 	private Handler mHandler = new Handler();
 	private GeocodingThread mThread;
 
@@ -58,6 +60,12 @@ public class MainActivity extends Activity implements
 		mGroupList = getContactsGroupList();
 		mContactsList = new ArrayList<ContactsItem>();
 		mCurrentGroupContactsList = new ArrayList<ContactsItem>();
+		mProgressDialog = new ProgressDialog(this);
+		mProgressDialog.setMax(PROGRESS_MAX);
+		mProgressDialog.setCancelable(false);
+		mProgressDialog.setTitle("TITLE");
+		mProgressDialog.setMessage("MESSAGE");
+		mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
 
 		ArrayAdapter<ContactsGroup> adapter = new ArrayAdapter<ContactsGroup>(
 				this, android.R.layout.simple_spinner_dropdown_item, mGroupList);
@@ -269,13 +277,20 @@ public class MainActivity extends Activity implements
 			final int listSize = mContactsList.size();
 			final GeocodingCacheDatabase db = new GeocodingCacheDatabase(
 					MainActivity.this);
+			mHandler.post(new Runnable() {
+				@Override
+				public void run() {
+					mProgressDialog.show();
+				}
+			});
 			for (int i = 0; i < listSize; i++) {
 				if (halt) { return; }
 				final int progress = i * PROGRESS_MAX / listSize;
 				mHandler.post(new Runnable() {
 					@Override
 					public void run() {
-						setProgress(progress);
+//						setProgress(progress);
+						mProgressDialog.setProgress(progress);
 					}
 				});
 
@@ -317,7 +332,8 @@ public class MainActivity extends Activity implements
 			mHandler.post(new Runnable() {
 				@Override
 				public void run() {
-					setProgress(PROGRESS_MAX);
+//					setProgress(PROGRESS_MAX);
+					mProgressDialog.dismiss();
 				}
 			});
 		}
