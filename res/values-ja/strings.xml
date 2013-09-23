@@ -11,6 +11,8 @@
     <string name="label_app_name" translatable="false">アプリケーション名</string>
     <string name="label_provider" translatable="false">提供者</string>
     <string name="label_version" translatable="false">バージョン</string>
+    <string name="title_geocoding" translatable="false">しばらくお待ちください</string>
+    <string name="message_geocoding" translatable="false">新しく登録された住所を座標に変換しています&#8230;</string>
     <string name="message_no_address" translatable="false">(未登録)</string>
     <string name="desc_appicon" translatable="false">アイコン</string>
 

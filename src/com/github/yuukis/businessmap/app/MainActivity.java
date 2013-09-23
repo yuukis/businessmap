@@ -35,7 +35,6 @@ import android.widget.ArrayAdapter;
 public class MainActivity extends Activity implements
 		ActionBar.OnNavigationListener {
 
-	private static final int PROGRESS_MAX = 10000;
 	private static final String KEY_NAVIGATION_INDEX = "navigation_index";
 	private static final String KEY_CONTACTSLIST = "contacts_list";
 
@@ -64,10 +63,9 @@ public class MainActivity extends Activity implements
 
 		mGroupList = getContactsGroupList();
 		mProgressDialog = new ProgressDialog(this);
-		mProgressDialog.setMax(PROGRESS_MAX);
 		mProgressDialog.setCancelable(false);
-		mProgressDialog.setTitle("TITLE");
-		mProgressDialog.setMessage("MESSAGE");
+		mProgressDialog.setTitle(R.string.title_geocoding);
+		mProgressDialog.setMessage(getString(R.string.message_geocoding));
 		mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
 
 		ArrayAdapter<ContactsGroup> adapter = new ArrayAdapter<ContactsGroup>(
@@ -314,6 +312,7 @@ public class MainActivity extends Activity implements
 			final int listSize = mContactsList.size();
 			final GeocodingCacheDatabase db = new GeocodingCacheDatabase(
 					MainActivity.this);
+			mProgressDialog.setMax(listSize);
 			mHandler.post(new Runnable() {
 				@Override
 				public void run() {
@@ -322,11 +321,10 @@ public class MainActivity extends Activity implements
 			});
 			for (int i = 0; i < listSize; i++) {
 				if (halt) { return; }
-				final int progress = i * PROGRESS_MAX / listSize;
+				final int progress = i;
 				mHandler.post(new Runnable() {
 					@Override
 					public void run() {
-//						setProgress(progress);
 						mProgressDialog.setProgress(progress);
 					}
 				});
@@ -369,7 +367,7 @@ public class MainActivity extends Activity implements
 			mHandler.post(new Runnable() {
 				@Override
 				public void run() {
-//					setProgress(PROGRESS_MAX);
+					mProgressDialog.setProgress(listSize);
 					mProgressDialog.dismiss();
 				}
 			});
