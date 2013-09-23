@@ -1,6 +1,10 @@
 package com.github.yuukis.businessmap.model;
 
-public class ContactsGroup {
+import java.io.Serializable;
+
+public class ContactsGroup implements Serializable {
+
+	private static final long serialVersionUID = -3609429759764928253L;
 
 	private long _id;
 	private String title;
