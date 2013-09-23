@@ -1,6 +1,7 @@
 package com.github.yuukis.businessmap.app;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -33,6 +34,8 @@ public class MainActivity extends Activity implements
 		ActionBar.OnNavigationListener {
 
 	private static final int PROGRESS_MAX = 10000;
+	private static final String KEY_NAVIGATION_INDEX = "navigation_index";
+	private static final String KEY_CONTACTSLIST = "contacts_list";
 
 	private List<ContactsGroup> mGroupList;
 	private List<ContactsItem> mContactsList;
@@ -58,8 +61,6 @@ public class MainActivity extends Activity implements
 				.findFragmentById(R.id.contacts_list);
 
 		mGroupList = getContactsGroupList();
-		mContactsList = new ArrayList<ContactsItem>();
-		mCurrentGroupContactsList = new ArrayList<ContactsItem>();
 		mProgressDialog = new ProgressDialog(this);
 		mProgressDialog.setMax(PROGRESS_MAX);
 		mProgressDialog.setCancelable(false);
@@ -74,8 +75,18 @@ public class MainActivity extends Activity implements
 		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
 		actionBar.setListNavigationCallbacks(adapter, this);
 
-		 mThread = new GeocodingThread();
-		 mThread.start();
+		if (savedInstanceState != null) {
+			actionBar.setSelectedNavigationItem(savedInstanceState
+					.getInt(KEY_NAVIGATION_INDEX));
+			mContactsList = (List<ContactsItem>) savedInstanceState
+					.getSerializable(KEY_CONTACTSLIST);
+		}
+		mCurrentGroupContactsList = new ArrayList<ContactsItem>();
+		if (mContactsList == null) {
+			mContactsList = new ArrayList<ContactsItem>();
+			mThread = new GeocodingThread();
+			mThread.start();
+		}
 	}
 
 	@Override
@@ -84,6 +95,14 @@ public class MainActivity extends Activity implements
 			mThread.halt();
 		}
 		super.onDestroy();
+	}
+
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		outState.putInt(KEY_NAVIGATION_INDEX, getActionBar()
+				.getSelectedNavigationIndex());
+		outState.putSerializable(KEY_CONTACTSLIST, (Serializable) mContactsList);
+		super.onSaveInstanceState(outState);
 	}
 
 	@Override
