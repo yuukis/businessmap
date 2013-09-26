@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.github.yuukis.businessmap"
-    android:versionCode="87"
-    android:versionName="0.9.87_beta" >
+    android:versionCode="89"
+    android:versionName="0.9.89_beta" >
 
     <uses-sdk
         android:minSdkVersion="14"
