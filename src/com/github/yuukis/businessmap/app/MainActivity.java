@@ -4,8 +4,12 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import com.github.yuukis.businessmap.R;
 import com.github.yuukis.businessmap.data.GeocodingCacheDatabase;
@@ -41,6 +45,7 @@ public class MainActivity extends Activity implements
 	private List<ContactsGroup> mGroupList;
 	private List<ContactsItem> mContactsList;
 	private List<ContactsItem> mCurrentGroupContactsList;
+	private Map<String, Double[]> mGeocodingResultCache;
 	private ContactsMapFragment mMapFragment;
 	private ContactsListFragment mListFragment;
 	private ProgressDialog mProgressDialog;
@@ -82,6 +87,7 @@ public class MainActivity extends Activity implements
 					.getSerializable(KEY_CONTACTSLIST);
 		}
 		mCurrentGroupContactsList = new ArrayList<ContactsItem>();
+		mGeocodingResultCache = new HashMap<String, Double[]>();
 		if (mContactsList == null) {
 			mContactsList = new ArrayList<ContactsItem>();
 			mThread = new GeocodingThread();
@@ -96,7 +102,7 @@ public class MainActivity extends Activity implements
 		}
 		super.onDestroy();
 	}
-	
+
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.main, menu);
@@ -147,15 +153,9 @@ public class MainActivity extends Activity implements
 
 	public List<ContactsGroup> getContactsGroupList() {
 
-		Cursor groupCursor = getContentResolver().query(
-				Groups.CONTENT_URI,
-				new String[] {
-						Groups._ID,
-						Groups.TITLE,
-						Groups.ACCOUNT_NAME },
-				Groups.DELETED + "=0",
-				null,
-				null);
+		Cursor groupCursor = getContentResolver().query(Groups.CONTENT_URI,
+				new String[] { Groups._ID, Groups.TITLE, Groups.ACCOUNT_NAME },
+				Groups.DELETED + "=0", null, null);
 
 		List<ContactsGroup> list = new ArrayList<ContactsGroup>();
 		while (groupCursor.moveToNext()) {
@@ -169,31 +169,27 @@ public class MainActivity extends Activity implements
 	}
 
 	private void loadAllContacts() {
+		mGeocodingResultCache.clear();
+
 		Cursor groupCursor = getContentResolver().query(
 				Data.CONTENT_URI,
-				new String[]{
-						GroupMembership.RAW_CONTACT_ID,
+				new String[] { GroupMembership.RAW_CONTACT_ID,
 						GroupMembership.CONTACT_ID,
 						GroupMembership.DISPLAY_NAME,
 						GroupMembership.PHONETIC_NAME,
-						GroupMembership.GROUP_ROW_ID},
-				Data.MIMETYPE + "=?",
-				new String[] {
-						GroupMembership.CONTENT_ITEM_TYPE},
+						GroupMembership.GROUP_ROW_ID }, Data.MIMETYPE + "=?",
+				new String[] { GroupMembership.CONTENT_ITEM_TYPE },
 				Data.RAW_CONTACT_ID);
 
 		Cursor postalCursor = getContentResolver().query(
 				StructuredPostal.CONTENT_URI,
-				new String[] {
-						StructuredPostal.RAW_CONTACT_ID,
-						StructuredPostal.FORMATTED_ADDRESS },
-				null,
-				null,
+				new String[] { StructuredPostal.RAW_CONTACT_ID,
+						StructuredPostal.FORMATTED_ADDRESS }, null, null,
 				StructuredPostal.RAW_CONTACT_ID);
 
-		CursorJoinerWithIntKey joiner = new CursorJoinerWithIntKey(
-				groupCursor, new String[] { Data.RAW_CONTACT_ID },
-				postalCursor, new String[] { Data.RAW_CONTACT_ID });
+		CursorJoinerWithIntKey joiner = new CursorJoinerWithIntKey(groupCursor,
+				new String[] { Data.RAW_CONTACT_ID }, postalCursor,
+				new String[] { Data.RAW_CONTACT_ID });
 
 		final GeocodingCacheDatabase db = new GeocodingCacheDatabase(this);
 		List<ContactsItem> contactsList = new ArrayList<ContactsItem>();
@@ -243,6 +239,10 @@ public class MainActivity extends Activity implements
 						if (latlng != null && latlng.length == 2) {
 							contact.setLat(latlng[0]);
 							contact.setLng(latlng[1]);
+						} else {
+							if (!mGeocodingResultCache.containsKey(addr)) {
+								mGeocodingResultCache.put(addr, null);
+							}
 						}
 						contactsList.add(contact);
 					}
@@ -264,13 +264,13 @@ public class MainActivity extends Activity implements
 		}
 		for (long gid : _groupIds) {
 			if (_address.isEmpty()) {
-				contactsList.add(new ContactsItem(_cid, _name,
-						_phonetic, gid, null));
+				contactsList.add(new ContactsItem(_cid, _name, _phonetic, gid,
+						null));
 				continue;
 			}
 			for (String addr : _address) {
-				contactsList.add(new ContactsItem(_cid, _name,
-						_phonetic, gid, addr));
+				contactsList.add(new ContactsItem(_cid, _name, _phonetic, gid,
+						addr));
 			}
 		}
 		db.close();
@@ -309,7 +309,8 @@ public class MainActivity extends Activity implements
 		}
 
 		private void findLatLng() {
-			final int listSize = mContactsList.size();
+			Map<String, Double[]> map = mGeocodingResultCache;
+			final int listSize = mGeocodingResultCache.size();
 			final GeocodingCacheDatabase db = new GeocodingCacheDatabase(
 					MainActivity.this);
 			mProgressDialog.setMax(listSize);
@@ -319,30 +320,18 @@ public class MainActivity extends Activity implements
 					mProgressDialog.show();
 				}
 			});
-			for (int i = 0; i < listSize; i++) {
-				if (halt) { return; }
-				final int progress = i;
-				mHandler.post(new Runnable() {
-					@Override
-					public void run() {
-						mProgressDialog.setProgress(progress);
-					}
-				});
+			int i = 0;
 
-				ContactsItem contact = mContactsList.get(i);
-				String address = contact.getAddress();
-				if (address == null) {
-					continue;
-				}
-				if (contact.getLat() != null && contact.getLng() != null) {
-					continue;
-				}
+			// Iteratorでループ
+			for (Iterator<Entry<String, Double[]>> it = map.entrySet()
+					.iterator(); it.hasNext();) {
+				Entry<String, Double[]> entry = it.next();
+				String address = entry.getKey();
 
 				List<Address> list;
 				try {
-					list = new Geocoder(MainActivity.this,
-							Locale.getDefault()).getFromLocationName(
-							address, 1);
+					list = new Geocoder(MainActivity.this, Locale.getDefault())
+							.getFromLocationName(address, 1);
 				} catch (IOException e) {
 					continue;
 				}
@@ -352,17 +341,45 @@ public class MainActivity extends Activity implements
 				Address addr = list.get(0);
 				double lat = addr.getLatitude();
 				double lng = addr.getLongitude();
-				contact.setLat(lat);
-				contact.setLng(lng);
 				db.put(address, new double[] { lat, lng });
+				entry.setValue(new Double[]{lat, lng});
 
 				if (halt) {
 					db.close();
 					return;
 				}
-				mContactsList.set(i, contact);
+
+				i++;
+				final int progress = i;
+				mHandler.post(new Runnable() {
+					@Override
+					public void run() {
+						mProgressDialog.setProgress(progress);
+					}
+				});
 			}
 			db.close();
+
+			for (int j = 0; j < mContactsList.size(); j++) {
+				ContactsItem contact = mContactsList.get(j);
+				String address = contact.getAddress();
+				if (address == null) {
+					continue;
+				}
+				if (contact.getLat() != null && contact.getLng() != null) {
+					continue;
+				}
+				if (!mGeocodingResultCache.containsKey(address)) {
+					continue;
+				}
+
+				Double[] latlng = mGeocodingResultCache.get(address);
+				if (latlng != null && latlng.length == 2) {
+					contact.setLat(latlng[0]);
+					contact.setLng(latlng[1]);
+					mContactsList.set(j, contact);
+				}
+			}
 
 			mHandler.post(new Runnable() {
 				@Override
