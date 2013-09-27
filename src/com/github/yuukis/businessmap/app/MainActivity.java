@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Locale;
 
 import com.github.yuukis.businessmap.R;
+import com.github.yuukis.businessmap.controller.UpdateAppTask;
 import com.github.yuukis.businessmap.data.GeocodingCacheDatabase;
 import com.github.yuukis.businessmap.model.ContactsGroup;
 import com.github.yuukis.businessmap.model.ContactsItem;
@@ -96,7 +97,7 @@ public class MainActivity extends Activity implements
 		}
 		super.onDestroy();
 	}
-	
+
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.main, menu);
@@ -108,6 +109,10 @@ public class MainActivity extends Activity implements
 		switch (item.getItemId()) {
 		case R.id.action_about:
 			AboutDialogFragment.showDialog(this);
+			return true;
+
+		case R.id.action_update_app:
+			UpdateAppTask.execute(this);
 			return true;
 		}
 		return false;

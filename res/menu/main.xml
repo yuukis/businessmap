@@ -4,6 +4,10 @@
         android:id="@+id/action_about"
         android:icon="@android:drawable/ic_menu_info_details"
         android:orderInCategory="20"
-        android:title="@string/action_about" />
+        android:title="@string/action_about"/>
+    <item
+        android:id="@+id/action_update_app"
+        android:orderInCategory="30"
+        android:title="@string/beta__action_update_app"/>
 
 </menu>
