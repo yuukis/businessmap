@@ -36,7 +36,7 @@ public class GeocodingCacheDatabase {
 		final String selection = String.format(Locale.getDefault(),
 				"%s=%d", DataColumns.HASH, hash);
 		Cursor cursor = query(columns, selection, null, null);
-	
+
 		double[] latlng = null;
 		if (cursor.moveToNext()) {
 			double lat = cursor.getDouble(0);
@@ -53,17 +53,19 @@ public class GeocodingCacheDatabase {
 		int hash = address.hashCode();
 		double lat = latlng[0];
 		double lng = latlng[1];
-	
+
 		ContentValues values = new ContentValues();
 		values.put(DataColumns.HASH, hash);
 		values.put(DataColumns.LAT, lat);
 		values.put(DataColumns.LNG, lng);
 		try {
-			insert(values);
+			if (!update(values, hash)) {
+				insert(values);
+			}
 		} catch (SQLException e) {
 			return false;
 		}
-	
+
 		return true;
 	}
 
@@ -75,6 +77,13 @@ public class GeocodingCacheDatabase {
 			String[] selectionArgs, String sortOrder) {
 		return db.query(TABLE_NAME, columns, selection, selectionArgs, null,
 				null, sortOrder);
+	}
+
+	private boolean update(ContentValues values, int hash) {
+		String whereClause = String.format(Locale.getDefault(), "%s=%d",
+				DataColumns.HASH, hash);
+		int affected = db.update(TABLE_NAME, values, whereClause, null);
+		return affected > 0;
 	}
 
 	private long insert(ContentValues values) throws SQLException {
