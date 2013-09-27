@@ -17,6 +17,7 @@
     <string name="desc_appicon" translatable="false">icon</string>
     <string name="beta__action_update_app" translatable="false">Update app</string>
     <string name="beta__message_downloading" translatable="false">Now downloading the APK file</string>
+    <string name="beta__message_updated" translatable="false">Update completed.</string>
     <string name="beta__apk_url" translatable="false">https://dl.dropboxusercontent.com/u/33642842/BusinessMap.apk</string>
 
 </resources>

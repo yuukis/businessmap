@@ -17,5 +17,6 @@
     <string name="desc_appicon" translatable="false">アイコン</string>
     <string name="beta__action_update_app" translatable="false">アップデート</string>
     <string name="beta__message_downloading" translatable="false">APK ファイルをダウンロードしています&#8230;</string>
+    <string name="beta__message_updated" translatable="false">アップデートが完了しました</string>
 
 </resources>
