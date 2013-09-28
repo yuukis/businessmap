@@ -291,7 +291,9 @@ public class MainActivity extends Activity implements
 		@Override
 		public void run() {
 			loadAllContacts();
-			findLatLng();
+			if (!mGeocodingResultCache.isEmpty()) {
+				geocoding();
+			}
 			mHandler.post(new Runnable() {
 				@Override
 				public void run() {
@@ -308,21 +310,19 @@ public class MainActivity extends Activity implements
 			interrupt();
 		}
 
-		private void findLatLng() {
-			Map<String, Double[]> map = mGeocodingResultCache;
-			final int listSize = mGeocodingResultCache.size();
-			final GeocodingCacheDatabase db = new GeocodingCacheDatabase(
-					MainActivity.this);
-			mProgressDialog.setMax(listSize);
+		private void geocoding() {
+			final Map<String, Double[]> map = mGeocodingResultCache;
+			mProgressDialog.setMax(map.size());
 			mHandler.post(new Runnable() {
 				@Override
 				public void run() {
 					mProgressDialog.show();
 				}
 			});
-			int i = 0;
-
-			// Iteratorでループ
+			
+			final GeocodingCacheDatabase db = new GeocodingCacheDatabase(
+					MainActivity.this);
+			int count = 0;
 			for (Iterator<Entry<String, Double[]>> it = map.entrySet()
 					.iterator(); it.hasNext();) {
 				Entry<String, Double[]> entry = it.next();
@@ -342,21 +342,21 @@ public class MainActivity extends Activity implements
 				double lat = addr.getLatitude();
 				double lng = addr.getLongitude();
 				db.put(address, new double[] { lat, lng });
-				entry.setValue(new Double[]{lat, lng});
+				entry.setValue(new Double[] { lat, lng });
 
-				if (halt) {
-					db.close();
-					return;
-				}
-
-				i++;
-				final int progress = i;
+				count++;
+				final int progress = count;
 				mHandler.post(new Runnable() {
 					@Override
 					public void run() {
 						mProgressDialog.setProgress(progress);
 					}
 				});
+
+				if (halt) {
+					db.close();
+					return;
+				}
 			}
 			db.close();
 
@@ -384,7 +384,7 @@ public class MainActivity extends Activity implements
 			mHandler.post(new Runnable() {
 				@Override
 				public void run() {
-					mProgressDialog.setProgress(listSize);
+					mProgressDialog.setProgress(mProgressDialog.getMax());
 					mProgressDialog.dismiss();
 				}
 			});
