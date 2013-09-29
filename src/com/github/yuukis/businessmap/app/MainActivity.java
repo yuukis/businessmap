@@ -311,8 +311,8 @@ public class MainActivity extends Activity implements
 		}
 
 		private void geocoding() {
-			final Map<String, Double[]> map = mGeocodingResultCache;
-			mProgressDialog.setMax(map.size());
+//			final Map<String, Double[]> map = mGeocodingResultCache;
+			mProgressDialog.setMax(mGeocodingResultCache.size());
 			mHandler.post(new Runnable() {
 				@Override
 				public void run() {
@@ -323,7 +323,7 @@ public class MainActivity extends Activity implements
 			final GeocodingCacheDatabase db = new GeocodingCacheDatabase(
 					MainActivity.this);
 			int count = 0;
-			for (Iterator<Entry<String, Double[]>> it = map.entrySet()
+			for (Iterator<Entry<String, Double[]>> it = mGeocodingResultCache.entrySet()
 					.iterator(); it.hasNext();) {
 				Entry<String, Double[]> entry = it.next();
 				String address = entry.getKey();
@@ -335,12 +335,13 @@ public class MainActivity extends Activity implements
 				} catch (IOException e) {
 					continue;
 				}
-				if (list.size() == 0) {
-					continue;
+				double lat = Double.NaN;
+				double lng = Double.NaN;
+				if (list.size() != 0) {
+					Address addr = list.get(0);
+					lat = addr.getLatitude();
+					lng = addr.getLongitude();
 				}
-				Address addr = list.get(0);
-				double lat = addr.getLatitude();
-				double lng = addr.getLongitude();
 				db.put(address, new double[] { lat, lng });
 				entry.setValue(new Double[] { lat, lng });
 
