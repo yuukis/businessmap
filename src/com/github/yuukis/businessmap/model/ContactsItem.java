@@ -14,7 +14,8 @@ public class ContactsItem implements Serializable {
 	private Double lat;
 	private Double lng;
 
-	public ContactsItem(long cid, String name, String phonetic, long groupId, String address) {
+	public ContactsItem(long cid, String name, String phonetic, long groupId,
+			String address) {
 		this.cid = cid;
 		this.name = name;
 		this.phonetic = phonetic;
@@ -69,11 +70,19 @@ public class ContactsItem implements Serializable {
 	}
 
 	public void setLat(double lat) {
-		this.lat = lat;
+		if (Double.isNaN(lat)) {
+			this.lat = null;
+		} else {
+			this.lat = lat;
+		}
 	}
 
 	public void setLng(double lng) {
-		this.lng = lng;
+		if (Double.isNaN(lng)) {
+			this.lng = null;
+		} else {
+			this.lng = lng;
+		}
 	}
 
 }
