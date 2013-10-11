@@ -41,6 +41,7 @@ public class MainActivity extends Activity implements
 
 	private static final String KEY_NAVIGATION_INDEX = "navigation_index";
 	private static final String KEY_CONTACTSLIST = "contacts_list";
+	private static final long ID_GROUP_ALL_CONTACTS = -1;
 
 	private List<ContactsGroup> mGroupList;
 	private List<ContactsItem> mContactsList;
@@ -158,6 +159,8 @@ public class MainActivity extends Activity implements
 				Groups.DELETED + "=0", null, null);
 
 		List<ContactsGroup> list = new ArrayList<ContactsGroup>();
+		ContactsGroup all = new ContactsGroup(-1, "すべての連絡先", "");
+		list.add(all);
 		while (groupCursor.moveToNext()) {
 			long _id = groupCursor.getLong(0);
 			String title = groupCursor.getString(1);
@@ -173,23 +176,29 @@ public class MainActivity extends Activity implements
 
 		Cursor groupCursor = getContentResolver().query(
 				Data.CONTENT_URI,
-				new String[] { GroupMembership.RAW_CONTACT_ID,
+				new String[] {
+						GroupMembership.RAW_CONTACT_ID,
 						GroupMembership.CONTACT_ID,
 						GroupMembership.DISPLAY_NAME,
 						GroupMembership.PHONETIC_NAME,
-						GroupMembership.GROUP_ROW_ID }, Data.MIMETYPE + "=?",
-				new String[] { GroupMembership.CONTENT_ITEM_TYPE },
+						GroupMembership.GROUP_ROW_ID },
+				Data.MIMETYPE + "=?",
+				new String[] {
+						GroupMembership.CONTENT_ITEM_TYPE },
 				Data.RAW_CONTACT_ID);
 
 		Cursor postalCursor = getContentResolver().query(
 				StructuredPostal.CONTENT_URI,
-				new String[] { StructuredPostal.RAW_CONTACT_ID,
-						StructuredPostal.FORMATTED_ADDRESS }, null, null,
+				new String[] {
+						StructuredPostal.RAW_CONTACT_ID,
+						StructuredPostal.FORMATTED_ADDRESS },
+				null,
+				null,
 				StructuredPostal.RAW_CONTACT_ID);
 
-		CursorJoinerWithIntKey joiner = new CursorJoinerWithIntKey(groupCursor,
-				new String[] { Data.RAW_CONTACT_ID }, postalCursor,
-				new String[] { Data.RAW_CONTACT_ID });
+		CursorJoinerWithIntKey joiner = new CursorJoinerWithIntKey(
+				groupCursor, new String[] { Data.RAW_CONTACT_ID },
+				postalCursor, new String[] { Data.RAW_CONTACT_ID });
 
 		final GeocodingCacheDatabase db = new GeocodingCacheDatabase(this);
 		List<ContactsItem> contactsList = new ArrayList<ContactsItem>();
@@ -210,6 +219,15 @@ public class MainActivity extends Activity implements
 				phonetic = groupCursor.getString(3);
 				groupId = groupCursor.getLong(4);
 				address = null;
+				break;
+
+			case RIGHT:
+				rowId = groupCursor.getLong(0);
+				cid = groupCursor.getLong(1);
+				name = groupCursor.getString(2);
+				phonetic = groupCursor.getString(3);
+				groupId = ID_GROUP_ALL_CONTACTS;
+				address = postalCursor.getString(1);
 				break;
 
 			case BOTH:
@@ -252,6 +270,7 @@ public class MainActivity extends Activity implements
 				_name = name;
 				_phonetic = phonetic;
 				_groupIds.clear();
+				_groupIds.add(ID_GROUP_ALL_CONTACTS);
 				_address.clear();
 			}
 
@@ -319,7 +338,7 @@ public class MainActivity extends Activity implements
 					mProgressDialog.show();
 				}
 			});
-			
+
 			final GeocodingCacheDatabase db = new GeocodingCacheDatabase(
 					MainActivity.this);
 			int count = 0;
