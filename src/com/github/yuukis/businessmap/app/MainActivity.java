@@ -159,7 +159,7 @@ public class MainActivity extends Activity implements
 				Groups.DELETED + "=0", null, null);
 
 		List<ContactsGroup> list = new ArrayList<ContactsGroup>();
-		ContactsGroup all = new ContactsGroup(-1, "すべての連絡先", "");
+		ContactsGroup all = new ContactsGroup(ID_GROUP_ALL_CONTACTS, "すべての連絡先", "");
 		list.add(all);
 		while (groupCursor.moveToNext()) {
 			long _id = groupCursor.getLong(0);
