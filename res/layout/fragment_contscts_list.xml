@@ -2,30 +2,20 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
 
-    <LinearLayout
+    <FrameLayout
         android:id="@+id/searchbar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true"
-        android:orientation="horizontal"
-        android:padding="8dp" >
+        android:layout_margin="4dp"
+        android:background="@drawable/searchbar_background"
+        android:layout_alignParentTop="true" >
 
-        <ImageView
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:src="@android:drawable/ic_menu_search" />
-
-        <EditText
-            android:id="@+id/edittext_search_contacts"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:ems="10"
-            android:imeOptions="actionSearch"
-            android:singleLine="true" />
-    </LinearLayout>
+        <SearchView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </FrameLayout>
 
     <ListView
         android:id="@android:id/list"
