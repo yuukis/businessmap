@@ -31,7 +31,8 @@ public class ContactsListFragment extends ListFragment {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 		setHasOptionsMenu(true);
-		return super.onCreateView(inflater, container, savedInstanceState);
+		View view = inflater.inflate(R.layout.fragment_contscts_list, null);
+		return view;
 	}
 
 	@Override
