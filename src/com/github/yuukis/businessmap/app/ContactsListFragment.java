@@ -27,6 +27,7 @@ import android.widget.TextView;
 
 import com.github.yuukis.businessmap.R;
 import com.github.yuukis.businessmap.utils.ActionUtils;
+import com.github.yuukis.businessmap.utils.StringJUtils;
 import com.slidinglayer.SlidingLayer;
 
 public class ContactsListFragment extends ListFragment implements
@@ -234,8 +235,13 @@ public class ContactsListFragment extends ListFragment implements
 						ArrayList<ContactsItem> filterResultData = new ArrayList<ContactsItem>();
 						for (ContactsItem contacts : contactsList) {
 							String query = constraint.toString();
-							if (contacts.getName().indexOf(query) >= 0
-									|| contacts.getPhontic().indexOf(query) >= 0) {
+							String name = contacts.getName();
+							String phonetic = contacts.getPhontic();
+							query = StringJUtils.convertToKatakana(query);
+							name = StringJUtils.convertToKatakana(name);
+							phonetic = StringJUtils.convertToKatakana(phonetic);
+							if (name.indexOf(query) >= 0
+									|| phonetic.indexOf(query) >= 0) {
 								filterResultData.add(contacts);
 							}
 						}
