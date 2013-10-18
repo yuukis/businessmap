@@ -1,5 +1,6 @@
 package com.github.yuukis.businessmap.app;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.github.yuukis.businessmap.model.ContactsItem;
@@ -9,6 +10,7 @@ import android.app.ListFragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -16,14 +18,19 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.ListView;
+import android.widget.SearchView;
+import android.widget.SearchView.OnQueryTextListener;
 import android.widget.TextView;
 
 import com.github.yuukis.businessmap.R;
 import com.github.yuukis.businessmap.utils.ActionUtils;
 import com.slidinglayer.SlidingLayer;
 
-public class ContactsListFragment extends ListFragment {
+public class ContactsListFragment extends ListFragment implements
+		OnQueryTextListener {
 
 	private ContactsAdapter mContactsAdapter;
 
@@ -31,16 +38,21 @@ public class ContactsListFragment extends ListFragment {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 		setHasOptionsMenu(true);
-		View view = inflater.inflate(R.layout.fragment_contscts_list, null);
-		return view;
+		return inflater.inflate(R.layout.fragment_contscts_list, null);
 	}
 
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
+		SearchView searchView = (SearchView) getView().findViewById(
+				R.id.searchview);
+		searchView.setIconifiedByDefault(false);
+		searchView.setOnQueryTextListener(this);
+		searchView.setSubmitButtonEnabled(false);
 		mContactsAdapter = new ContactsAdapter();
 		setListAdapter(mContactsAdapter);
+		getListView().setTextFilterEnabled(true);
 	}
 
 	public void notifyDataSetChanged() {
@@ -101,11 +113,8 @@ public class ContactsListFragment extends ListFragment {
 
 		final Context context = getActivity();
 		String title = contact.getName();
-		final String[] items = new String[] {
-				getString(R.string.action_contacts_detail)
-		};
-		new AlertDialog.Builder(getActivity())
-				.setTitle(title)
+		final String[] items = new String[] { getString(R.string.action_contacts_detail) };
+		new AlertDialog.Builder(getActivity()).setTitle(title)
 				.setItems(items, new DialogInterface.OnClickListener() {
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
@@ -115,9 +124,24 @@ public class ContactsListFragment extends ListFragment {
 							break;
 						}
 					}
-				})
-				.show();
+				}).show();
+	}
+
+	@Override
+	public boolean onQueryTextChange(String newText) {
+		ListView listView = getListView();
+		if (TextUtils.isEmpty(newText)) {
+			listView.clearTextFilter();
+		} else {
+			listView.setFilterText(newText.toString());
 		}
+		return true;
+	}
+
+	@Override
+	public boolean onQueryTextSubmit(String query) {
+		return false;
+	}
 
 	private List<ContactsItem> getContactsList() {
 		MainActivity activity = (MainActivity) getActivity();
@@ -129,11 +153,18 @@ public class ContactsListFragment extends ListFragment {
 		TextView textView2;
 	}
 
-	private class ContactsAdapter extends BaseAdapter {
+	private class ContactsAdapter extends BaseAdapter implements Filterable {
+
+		private List<ContactsItem> mFilterResultList = null;
 
 		@Override
 		public int getCount() {
-			List<ContactsItem> list = getContactsList();
+			List<ContactsItem> list;
+			if (mFilterResultList == null) {
+				list = getContactsList();
+			} else {
+				list = mFilterResultList;
+			}
 			if (list == null) {
 				return 0;
 			}
@@ -142,7 +173,16 @@ public class ContactsListFragment extends ListFragment {
 
 		@Override
 		public Object getItem(int position) {
-			return getContactsList().get(position);
+			List<ContactsItem> list;
+			if (mFilterResultList == null) {
+				list = getContactsList();
+			} else {
+				list = mFilterResultList;
+			}
+			if (list == null) {
+				return null;
+			}
+			return list.get(position);
 		}
 
 		@Override
@@ -177,6 +217,43 @@ public class ContactsListFragment extends ListFragment {
 			holder.textView2.setText(address);
 
 			return convertView;
+		}
+
+		@Override
+		public Filter getFilter() {
+			Filter filter = new Filter() {
+
+				@Override
+				protected FilterResults performFiltering(CharSequence constraint) {
+					FilterResults results = new FilterResults();
+					List<ContactsItem> contactsList = getContactsList();
+					if (TextUtils.isEmpty(constraint)) {
+						results.values = null;
+						results.count = 0;
+					} else {
+						ArrayList<ContactsItem> filterResultData = new ArrayList<ContactsItem>();
+						for (ContactsItem contacts : contactsList) {
+							String query = constraint.toString();
+							if (contacts.getName().indexOf(query) >= 0
+									|| contacts.getPhontic().indexOf(query) >= 0) {
+								filterResultData.add(contacts);
+							}
+						}
+						results.values = filterResultData;
+						results.count = filterResultData.size();
+					}
+					return results;
+				}
+
+				@SuppressWarnings("unchecked")
+				@Override
+				protected void publishResults(CharSequence constraint,
+						FilterResults results) {
+					mFilterResultList = (List<ContactsItem>) results.values;
+					notifyDataSetChanged();
+				}
+			};
+			return filter;
 		}
 
 	}

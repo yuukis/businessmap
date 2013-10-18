@@ -8,11 +8,13 @@
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
         android:layout_margin="4dp"
-        android:background="@drawable/searchbar_background"
-        android:layout_alignParentTop="true" >
+        android:background="@drawable/searchbar_background" >
 
         <SearchView
+            android:id="@+id/searchview"
+            android:queryHint=""
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
     </FrameLayout>
