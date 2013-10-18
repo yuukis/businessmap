@@ -34,6 +34,7 @@ import android.database.Cursor;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
+import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 
 public class MainActivity extends Activity implements
@@ -56,6 +57,8 @@ public class MainActivity extends Activity implements
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_PROGRESS);
+		getWindow().setSoftInputMode(
+				WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 		setContentView(R.layout.activity_main);
 
 		setProgressBarVisibility(false);
@@ -319,7 +322,7 @@ public class MainActivity extends Activity implements
 					mProgressDialog.show();
 				}
 			});
-			
+
 			final GeocodingCacheDatabase db = new GeocodingCacheDatabase(
 					MainActivity.this);
 			int count = 0;

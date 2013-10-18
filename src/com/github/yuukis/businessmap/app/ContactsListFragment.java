@@ -34,6 +34,7 @@ public class ContactsListFragment extends ListFragment implements
 		OnQueryTextListener {
 
 	private ContactsAdapter mContactsAdapter;
+	private SearchView mSearchView;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -46,18 +47,14 @@ public class ContactsListFragment extends ListFragment implements
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
-		SearchView searchView = (SearchView) getView().findViewById(
-				R.id.searchview);
-		searchView.setIconifiedByDefault(false);
-		searchView.setOnQueryTextListener(this);
-		searchView.setSubmitButtonEnabled(false);
+		mSearchView = (SearchView) getView().findViewById(R.id.searchview);
+		mSearchView.setIconifiedByDefault(false);
+		mSearchView.setOnQueryTextListener(this);
+		mSearchView.setSubmitButtonEnabled(false);
 		mContactsAdapter = new ContactsAdapter();
 		setListAdapter(mContactsAdapter);
+		setEmptyText(getString(R.string.message_no_contacts));
 		getListView().setTextFilterEnabled(true);
-	}
-
-	public void notifyDataSetChanged() {
-		mContactsAdapter.notifyDataSetChanged();
 	}
 
 	@Override
@@ -79,27 +76,9 @@ public class ContactsListFragment extends ListFragment implements
 		return false;
 	}
 
-	public boolean getVisibility() {
-		MainActivity activity = (MainActivity) getActivity();
-		SlidingLayer listContainer = (SlidingLayer) activity
-				.findViewById(R.id.list_container);
-		return listContainer.isOpened();
-	}
-
-	public void setVisibility(boolean visible) {
-		MainActivity activity = (MainActivity) getActivity();
-		SlidingLayer listContainer = (SlidingLayer) activity
-				.findViewById(R.id.list_container);
-		if (visible) {
-			listContainer.openLayer(true);
-		} else {
-			listContainer.closeLayer(true);
-		}
-		getFragmentManager().invalidateOptionsMenu();
-	}
-
 	@Override
 	public void onListItemClick(ListView l, View v, int position, long id) {
+		mSearchView.clearFocus();
 		final ContactsItem contact = (ContactsItem) mContactsAdapter
 				.getItem(position);
 		ContactsMapFragment mapFragment = (ContactsMapFragment) getFragmentManager()
@@ -141,7 +120,39 @@ public class ContactsListFragment extends ListFragment implements
 
 	@Override
 	public boolean onQueryTextSubmit(String query) {
+		mSearchView.clearFocus();
 		return false;
+	}
+
+	public void notifyDataSetChanged() {
+		mSearchView.clearFocus();
+		mContactsAdapter.notifyDataSetChanged();
+	}
+
+	public boolean getVisibility() {
+		MainActivity activity = (MainActivity) getActivity();
+		SlidingLayer listContainer = (SlidingLayer) activity
+				.findViewById(R.id.list_container);
+		return listContainer.isOpened();
+	}
+
+	public void setVisibility(boolean visible) {
+		MainActivity activity = (MainActivity) getActivity();
+		SlidingLayer listContainer = (SlidingLayer) activity
+				.findViewById(R.id.list_container);
+		if (visible) {
+			listContainer.openLayer(true);
+		} else {
+			mSearchView.clearFocus();
+			listContainer.closeLayer(true);
+		}
+		getFragmentManager().invalidateOptionsMenu();
+	}
+
+	@Override
+	public void setEmptyText(CharSequence text) {
+		TextView tv = (TextView) getListView().getEmptyView();
+		tv.setText(text);
 	}
 
 	private List<ContactsItem> getContactsList() {
