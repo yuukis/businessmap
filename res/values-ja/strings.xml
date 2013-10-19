@@ -14,6 +14,8 @@
     <string name="title_geocoding" translatable="false">しばらくお待ちください</string>
     <string name="message_geocoding" translatable="false">新しく登録された住所を座標に変換しています&#8230;</string>
     <string name="message_no_address" translatable="false">(未登録)</string>
+    <string name="message_no_contacts" translatable="false">このグループに連絡先はありません</string>
+    <string name="hint_searchview" translatable="false">連絡先を検索</string>
     <string name="desc_appicon" translatable="false">アイコン</string>
     <string name="beta__action_update_app" translatable="false">アップデート</string>
     <string name="beta__message_downloading" translatable="false">APK ファイルをダウンロードしています&#8230;</string>
