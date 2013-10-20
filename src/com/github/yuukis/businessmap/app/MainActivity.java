@@ -42,6 +42,7 @@ public class MainActivity extends Activity implements
 
 	private static final String KEY_NAVIGATION_INDEX = "navigation_index";
 	private static final String KEY_CONTACTSLIST = "contacts_list";
+	private static final long ID_GROUP_ALL_CONTACTS = -1;
 
 	private List<ContactsGroup> mGroupList;
 	private List<ContactsItem> mContactsList;
@@ -137,19 +138,13 @@ public class MainActivity extends Activity implements
 		}
 		ContactsGroup group = mGroupList.get(itemPosition);
 		long groupId = group.getId();
-		mCurrentGroupContactsList.clear();
-		for (ContactsItem contact : mContactsList) {
-			if (contact.getGroupId() == groupId) {
-				mCurrentGroupContactsList.add(contact);
-			}
-		}
-
+		changeCurrentGroup(groupId);
 		mMapFragment.notifyDataSetChanged();
 		mListFragment.notifyDataSetChanged();
 
 		return true;
 	}
-
+	
 	public List<ContactsItem> getCurrentContactsList() {
 		return mCurrentGroupContactsList;
 	}
@@ -161,6 +156,8 @@ public class MainActivity extends Activity implements
 				Groups.DELETED + "=0", null, null);
 
 		List<ContactsGroup> list = new ArrayList<ContactsGroup>();
+		ContactsGroup all = new ContactsGroup(ID_GROUP_ALL_CONTACTS, "すべての連絡先", "");
+		list.add(all);
 		while (groupCursor.moveToNext()) {
 			long _id = groupCursor.getLong(0);
 			String title = groupCursor.getString(1);
@@ -171,28 +168,46 @@ public class MainActivity extends Activity implements
 		return list;
 	}
 
+	private void changeCurrentGroup(long groupId) {
+		mCurrentGroupContactsList.clear();
+		for (ContactsItem contact : mContactsList) {
+			if (contact.getGroupId() == groupId) {
+				mCurrentGroupContactsList.add(contact);
+			}
+		}
+	}
+
 	private void loadAllContacts() {
 		mGeocodingResultCache.clear();
 
 		Cursor groupCursor = getContentResolver().query(
 				Data.CONTENT_URI,
-				new String[] { GroupMembership.RAW_CONTACT_ID,
+				new String[] {
+						GroupMembership.RAW_CONTACT_ID,
 						GroupMembership.CONTACT_ID,
 						GroupMembership.DISPLAY_NAME,
 						GroupMembership.PHONETIC_NAME,
-						GroupMembership.GROUP_ROW_ID }, Data.MIMETYPE + "=?",
-				new String[] { GroupMembership.CONTENT_ITEM_TYPE },
+						GroupMembership.GROUP_ROW_ID },
+				Data.MIMETYPE + "=?",
+				new String[] {
+						GroupMembership.CONTENT_ITEM_TYPE },
 				Data.RAW_CONTACT_ID);
 
 		Cursor postalCursor = getContentResolver().query(
 				StructuredPostal.CONTENT_URI,
-				new String[] { StructuredPostal.RAW_CONTACT_ID,
-						StructuredPostal.FORMATTED_ADDRESS }, null, null,
+				new String[] {
+						StructuredPostal.RAW_CONTACT_ID,
+						StructuredPostal.CONTACT_ID,
+						StructuredPostal.DISPLAY_NAME,
+						StructuredPostal.PHONETIC_NAME,
+						StructuredPostal.FORMATTED_ADDRESS },
+				null,
+				null,
 				StructuredPostal.RAW_CONTACT_ID);
 
-		CursorJoinerWithIntKey joiner = new CursorJoinerWithIntKey(groupCursor,
-				new String[] { Data.RAW_CONTACT_ID }, postalCursor,
-				new String[] { Data.RAW_CONTACT_ID });
+		CursorJoinerWithIntKey joiner = new CursorJoinerWithIntKey(
+				groupCursor, new String[] { Data.RAW_CONTACT_ID },
+				postalCursor, new String[] { Data.RAW_CONTACT_ID });
 
 		final GeocodingCacheDatabase db = new GeocodingCacheDatabase(this);
 		List<ContactsItem> contactsList = new ArrayList<ContactsItem>();
@@ -215,13 +230,22 @@ public class MainActivity extends Activity implements
 				address = null;
 				break;
 
+			case RIGHT:
+				rowId = postalCursor.getLong(0);
+				cid = postalCursor.getLong(1);
+				name = postalCursor.getString(2);
+				phonetic = postalCursor.getString(3);
+				groupId = ID_GROUP_ALL_CONTACTS;
+				address = postalCursor.getString(4);
+				break;
+
 			case BOTH:
 				rowId = groupCursor.getLong(0);
 				cid = groupCursor.getLong(1);
 				name = groupCursor.getString(2);
 				phonetic = groupCursor.getString(3);
 				groupId = groupCursor.getLong(4);
-				address = postalCursor.getString(1);
+				address = postalCursor.getString(4);
 				break;
 
 			default:
@@ -255,6 +279,7 @@ public class MainActivity extends Activity implements
 				_name = name;
 				_phonetic = phonetic;
 				_groupIds.clear();
+				_groupIds.add(ID_GROUP_ALL_CONTACTS);
 				_address.clear();
 			}
 
@@ -265,6 +290,7 @@ public class MainActivity extends Activity implements
 				_address.add(address);
 			}
 		}
+		// FIXME: 冗長
 		for (long gid : _groupIds) {
 			if (_address.isEmpty()) {
 				contactsList.add(new ContactsItem(_cid, _name, _phonetic, gid,
@@ -272,8 +298,18 @@ public class MainActivity extends Activity implements
 				continue;
 			}
 			for (String addr : _address) {
-				contactsList.add(new ContactsItem(_cid, _name, _phonetic, gid,
-						addr));
+				ContactsItem contact = new ContactsItem(_cid, _name,
+						_phonetic, gid, addr);
+				double[] latlng = db.get(addr);
+				if (latlng != null && latlng.length == 2) {
+					contact.setLat(latlng[0]);
+					contact.setLng(latlng[1]);
+				} else {
+					if (!mGeocodingResultCache.containsKey(addr)) {
+						mGeocodingResultCache.put(addr, null);
+					}
+				}
+				contactsList.add(contact);
 			}
 		}
 		db.close();
@@ -297,6 +333,11 @@ public class MainActivity extends Activity implements
 			if (!mGeocodingResultCache.isEmpty()) {
 				geocoding();
 			}
+			
+			int index = getActionBar().getSelectedNavigationIndex();
+			ContactsGroup group = mGroupList.get(index);
+			long groupId = group.getId();
+			changeCurrentGroup(groupId);
 			mHandler.post(new Runnable() {
 				@Override
 				public void run() {
