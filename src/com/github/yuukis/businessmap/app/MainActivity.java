@@ -135,19 +135,13 @@ public class MainActivity extends Activity implements
 		}
 		ContactsGroup group = mGroupList.get(itemPosition);
 		long groupId = group.getId();
-		mCurrentGroupContactsList.clear();
-		for (ContactsItem contact : mContactsList) {
-			if (contact.getGroupId() == groupId) {
-				mCurrentGroupContactsList.add(contact);
-			}
-		}
-
+		changeCurrentGroup(groupId);
 		mMapFragment.notifyDataSetChanged();
 		mListFragment.notifyDataSetChanged();
 
 		return true;
 	}
-
+	
 	public List<ContactsItem> getCurrentContactsList() {
 		return mCurrentGroupContactsList;
 	}
@@ -169,6 +163,15 @@ public class MainActivity extends Activity implements
 			list.add(group);
 		}
 		return list;
+	}
+
+	private void changeCurrentGroup(long groupId) {
+		mCurrentGroupContactsList.clear();
+		for (ContactsItem contact : mContactsList) {
+			if (contact.getGroupId() == groupId) {
+				mCurrentGroupContactsList.add(contact);
+			}
+		}
 	}
 
 	private void loadAllContacts() {
@@ -327,6 +330,11 @@ public class MainActivity extends Activity implements
 			if (!mGeocodingResultCache.isEmpty()) {
 				geocoding();
 			}
+			
+			int index = getActionBar().getSelectedNavigationIndex();
+			ContactsGroup group = mGroupList.get(index);
+			long groupId = group.getId();
+			changeCurrentGroup(groupId);
 			mHandler.post(new Runnable() {
 				@Override
 				public void run() {
