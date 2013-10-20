@@ -191,6 +191,9 @@ public class MainActivity extends Activity implements
 				StructuredPostal.CONTENT_URI,
 				new String[] {
 						StructuredPostal.RAW_CONTACT_ID,
+						StructuredPostal.CONTACT_ID,
+						StructuredPostal.DISPLAY_NAME,
+						StructuredPostal.PHONETIC_NAME,
 						StructuredPostal.FORMATTED_ADDRESS },
 				null,
 				null,
@@ -222,12 +225,12 @@ public class MainActivity extends Activity implements
 				break;
 
 			case RIGHT:
-				rowId = groupCursor.getLong(0);
-				cid = groupCursor.getLong(1);
-				name = groupCursor.getString(2);
-				phonetic = groupCursor.getString(3);
+				rowId = postalCursor.getLong(0);
+				cid = postalCursor.getLong(1);
+				name = postalCursor.getString(2);
+				phonetic = postalCursor.getString(3);
 				groupId = ID_GROUP_ALL_CONTACTS;
-				address = postalCursor.getString(1);
+				address = postalCursor.getString(4);
 				break;
 
 			case BOTH:
@@ -236,7 +239,7 @@ public class MainActivity extends Activity implements
 				name = groupCursor.getString(2);
 				phonetic = groupCursor.getString(3);
 				groupId = groupCursor.getLong(4);
-				address = postalCursor.getString(1);
+				address = postalCursor.getString(4);
 				break;
 
 			default:
@@ -281,6 +284,7 @@ public class MainActivity extends Activity implements
 				_address.add(address);
 			}
 		}
+		// FIXME: 冗長
 		for (long gid : _groupIds) {
 			if (_address.isEmpty()) {
 				contactsList.add(new ContactsItem(_cid, _name, _phonetic, gid,
@@ -288,8 +292,18 @@ public class MainActivity extends Activity implements
 				continue;
 			}
 			for (String addr : _address) {
-				contactsList.add(new ContactsItem(_cid, _name, _phonetic, gid,
-						addr));
+				ContactsItem contact = new ContactsItem(_cid, _name,
+						_phonetic, gid, addr);
+				double[] latlng = db.get(addr);
+				if (latlng != null && latlng.length == 2) {
+					contact.setLat(latlng[0]);
+					contact.setLng(latlng[1]);
+				} else {
+					if (!mGeocodingResultCache.containsKey(addr)) {
+						mGeocodingResultCache.put(addr, null);
+					}
+				}
+				contactsList.add(contact);
 			}
 		}
 		db.close();
