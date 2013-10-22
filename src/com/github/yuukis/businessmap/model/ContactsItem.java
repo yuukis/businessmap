@@ -13,9 +13,10 @@ public class ContactsItem implements Serializable {
 	private String address;
 	private Double lat;
 	private Double lng;
+	private String note;
 
 	public ContactsItem(long cid, String name, String phonetic, long groupId,
-			String address) {
+			String address, String note) {
 		this.cid = cid;
 		this.name = name;
 		this.phonetic = phonetic;
@@ -23,6 +24,7 @@ public class ContactsItem implements Serializable {
 		this.address = address;
 		this.lat = null;
 		this.lng = null;
+		this.note = note;
 	}
 
 	public long getCID() {
@@ -51,6 +53,10 @@ public class ContactsItem implements Serializable {
 
 	public Double getLng() {
 		return lng;
+	}
+	
+	public String getNote() {
+		return note;
 	}
 
 	public void setName(String name) {
@@ -83,6 +89,10 @@ public class ContactsItem implements Serializable {
 		} else {
 			this.lng = lng;
 		}
+	}
+	
+	public void setNote(String note) {
+		this.note = note;
 	}
 
 }

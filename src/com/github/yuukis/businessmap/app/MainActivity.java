@@ -22,6 +22,7 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.ContactsContract.CommonDataKinds.Note;
 import android.provider.ContactsContract.Data;
 import android.provider.ContactsContract.Groups;
 import android.provider.ContactsContract.CommonDataKinds.GroupMembership;
@@ -179,7 +180,7 @@ public class MainActivity extends Activity implements
 
 	private void loadAllContacts() {
 		mGeocodingResultCache.clear();
-
+		
 		Cursor groupCursor = getContentResolver().query(
 				Data.CONTENT_URI,
 				new String[] {
@@ -205,6 +206,22 @@ public class MainActivity extends Activity implements
 				null,
 				StructuredPostal.RAW_CONTACT_ID);
 
+		Cursor noteCursor = getContentResolver().query(
+				Data.CONTENT_URI,
+				new String[] {
+						Note.RAW_CONTACT_ID,
+						Note.NOTE },
+				Data.MIMETYPE + "=?",
+				new String[] {
+						Note.CONTENT_ITEM_TYPE },
+				Data.RAW_CONTACT_ID);
+		HashMap<Long, String> noteMap = new HashMap<Long, String>();
+		while (noteCursor.moveToNext()) {
+			long rowId = noteCursor.getLong(0);
+			String note = noteCursor.getString(1);
+			noteMap.put(rowId, note);
+		}
+
 		CursorJoinerWithIntKey joiner = new CursorJoinerWithIntKey(
 				groupCursor, new String[] { Data.RAW_CONTACT_ID },
 				postalCursor, new String[] { Data.RAW_CONTACT_ID });
@@ -212,13 +229,13 @@ public class MainActivity extends Activity implements
 		final GeocodingCacheDatabase db = new GeocodingCacheDatabase(this);
 		List<ContactsItem> contactsList = new ArrayList<ContactsItem>();
 		long _rowId = -1, _cid = -1;
-		String _name = null, _phonetic = null;
+		String _name = null, _phonetic = null, _note = null;
 		List<Long> _groupIds = new ArrayList<Long>();
 		List<String> _address = new ArrayList<String>();
 
 		for (CursorJoinerWithIntKey.Result result : joiner) {
 			long rowId, cid, groupId;
-			String name, phonetic, address;
+			String name, phonetic, address, note;
 
 			switch (result) {
 			case LEFT:
@@ -228,6 +245,7 @@ public class MainActivity extends Activity implements
 				phonetic = groupCursor.getString(3);
 				groupId = groupCursor.getLong(4);
 				address = null;
+				note = noteMap.get(rowId);
 				break;
 
 			case RIGHT:
@@ -237,6 +255,7 @@ public class MainActivity extends Activity implements
 				phonetic = postalCursor.getString(3);
 				groupId = ID_GROUP_ALL_CONTACTS;
 				address = postalCursor.getString(4);
+				note = noteMap.get(rowId);
 				break;
 
 			case BOTH:
@@ -246,6 +265,7 @@ public class MainActivity extends Activity implements
 				phonetic = groupCursor.getString(3);
 				groupId = groupCursor.getLong(4);
 				address = postalCursor.getString(4);
+				note = noteMap.get(rowId);
 				break;
 
 			default:
@@ -256,12 +276,12 @@ public class MainActivity extends Activity implements
 				for (long gid : _groupIds) {
 					if (_address.isEmpty()) {
 						contactsList.add(new ContactsItem(_cid, _name,
-								_phonetic, gid, null));
+								_phonetic, gid, null, _note));
 						continue;
 					}
 					for (String addr : _address) {
 						ContactsItem contact = new ContactsItem(_cid, _name,
-								_phonetic, gid, addr);
+								_phonetic, gid, addr, _note);
 						double[] latlng = db.get(addr);
 						if (latlng != null && latlng.length == 2) {
 							contact.setLat(latlng[0]);
@@ -281,6 +301,7 @@ public class MainActivity extends Activity implements
 				_groupIds.clear();
 				_groupIds.add(ID_GROUP_ALL_CONTACTS);
 				_address.clear();
+				_note = note;
 			}
 
 			if (_groupIds.indexOf(groupId) < 0) {
@@ -294,12 +315,12 @@ public class MainActivity extends Activity implements
 		for (long gid : _groupIds) {
 			if (_address.isEmpty()) {
 				contactsList.add(new ContactsItem(_cid, _name, _phonetic, gid,
-						null));
+						null, _note));
 				continue;
 			}
 			for (String addr : _address) {
 				ContactsItem contact = new ContactsItem(_cid, _name,
-						_phonetic, gid, addr);
+						_phonetic, gid, addr, _note);
 				double[] latlng = db.get(addr);
 				if (latlng != null && latlng.length == 2) {
 					contact.setLat(latlng[0]);
