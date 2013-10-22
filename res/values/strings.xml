@@ -13,7 +13,7 @@
     <string name="label_version" translatable="false">Version</string>
     <string name="title_geocoding" translatable="false">Please wait a moment</string>
     <string name="message_geocoding" translatable="false">finding coordinates from the address registered newly &#8230;</string>
-    <string name="message_no_address" translatable="false">unregistered</string>
+    <string name="message_no_data" translatable="false">No data.</string>
     <string name="message_no_contacts" translatable="false">No contacts in this group.</string>
     <string name="hint_searchview" translatable="false">Find contacts</string>
     <string name="desc_appicon" translatable="false">icon</string>

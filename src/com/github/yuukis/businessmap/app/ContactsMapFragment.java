@@ -74,9 +74,12 @@ public class ContactsMapFragment extends MapFragment implements
 				continue;
 			}
 			String name = contact.getName();
+			if (name == null) {
+				name = getString(R.string.message_no_data);
+			}
 			String address = contact.getAddress();
 			if (address == null) {
-				address = getString(R.string.message_no_address);
+				address = getString(R.string.message_no_data);
 			}
 			LatLng latLng = new LatLng(contact.getLat(), contact.getLng());
 			Marker marker = getMap().addMarker(new MarkerOptions()
