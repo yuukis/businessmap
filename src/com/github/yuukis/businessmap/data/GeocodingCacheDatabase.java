@@ -46,8 +46,8 @@ public class GeocodingCacheDatabase {
 		return latlng;
 	}
 
-	public boolean put(String address, double[] latlng) {
-		if (latlng.length != 2) {
+	public boolean put(String address, Double[] latlng) {
+		if (latlng == null || latlng.length != 2) {
 			return false;
 		}
 		int hash = address.hashCode();

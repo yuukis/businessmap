@@ -6,6 +6,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.SparseArray;
 import android.view.View;
 import android.widget.TextView;
@@ -73,9 +74,12 @@ public class ContactsMapFragment extends MapFragment implements
 				continue;
 			}
 			String name = contact.getName();
+			if (name == null) {
+				name = getString(R.string.message_no_data);
+			}
 			String address = contact.getAddress();
 			if (address == null) {
-				address = getString(R.string.message_no_address);
+				address = getString(R.string.message_no_data);
 			}
 			LatLng latLng = new LatLng(contact.getLat(), contact.getLng());
 			Marker marker = getMap().addMarker(new MarkerOptions()
@@ -155,15 +159,32 @@ public class ContactsMapFragment extends MapFragment implements
 
 		@Override
 		public View getInfoContents(Marker marker) {
+			ContactsItem contacts = mContactHashMap.get(marker.hashCode());
 			View view = getActivity().getLayoutInflater().inflate(
 					R.layout.marker_info_contents, null);
 			TextView tvTitle = (TextView) view.findViewById(R.id.title);
 			TextView tvSnippet = (TextView) view.findViewById(R.id.snippet);
-			String title = marker.getTitle();
-			String snippet = marker.getSnippet();
-			snippet = snippet.replaceAll("[ 　]", "\n");
-			tvTitle.setText(title);
-			tvSnippet.setText(snippet);
+			TextView tvNote = (TextView) view.findViewById(R.id.note);
+			View separator = view.findViewById(R.id.separator);
+
+			if (contacts != null) {
+				String title = marker.getTitle();
+				tvTitle.setText(title);
+				
+				String snippet = marker.getSnippet();
+				snippet = snippet.replaceAll("[ 　]", "\n");
+				tvSnippet.setText(snippet);
+				
+				String note = contacts.getNote();
+				if (TextUtils.isEmpty(note)) {
+					separator.setVisibility(View.GONE);
+					tvNote.setVisibility(View.GONE);
+				} else {
+					tvNote.setText(note);
+					separator.setVisibility(View.VISIBLE);
+					tvNote.setVisibility(View.VISIBLE);
+				}
+			}
 			return view;
 		}
 

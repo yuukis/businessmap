@@ -19,9 +19,17 @@ public class ContactsItemComparator implements Comparator<ContactsItem> {
 			r = rhs.getName();
 		}
 
-		int compare = Collator.getInstance(Locale.getDefault()).compare(l, r);
-		if (compare != 0) {
-			return compare;
+		if (l == null && r != null) {
+			return 1;
+		} else if (l != null && r == null) {
+			return -1;
+		}
+		if (l != null && r != null) {
+			int compare = Collator.getInstance(Locale.getDefault()).compare(l,
+					r);
+			if (compare != 0) {
+				return compare;
+			}
 		}
 
 		if (lhs.getCID() < rhs.getCID()) {
