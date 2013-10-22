@@ -246,14 +246,24 @@ public class ContactsListFragment extends ListFragment implements
 						ArrayList<ContactsItem> filterResultData = new ArrayList<ContactsItem>();
 						for (ContactsItem contacts : contactsList) {
 							String query = constraint.toString();
-							String name = contacts.getName();
-							String phonetic = contacts.getPhontic();
 							query = StringJUtils.convertToKatakana(query);
-							name = StringJUtils.convertToKatakana(name);
-							phonetic = StringJUtils.convertToKatakana(phonetic);
-							if (name.indexOf(query) >= 0
-									|| phonetic.indexOf(query) >= 0) {
-								filterResultData.add(contacts);
+							
+							String name = contacts.getName();
+							if (name != null) {
+								name = StringJUtils.convertToKatakana(name);
+								if (name.indexOf(query) >= 0) {
+									filterResultData.add(contacts);
+									continue;
+								}
+							}
+							
+							String phonetic = contacts.getPhontic();
+							if (phonetic != null) {
+								phonetic = StringJUtils.convertToKatakana(phonetic);
+								if (phonetic.indexOf(query) >= 0) {
+									filterResultData.add(contacts);
+									continue;
+								}
 							}
 						}
 						results.values = filterResultData;
