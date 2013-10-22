@@ -223,7 +223,7 @@ public class ContactsListFragment extends ListFragment implements
 			String name = contact.getName();
 			String address = contact.getAddress();
 			if (address == null) {
-				address = getString(R.string.message_no_address);
+				address = getString(R.string.message_no_data);
 			}
 			holder.textView1.setText(name);
 			holder.textView2.setText(address);

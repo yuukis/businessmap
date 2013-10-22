@@ -17,6 +17,7 @@ import com.github.yuukis.businessmap.model.ContactsGroup;
 import com.github.yuukis.businessmap.model.ContactsItem;
 import com.github.yuukis.businessmap.utils.CursorJoinerWithIntKey;
 import com.github.yuukis.businessmap.utils.ContactsItemComparator;
+import com.github.yuukis.businessmap.utils.GeocoderUtils;
 
 import android.location.Address;
 import android.location.Geocoder;
@@ -372,22 +373,14 @@ public class MainActivity extends Activity implements
 				Entry<String, Double[]> entry = it.next();
 				String address = entry.getKey();
 
-				List<Address> list;
 				try {
-					list = new Geocoder(MainActivity.this, Locale.getDefault())
-							.getFromLocationName(address, 1);
+					Double[] latlng = GeocoderUtils.getFromLocationName(
+							MainActivity.this, address);
+					db.put(address, latlng);
+					entry.setValue(latlng);
 				} catch (IOException e) {
 					continue;
 				}
-				double lat = Double.NaN;
-				double lng = Double.NaN;
-				if (list.size() != 0) {
-					Address addr = list.get(0);
-					lat = addr.getLatitude();
-					lng = addr.getLongitude();
-				}
-				db.put(address, new double[] { lat, lng });
-				entry.setValue(new Double[] { lat, lng });
 
 				count++;
 				final int progress = count;
