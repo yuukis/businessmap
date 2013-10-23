@@ -5,6 +5,7 @@
     <string name="provider" translatable="false">Yuuki Shimizu</string>
     <string name="action_list" translatable="false">List</string>
     <string name="action_about" translatable="false">About</string>
+    <string name="label_licenses" translatable="false"><u>Open source licenses</u></string>
     <string name="action_contacts_detail" translatable="false">Show contacts</string>
     <string name="action_directions" translatable="false">Directions</string>
     <string name="action_drive_navigation" translatable="false">Drive navigation</string>

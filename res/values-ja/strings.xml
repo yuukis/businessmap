@@ -5,6 +5,7 @@
     <string name="provider" translatable="false">しみず ゆうき</string>
     <string name="action_list" translatable="false">連絡先一覧</string>
     <string name="action_about" translatable="false">このアプリについて</string>
+    <string name="label_licenses" translatable="false"><u>オープンソース ライセンス</u></string>
     <string name="action_contacts_detail" translatable="false">連絡先を表示</string>
     <string name="action_directions" translatable="false">経路を調べる</string>
     <string name="action_drive_navigation" translatable="false">ナビを開始</string>
