@@ -63,6 +63,15 @@
             android:layout_height="wrap_content"
             android:textColor="#ff000000"
             android:textSize="20sp" />
+
+        <TextView
+            android:id="@+id/textview_license"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="@string/label_licenses"
+            android:textColor="#0099cc"
+            android:textSize="14sp" />
     </LinearLayout>
 
 </ScrollView>

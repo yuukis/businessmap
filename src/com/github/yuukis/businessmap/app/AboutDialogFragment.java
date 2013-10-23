@@ -16,7 +16,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
 
-public class AboutDialogFragment extends DialogFragment {
+public class AboutDialogFragment extends DialogFragment implements
+		View.OnClickListener {
 
 	private static final String TAG = "AboutDialogFragment";
 
@@ -35,12 +36,17 @@ public class AboutDialogFragment extends DialogFragment {
 		View view = inflater.inflate(R.layout.fragment_about, null);
 		((TextView) view.findViewById(R.id.textview_about_version))
 				.setText(getVersion());
+		view.findViewById(R.id.textview_license).setOnClickListener(this);
 
 		return new AlertDialog.Builder(getActivity())
-				.setTitle(R.string.action_about)
-				.setView(view)
-				.setPositiveButton(android.R.string.ok, null)
-				.create();
+				.setTitle(R.string.action_about).setView(view)
+				.setPositiveButton(android.R.string.ok, null).create();
+	}
+
+	@Override
+	public void onClick(View v) {
+		// オープンソース ライセンス表示
+		LicenseDialogFragment.showDialog(getActivity());
 	}
 
 	private String getVersion() {

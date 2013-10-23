@@ -7,7 +7,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -19,8 +18,6 @@ import com.github.yuukis.businessmap.utils.CursorJoinerWithIntKey;
 import com.github.yuukis.businessmap.utils.ContactsItemComparator;
 import com.github.yuukis.businessmap.utils.GeocoderUtils;
 
-import android.location.Address;
-import android.location.Geocoder;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.ContactsContract.CommonDataKinds.Note;
