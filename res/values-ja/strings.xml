@@ -16,6 +16,7 @@
     <string name="message_no_data" translatable="false">(未登録)</string>
     <string name="message_no_contacts" translatable="false">このグループに連絡先はありません</string>
     <string name="hint_searchview" translatable="false">連絡先を検索</string>
+    <string name="group_all_contacts" translatable="false">すべての連絡先</string>
     <string name="desc_appicon" translatable="false">アイコン</string>
 
 </resources>
