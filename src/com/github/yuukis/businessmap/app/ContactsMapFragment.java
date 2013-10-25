@@ -1,6 +1,6 @@
 /*
  * ContactsMapFragment.java
- * 
+ *
  * Copyright 2013 Yuuki Shimizu.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,9 +19,6 @@ package com.github.yuukis.businessmap.app;
 
 import java.util.List;
 
-import android.app.AlertDialog;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.SparseArray;
@@ -31,7 +28,6 @@ import android.widget.TextView;
 import com.github.yuukis.businessmap.R;
 import com.github.yuukis.businessmap.data.MapStatePreferences;
 import com.github.yuukis.businessmap.model.ContactsItem;
-import com.github.yuukis.businessmap.utils.ActionUtils;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.CancelableCallback;
@@ -138,33 +134,7 @@ public class ContactsMapFragment extends MapFragment implements
 		if (contact == null) {
 			return;
 		}
-
-		final Context context = getActivity();
-		String title = contact.getName();
-		final String[] items = new String[] {
-				getString(R.string.action_contacts_detail),
-				getString(R.string.action_directions),
-				getString(R.string.action_drive_navigation)
-		};
-		new AlertDialog.Builder(getActivity())
-				.setTitle(title)
-				.setItems(items, new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						switch (which) {
-						case 0:
-							ActionUtils.doShowContact(context, contact);
-							break;
-						case 1:
-							ActionUtils.doShowDirections(context, contact);
-							break;
-						case 2:
-							ActionUtils
-									.doStartDriveNavigation(context, contact);
-						}
-					}
-				})
-				.show();
+		ContactsActionFragment.showDialog(getActivity(), contact);
 	}
 
 	private List<ContactsItem> getContactsList() {
@@ -187,11 +157,11 @@ public class ContactsMapFragment extends MapFragment implements
 			if (contacts != null) {
 				String title = marker.getTitle();
 				tvTitle.setText(title);
-				
+
 				String snippet = marker.getSnippet();
 				snippet = snippet.replaceAll("[ 　]", "\n");
 				tvSnippet.setText(snippet);
-				
+
 				String note = contacts.getNote();
 				if (TextUtils.isEmpty(note)) {
 					separator.setVisibility(View.GONE);
