@@ -81,8 +81,9 @@ AdapterView.OnItemClickListener {
 
 		MenuAdapter adapter = new MenuAdapter(getActivity(),
 				R.layout.gridview_contents, ACTION_ITEMS);
+		int columns = getResources().getInteger(R.integer.gridview_columns);
 		GridView gridView = new GridView(getActivity());
-		gridView.setNumColumns(2);
+		gridView.setNumColumns(columns);
 		gridView.setAdapter(adapter);
 		gridView.setOnItemClickListener(this);
 		String title = mContact.getName();
