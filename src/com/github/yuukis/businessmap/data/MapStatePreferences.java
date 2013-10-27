@@ -4,7 +4,9 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.location.Criteria;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Bundle;
 
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
@@ -36,7 +38,7 @@ public class MapStatePreferences {
 		float bearing = preferences.getFloat(KEY_BEARING, 0);
 
 		LatLng target;
-		if (lat == Float.NaN || lng == Float.NaN) {
+		if (Float.isNaN(lat) || Float.isNaN(lng)) {
 			target = getLastKnownLocation();
 		} else {
 			target = new LatLng(lat, lng);
@@ -74,8 +76,10 @@ public class MapStatePreferences {
 		Criteria criteria = new Criteria();
 		criteria.setAccuracy(Criteria.ACCURACY_FINE);
 		String provider = manager.getBestProvider(criteria, true);
+		provider = LocationManager.NETWORK_PROVIDER;
 		Location location = manager.getLastKnownLocation(provider);
-		double lat = 0, lng = 0;
+		// 位置情報取得に失敗した場合の既定値
+		double lat = 139.766084, lng = 35.681382;	// 東京駅
 		if (location != null) {
 			lat = location.getLatitude();
 			lng = location.getLongitude();
