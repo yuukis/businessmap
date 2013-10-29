@@ -1,6 +1,6 @@
 /*
  * GeocodingCacheDatabase.java
- * 
+ *
  * Copyright 2013 Yuuki Shimizu.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -87,7 +87,9 @@ public class GeocodingCacheDatabase {
 	}
 
 	public void close() {
-		db.close();
+		if (db != null && db.isOpen()) {
+			db.close();
+		}
 	}
 
 	private Cursor query(String[] columns, String selection,
