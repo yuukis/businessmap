@@ -23,6 +23,7 @@ import com.github.yuukis.businessmap.R;
 import com.github.yuukis.businessmap.model.ContactsGroup;
 
 import android.app.Activity;
+import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -96,13 +97,18 @@ public class GroupAdapter extends BaseAdapter {
 		}
 
 		ContactsGroup group = (ContactsGroup) getItem(position);
+
 		String title = group.getTitle();
-		String accountName = group.getAccountName();
-		if (accountName == null) {
-			accountName = "";
-		}
 		holder.textView1.setText(title);
-		holder.textView2.setText(accountName);
+
+		String accountName = group.getAccountName();
+		if (TextUtils.isEmpty(accountName)) {
+			holder.textView2.setVisibility(View.GONE);
+			holder.textView2.setText("");
+		} else {
+			holder.textView2.setVisibility(View.VISIBLE);
+			holder.textView2.setText(accountName);
+		}
 
 		return convertView;
 	}
