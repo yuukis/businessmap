@@ -5,5 +5,6 @@
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
     <dimen name="slidinglayer_width">-1dp</dimen>
+    <dimen name="dropdown_list_preferred_item_height">48dp</dimen>
 
 </resources>

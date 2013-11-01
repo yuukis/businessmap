@@ -1,6 +1,6 @@
 /*
  * MainActivity.java
- * 
+ *
  * Copyright 2013 Yuuki Shimizu.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -34,6 +34,7 @@ import com.github.yuukis.businessmap.model.ContactsItem;
 import com.github.yuukis.businessmap.utils.CursorJoinerWithIntKey;
 import com.github.yuukis.businessmap.utils.ContactsItemComparator;
 import com.github.yuukis.businessmap.utils.GeocoderUtils;
+import com.github.yuukis.businessmap.widget.GroupAdapter;
 
 import android.os.Bundle;
 import android.os.Handler;
@@ -51,7 +52,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.ArrayAdapter;
 
 public class MainActivity extends Activity implements
 		ActionBar.OnNavigationListener {
@@ -93,8 +93,7 @@ public class MainActivity extends Activity implements
 		mProgressDialog.setMessage(getString(R.string.message_geocoding));
 		mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
 
-		ArrayAdapter<ContactsGroup> adapter = new ArrayAdapter<ContactsGroup>(
-				this, android.R.layout.simple_spinner_dropdown_item, mGroupList);
+		GroupAdapter adapter = new GroupAdapter(this, mGroupList);
 		ActionBar actionBar = getActionBar();
 		actionBar.setDisplayShowTitleEnabled(false);
 		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
@@ -160,7 +159,7 @@ public class MainActivity extends Activity implements
 
 		return true;
 	}
-	
+
 	public List<ContactsItem> getCurrentContactsList() {
 		return mCurrentGroupContactsList;
 	}
@@ -196,7 +195,7 @@ public class MainActivity extends Activity implements
 
 	private void loadAllContacts() {
 		mGeocodingResultCache.clear();
-		
+
 		Cursor groupCursor = getContentResolver().query(
 				Data.CONTENT_URI,
 				new String[] {
@@ -370,7 +369,7 @@ public class MainActivity extends Activity implements
 			if (!mGeocodingResultCache.isEmpty()) {
 				geocoding();
 			}
-			
+
 			int index = getActionBar().getSelectedNavigationIndex();
 			ContactsGroup group = mGroupList.get(index);
 			long groupId = group.getId();
