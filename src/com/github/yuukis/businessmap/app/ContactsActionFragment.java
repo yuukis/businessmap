@@ -45,6 +45,7 @@ AdapterView.OnItemClickListener {
 	private static final int ID_SHOW_CONTACTS = 1;
 	private static final int ID_DIRECTION = 2;
 	private static final int ID_NAVIGATION = 3;
+	private static final int ID_STREETVIEW = 4;
 	private static final BindData[] ACTION_ITEMS = {
 		new BindData(
 				ID_SHOW_CONTACTS,
@@ -58,6 +59,10 @@ AdapterView.OnItemClickListener {
 				ID_NAVIGATION,
 				R.drawable.ic_action_navigation,
 				R.string.action_drive_navigation),
+		new BindData(
+				ID_STREETVIEW,
+				0,
+				R.string.action_streetview),
 	};
 
 	public static ContactsActionFragment newInstance(ContactsItem contact) {
@@ -111,8 +116,12 @@ AdapterView.OnItemClickListener {
 			break;
 
 		case ID_NAVIGATION:
-			ActionUtils
-					.doStartDriveNavigation(context, mContact);
+			ActionUtils.doStartDriveNavigation(context, mContact);
+			break;
+
+		case ID_STREETVIEW:
+			ActionUtils.doShowStreetView(context, mContact);
+			break;
 		}
 	}
 

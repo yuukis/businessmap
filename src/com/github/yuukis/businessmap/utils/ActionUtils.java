@@ -1,6 +1,6 @@
 /*
  * ActionUtils.java
- * 
+ *
  * Copyright 2013 Yuuki Shimizu.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -52,6 +52,14 @@ public class ActionUtils {
 		Intent intent = new Intent(Intent.ACTION_VIEW, uri);
 		intent.setClassName("com.google.android.apps.maps",
 				"com.google.android.maps.driveabout.app.NavigationActivity");
+		context.startActivity(intent);
+	}
+
+	public static void doShowStreetView(Context context, ContactsItem contact) {
+		Uri uri = Uri.parse(String.format(Locale.getDefault(),
+				"google.streetview:cbll=%f,%f",
+				contact.getLat(), contact.getLng()));
+		Intent intent = new Intent(Intent.ACTION_VIEW, uri);
 		context.startActivity(intent);
 	}
 
