@@ -167,20 +167,33 @@ public class MainActivity extends Activity implements
 
 	public List<ContactsGroup> getContactsGroupList() {
 
-		Cursor groupCursor = getContentResolver().query(Groups.CONTENT_URI,
-				new String[] { Groups._ID, Groups.TITLE, Groups.ACCOUNT_NAME },
-				Groups.DELETED + "=0", null, null);
-
 		List<ContactsGroup> list = new ArrayList<ContactsGroup>();
 		ContactsGroup all = new ContactsGroup(ID_GROUP_ALL_CONTACTS,
 				getString(R.string.group_all_contacts), "");
 		list.add(all);
-		while (groupCursor.moveToNext()) {
-			long _id = groupCursor.getLong(0);
-			String title = groupCursor.getString(1);
-			String accountName = groupCursor.getString(2);
-			ContactsGroup group = new ContactsGroup(_id, title, accountName);
-			list.add(group);
+
+		Cursor groupCursor = null;
+		try {
+			groupCursor = getContentResolver().query(
+					Groups.CONTENT_URI,
+					new String[] {
+							Groups._ID,
+							Groups.TITLE,
+							Groups.ACCOUNT_NAME },
+					Groups.DELETED + "=0",
+					null,
+					null);
+			while (groupCursor.moveToNext()) {
+				long _id = groupCursor.getLong(0);
+				String title = groupCursor.getString(1);
+				String accountName = groupCursor.getString(2);
+				ContactsGroup group = new ContactsGroup(_id, title, accountName);
+				list.add(group);
+			}
+		} finally {
+			if (groupCursor != null) {
+				groupCursor.close();
+			}
 		}
 		return list;
 	}
@@ -197,54 +210,59 @@ public class MainActivity extends Activity implements
 	private void loadAllContacts() {
 		mGeocodingResultCache.clear();
 
-		Cursor groupCursor = getContentResolver().query(
-				Data.CONTENT_URI,
-				new String[] {
-						GroupMembership.RAW_CONTACT_ID,
-						GroupMembership.CONTACT_ID,
-						GroupMembership.DISPLAY_NAME,
-						GroupMembership.PHONETIC_NAME,
-						GroupMembership.GROUP_ROW_ID },
-				Data.MIMETYPE + "=?",
-				new String[] {
-						GroupMembership.CONTENT_ITEM_TYPE },
-				Data.RAW_CONTACT_ID);
-
-		Cursor postalCursor = getContentResolver().query(
-				StructuredPostal.CONTENT_URI,
-				new String[] {
-						StructuredPostal.RAW_CONTACT_ID,
-						StructuredPostal.CONTACT_ID,
-						StructuredPostal.DISPLAY_NAME,
-						StructuredPostal.PHONETIC_NAME,
-						StructuredPostal.FORMATTED_ADDRESS },
-				null,
-				null,
-				StructuredPostal.RAW_CONTACT_ID);
-
-		Cursor noteCursor = getContentResolver().query(
-				Data.CONTENT_URI,
-				new String[] {
-						Note.RAW_CONTACT_ID,
-						Note.NOTE },
-				Data.MIMETYPE + "=?",
-				new String[] {
-						Note.CONTENT_ITEM_TYPE },
-				Data.RAW_CONTACT_ID);
-		HashMap<Long, String> noteMap = new HashMap<Long, String>();
-		while (noteCursor.moveToNext()) {
-			long rowId = noteCursor.getLong(0);
-			String note = noteCursor.getString(1);
-			noteMap.put(rowId, note);
-		}
-
-		CursorJoinerWithIntKey joiner = new CursorJoinerWithIntKey(
-				groupCursor, new String[] { Data.RAW_CONTACT_ID },
-				postalCursor, new String[] { Data.RAW_CONTACT_ID });
-
 		List<ContactsItem> contactsList = new ArrayList<ContactsItem>();
-		final GeocodingCacheDatabase db = new GeocodingCacheDatabase(this);
+		Cursor groupCursor = null;
+		Cursor postalCursor = null;
+		Cursor noteCursor = null;
+		GeocodingCacheDatabase db = null;
+
 		try {
+			groupCursor = getContentResolver().query(
+					Data.CONTENT_URI,
+					new String[] {
+							GroupMembership.RAW_CONTACT_ID,
+							GroupMembership.CONTACT_ID,
+							GroupMembership.DISPLAY_NAME,
+							GroupMembership.PHONETIC_NAME,
+							GroupMembership.GROUP_ROW_ID },
+					Data.MIMETYPE + "=?",
+					new String[] {
+							GroupMembership.CONTENT_ITEM_TYPE },
+					Data.RAW_CONTACT_ID);
+
+			postalCursor = getContentResolver().query(
+					StructuredPostal.CONTENT_URI,
+					new String[] {
+							StructuredPostal.RAW_CONTACT_ID,
+							StructuredPostal.CONTACT_ID,
+							StructuredPostal.DISPLAY_NAME,
+							StructuredPostal.PHONETIC_NAME,
+							StructuredPostal.FORMATTED_ADDRESS },
+					null,
+					null,
+					StructuredPostal.RAW_CONTACT_ID);
+
+			noteCursor = getContentResolver().query(
+					Data.CONTENT_URI,
+					new String[] {
+							Note.RAW_CONTACT_ID,
+							Note.NOTE },
+					Data.MIMETYPE + "=?",
+					new String[] {
+							Note.CONTENT_ITEM_TYPE },
+					Data.RAW_CONTACT_ID);
+			HashMap<Long, String> noteMap = new HashMap<Long, String>();
+			while (noteCursor.moveToNext()) {
+				long rowId = noteCursor.getLong(0);
+				String note = noteCursor.getString(1);
+				noteMap.put(rowId, note);
+			}
+
+			CursorJoinerWithIntKey joiner = new CursorJoinerWithIntKey(
+					groupCursor, new String[] { Data.RAW_CONTACT_ID },
+					postalCursor, new String[] { Data.RAW_CONTACT_ID });
+
+			db = new GeocodingCacheDatabase(this);
 			long _rowId = -1, _cid = -1;
 			String _name = null, _phonetic = null, _note = null;
 			List<Long> _groupIds = new ArrayList<Long>();
@@ -351,10 +369,19 @@ public class MainActivity extends Activity implements
 				}
 			}
 		} finally {
-			db.close();
+			if (groupCursor != null) {
+				groupCursor.close();
+			}
+			if (postalCursor != null) {
+				postalCursor.close();
+			}
+			if (noteCursor != null) {
+				noteCursor.close();
+			}
+			if (db != null) {
+				db.close();
+			}
 		}
-		groupCursor.close();
-		postalCursor.close();
 		Collections.sort(contactsList, new ContactsItemComparator());
 		mContactsList = contactsList;
 	}
