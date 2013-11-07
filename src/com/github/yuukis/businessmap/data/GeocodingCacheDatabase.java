@@ -89,6 +89,7 @@ public class GeocodingCacheDatabase {
 	public void close() {
 		if (db != null && db.isOpen()) {
 			db.close();
+			db = null;
 		}
 	}
 

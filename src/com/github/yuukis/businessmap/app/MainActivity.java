@@ -1,6 +1,6 @@
 /*
  * MainActivity.java
- * 
+ *
  * Copyright 2013 Yuuki Shimizu.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -160,7 +160,7 @@ public class MainActivity extends Activity implements
 
 		return true;
 	}
-	
+
 	public List<ContactsItem> getCurrentContactsList() {
 		return mCurrentGroupContactsList;
 	}
@@ -196,7 +196,7 @@ public class MainActivity extends Activity implements
 
 	private void loadAllContacts() {
 		mGeocodingResultCache.clear();
-		
+
 		Cursor groupCursor = getContentResolver().query(
 				Data.CONTENT_URI,
 				new String[] {
@@ -242,114 +242,117 @@ public class MainActivity extends Activity implements
 				groupCursor, new String[] { Data.RAW_CONTACT_ID },
 				postalCursor, new String[] { Data.RAW_CONTACT_ID });
 
-		final GeocodingCacheDatabase db = new GeocodingCacheDatabase(this);
 		List<ContactsItem> contactsList = new ArrayList<ContactsItem>();
-		long _rowId = -1, _cid = -1;
-		String _name = null, _phonetic = null, _note = null;
-		List<Long> _groupIds = new ArrayList<Long>();
-		List<String> _address = new ArrayList<String>();
+		final GeocodingCacheDatabase db = new GeocodingCacheDatabase(this);
+		try {
+			long _rowId = -1, _cid = -1;
+			String _name = null, _phonetic = null, _note = null;
+			List<Long> _groupIds = new ArrayList<Long>();
+			List<String> _address = new ArrayList<String>();
 
-		for (CursorJoinerWithIntKey.Result result : joiner) {
-			long rowId, cid, groupId;
-			String name, phonetic, address, note;
+			for (CursorJoinerWithIntKey.Result result : joiner) {
+				long rowId, cid, groupId;
+				String name, phonetic, address, note;
 
-			switch (result) {
-			case LEFT:
-				rowId = groupCursor.getLong(0);
-				cid = groupCursor.getLong(1);
-				name = groupCursor.getString(2);
-				phonetic = groupCursor.getString(3);
-				groupId = groupCursor.getLong(4);
-				address = null;
-				note = noteMap.get(rowId);
-				break;
+				switch (result) {
+				case LEFT:
+					rowId = groupCursor.getLong(0);
+					cid = groupCursor.getLong(1);
+					name = groupCursor.getString(2);
+					phonetic = groupCursor.getString(3);
+					groupId = groupCursor.getLong(4);
+					address = null;
+					note = noteMap.get(rowId);
+					break;
 
-			case RIGHT:
-				rowId = postalCursor.getLong(0);
-				cid = postalCursor.getLong(1);
-				name = postalCursor.getString(2);
-				phonetic = postalCursor.getString(3);
-				groupId = ID_GROUP_ALL_CONTACTS;
-				address = postalCursor.getString(4);
-				note = noteMap.get(rowId);
-				break;
+				case RIGHT:
+					rowId = postalCursor.getLong(0);
+					cid = postalCursor.getLong(1);
+					name = postalCursor.getString(2);
+					phonetic = postalCursor.getString(3);
+					groupId = ID_GROUP_ALL_CONTACTS;
+					address = postalCursor.getString(4);
+					note = noteMap.get(rowId);
+					break;
 
-			case BOTH:
-				rowId = groupCursor.getLong(0);
-				cid = groupCursor.getLong(1);
-				name = groupCursor.getString(2);
-				phonetic = groupCursor.getString(3);
-				groupId = groupCursor.getLong(4);
-				address = postalCursor.getString(4);
-				note = noteMap.get(rowId);
-				break;
+				case BOTH:
+					rowId = groupCursor.getLong(0);
+					cid = groupCursor.getLong(1);
+					name = groupCursor.getString(2);
+					phonetic = groupCursor.getString(3);
+					groupId = groupCursor.getLong(4);
+					address = postalCursor.getString(4);
+					note = noteMap.get(rowId);
+					break;
 
-			default:
-				continue;
-			}
+				default:
+					continue;
+				}
 
-			if (_rowId != rowId) {
-				for (long gid : _groupIds) {
-					if (_address.isEmpty()) {
-						contactsList.add(new ContactsItem(_cid, _name,
-								_phonetic, gid, null, _note));
-						continue;
-					}
-					for (String addr : _address) {
-						ContactsItem contact = new ContactsItem(_cid, _name,
-								_phonetic, gid, addr, _note);
-						double[] latlng = db.get(addr);
-						if (latlng != null && latlng.length == 2) {
-							contact.setLat(latlng[0]);
-							contact.setLng(latlng[1]);
-						} else {
-							if (!mGeocodingResultCache.containsKey(addr)) {
-								mGeocodingResultCache.put(addr, null);
-							}
+				if (_rowId != rowId) {
+					for (long gid : _groupIds) {
+						if (_address.isEmpty()) {
+							contactsList.add(new ContactsItem(_cid, _name,
+									_phonetic, gid, null, _note));
+							continue;
 						}
-						contactsList.add(contact);
+						for (String addr : _address) {
+							ContactsItem contact = new ContactsItem(_cid,
+									_name, _phonetic, gid, addr, _note);
+							double[] latlng = db.get(addr);
+							if (latlng != null && latlng.length == 2) {
+								contact.setLat(latlng[0]);
+								contact.setLng(latlng[1]);
+							} else {
+								if (!mGeocodingResultCache.containsKey(addr)) {
+									mGeocodingResultCache.put(addr, null);
+								}
+							}
+							contactsList.add(contact);
+						}
 					}
+					_rowId = rowId;
+					_cid = cid;
+					_name = name;
+					_phonetic = phonetic;
+					_groupIds.clear();
+					_groupIds.add(ID_GROUP_ALL_CONTACTS);
+					_address.clear();
+					_note = note;
 				}
-				_rowId = rowId;
-				_cid = cid;
-				_name = name;
-				_phonetic = phonetic;
-				_groupIds.clear();
-				_groupIds.add(ID_GROUP_ALL_CONTACTS);
-				_address.clear();
-				_note = note;
-			}
 
-			if (_groupIds.indexOf(groupId) < 0) {
-				_groupIds.add(groupId);
-			}
-			if (address != null && _address.indexOf(address) < 0) {
-				_address.add(address);
-			}
-		}
-		// FIXME: 冗長
-		for (long gid : _groupIds) {
-			if (_address.isEmpty()) {
-				contactsList.add(new ContactsItem(_cid, _name, _phonetic, gid,
-						null, _note));
-				continue;
-			}
-			for (String addr : _address) {
-				ContactsItem contact = new ContactsItem(_cid, _name,
-						_phonetic, gid, addr, _note);
-				double[] latlng = db.get(addr);
-				if (latlng != null && latlng.length == 2) {
-					contact.setLat(latlng[0]);
-					contact.setLng(latlng[1]);
-				} else {
-					if (!mGeocodingResultCache.containsKey(addr)) {
-						mGeocodingResultCache.put(addr, null);
-					}
+				if (_groupIds.indexOf(groupId) < 0) {
+					_groupIds.add(groupId);
 				}
-				contactsList.add(contact);
+				if (address != null && _address.indexOf(address) < 0) {
+					_address.add(address);
+				}
 			}
+			// FIXME: 冗長
+			for (long gid : _groupIds) {
+				if (_address.isEmpty()) {
+					contactsList.add(new ContactsItem(_cid, _name, _phonetic,
+							gid, null, _note));
+					continue;
+				}
+				for (String addr : _address) {
+					ContactsItem contact = new ContactsItem(_cid, _name,
+							_phonetic, gid, addr, _note);
+					double[] latlng = db.get(addr);
+					if (latlng != null && latlng.length == 2) {
+						contact.setLat(latlng[0]);
+						contact.setLng(latlng[1]);
+					} else {
+						if (!mGeocodingResultCache.containsKey(addr)) {
+							mGeocodingResultCache.put(addr, null);
+						}
+					}
+					contactsList.add(contact);
+				}
+			}
+		} finally {
+			db.close();
 		}
-		db.close();
 		groupCursor.close();
 		postalCursor.close();
 		Collections.sort(contactsList, new ContactsItemComparator());
@@ -370,7 +373,7 @@ public class MainActivity extends Activity implements
 			if (!mGeocodingResultCache.isEmpty()) {
 				geocoding();
 			}
-			
+
 			int index = getActionBar().getSelectedNavigationIndex();
 			ContactsGroup group = mGroupList.get(index);
 			long groupId = group.getId();
@@ -403,36 +406,38 @@ public class MainActivity extends Activity implements
 
 			final GeocodingCacheDatabase db = new GeocodingCacheDatabase(
 					MainActivity.this);
-			int count = 0;
-			for (Iterator<Entry<String, Double[]>> it = mGeocodingResultCache.entrySet()
-					.iterator(); it.hasNext();) {
-				Entry<String, Double[]> entry = it.next();
-				String address = entry.getKey();
+			try {
+				int count = 0;
+				for (Iterator<Entry<String, Double[]>> it = mGeocodingResultCache
+						.entrySet().iterator(); it.hasNext();) {
+					Entry<String, Double[]> entry = it.next();
+					String address = entry.getKey();
 
-				try {
-					Double[] latlng = GeocoderUtils.getFromLocationName(
-							MainActivity.this, address);
-					db.put(address, latlng);
-					entry.setValue(latlng);
-				} catch (IOException e) {
-					continue;
-				}
-
-				count++;
-				final int progress = count;
-				mHandler.post(new Runnable() {
-					@Override
-					public void run() {
-						mProgressDialog.setProgress(progress);
+					try {
+						Double[] latlng = GeocoderUtils.getFromLocationName(
+								MainActivity.this, address);
+						db.put(address, latlng);
+						entry.setValue(latlng);
+					} catch (IOException e) {
+						continue;
 					}
-				});
 
-				if (halt) {
-					db.close();
-					return;
+					count++;
+					final int progress = count;
+					mHandler.post(new Runnable() {
+						@Override
+						public void run() {
+							mProgressDialog.setProgress(progress);
+						}
+					});
+
+					if (halt) {
+						return;
+					}
 				}
+			} finally {
+				db.close();
 			}
-			db.close();
 
 			for (int j = 0; j < mContactsList.size(); j++) {
 				ContactsItem contact = mContactsList.get(j);
