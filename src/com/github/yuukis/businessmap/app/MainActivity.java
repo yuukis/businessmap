@@ -1,6 +1,6 @@
 /*
  * MainActivity.java
- * 
+ *
  * Copyright 2013 Yuuki Shimizu.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -44,6 +44,7 @@ import android.provider.ContactsContract.CommonDataKinds.GroupMembership;
 import android.provider.ContactsContract.CommonDataKinds.StructuredPostal;
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.FragmentManager;
 import android.app.ProgressDialog;
 import android.database.Cursor;
@@ -160,7 +161,7 @@ public class MainActivity extends Activity implements
 
 		return true;
 	}
-	
+
 	public List<ContactsItem> getCurrentContactsList() {
 		return mCurrentGroupContactsList;
 	}
@@ -196,7 +197,7 @@ public class MainActivity extends Activity implements
 
 	private void loadAllContacts() {
 		mGeocodingResultCache.clear();
-		
+
 		Cursor groupCursor = getContentResolver().query(
 				Data.CONTENT_URI,
 				new String[] {
@@ -370,7 +371,7 @@ public class MainActivity extends Activity implements
 			if (!mGeocodingResultCache.isEmpty()) {
 				geocoding();
 			}
-			
+
 			int index = getActionBar().getSelectedNavigationIndex();
 			ContactsGroup group = mGroupList.get(index);
 			long groupId = group.getId();
@@ -404,33 +405,45 @@ public class MainActivity extends Activity implements
 			final GeocodingCacheDatabase db = new GeocodingCacheDatabase(
 					MainActivity.this);
 			int count = 0;
-			for (Iterator<Entry<String, Double[]>> it = mGeocodingResultCache.entrySet()
-					.iterator(); it.hasNext();) {
-				Entry<String, Double[]> entry = it.next();
-				String address = entry.getKey();
+			try {
+				for (Iterator<Entry<String, Double[]>> it = mGeocodingResultCache.entrySet()
+						.iterator(); it.hasNext();) {
+					Entry<String, Double[]> entry = it.next();
+					String address = entry.getKey();
 
-				try {
-					Double[] latlng = GeocoderUtils.getFromLocationName(
-							MainActivity.this, address);
-					db.put(address, latlng);
-					entry.setValue(latlng);
-				} catch (IOException e) {
-					continue;
+						Double[] latlng = GeocoderUtils.getFromLocationName(
+								MainActivity.this, address);
+						db.put(address, latlng);
+						entry.setValue(latlng);
+
+					count++;
+					final int progress = count;
+					mHandler.post(new Runnable() {
+						@Override
+						public void run() {
+							mProgressDialog.setProgress(progress);
+						}
+					});
+
+					if (halt) {
+						db.close();
+						return;
+					}
 				}
-
-				count++;
-				final int progress = count;
+			} catch (IOException e) {
+				db.close();
 				mHandler.post(new Runnable() {
 					@Override
 					public void run() {
-						mProgressDialog.setProgress(progress);
+						mProgressDialog.dismiss();
+						new AlertDialog.Builder(MainActivity.this)
+								.setTitle(R.string.title_geocoding_ioerror)
+								.setMessage(R.string.message_geocoding_ioerror)
+								.setPositiveButton(android.R.string.ok, null)
+								.show();
 					}
 				});
-
-				if (halt) {
-					db.close();
-					return;
-				}
+				return;
 			}
 			db.close();
 
