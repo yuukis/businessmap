@@ -26,9 +26,10 @@
 
     <TwoLineListItem
         android:layout_width="0dip"
-        android:layout_height="@dimen/dropdown_list_preferred_item_height"
+        android:layout_height="wrap_content"
         android:layout_weight="1"
         android:gravity="center_vertical"
+        android:minHeight="@dimen/dropdown_list_preferred_item_height"
         android:mode="twoLine"
         android:paddingBottom="2dip"
         android:paddingTop="2dip" >
@@ -39,7 +40,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:singleLine="true"
-            android:textAppearance="?android:attr/textAppearanceLargePopupMenu" />
+            android:textAppearance="?android:attr/textAppearanceLargePopupMenu"
+            android:textColor="#ff000000" />
 
         <TextView
             android:id="@android:id/text2"
@@ -50,7 +52,7 @@
             android:layout_below="@android:id/text1"
             android:singleLine="true"
             android:textAppearance="?android:attr/textAppearanceSmallPopupMenu"
-            android:textColor="#ff7f7f7f" />
+            android:textColor="#44000000" />
     </TwoLineListItem>
 
 </LinearLayout>

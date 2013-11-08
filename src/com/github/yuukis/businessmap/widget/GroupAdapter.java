@@ -31,7 +31,7 @@ import android.widget.TextView;
 
 public class GroupAdapter extends BaseAdapter {
 
-	private static final int LAYOUT_SPINNER_ITEM_RESOURCE_ID = android.R.layout.simple_spinner_item;
+	private static final int LAYOUT_SPINNER_ITEM_RESOURCE_ID = R.layout.simple_spinner_item;
 	private static final int LAYOUT_SPINNER_DROPDOWN_ITEM_RESOURCE_ID = R.layout.simple_spinner_dropdown_item_2line;
 
 	private Activity activity;
