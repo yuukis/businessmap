@@ -1,6 +1,6 @@
 /*
  * MainActivity.java
- * 
+ *
  * Copyright 2013 Yuuki Shimizu.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -46,6 +46,7 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.app.FragmentManager;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.database.Cursor;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -88,10 +89,27 @@ public class MainActivity extends Activity implements
 
 		mGroupList = getContactsGroupList();
 		mProgressDialog = new ProgressDialog(this);
-		mProgressDialog.setCancelable(false);
+		mProgressDialog.setCancelable(true);
+		mProgressDialog.setCanceledOnTouchOutside(false);
 		mProgressDialog.setTitle(R.string.title_geocoding);
 		mProgressDialog.setMessage(getString(R.string.message_geocoding));
 		mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+		mProgressDialog.setButton(ProgressDialog.BUTTON_NEGATIVE,
+				getString(android.R.string.cancel),
+				new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						dialog.cancel();
+					}
+				});
+		mProgressDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+			@Override
+			public void onCancel(DialogInterface dialog) {
+				if (mThread != null) {
+					mThread.halt();
+				}
+			}
+		});
 
 		ArrayAdapter<ContactsGroup> adapter = new ArrayAdapter<ContactsGroup>(
 				this, android.R.layout.simple_spinner_dropdown_item, mGroupList);
@@ -160,7 +178,7 @@ public class MainActivity extends Activity implements
 
 		return true;
 	}
-	
+
 	public List<ContactsItem> getCurrentContactsList() {
 		return mCurrentGroupContactsList;
 	}
@@ -196,7 +214,7 @@ public class MainActivity extends Activity implements
 
 	private void loadAllContacts() {
 		mGeocodingResultCache.clear();
-		
+
 		Cursor groupCursor = getContentResolver().query(
 				Data.CONTENT_URI,
 				new String[] {
@@ -370,7 +388,7 @@ public class MainActivity extends Activity implements
 			if (!mGeocodingResultCache.isEmpty()) {
 				geocoding();
 			}
-			
+
 			int index = getActionBar().getSelectedNavigationIndex();
 			ContactsGroup group = mGroupList.get(index);
 			long groupId = group.getId();
