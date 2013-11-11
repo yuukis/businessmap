@@ -88,7 +88,11 @@ public class GeocodingCacheDatabase {
 
 	public void close() {
 		if (db != null && db.isOpen()) {
-			db.close();
+			// FIXME: SQLiteDatabase#closeDatabase で発生する場合がある NPE の回避
+			try {
+				db.close();
+			} catch (NullPointerException e) {
+			}
 			db = null;
 		}
 	}
