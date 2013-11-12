@@ -1,6 +1,6 @@
 /*
  * GeocodingCacheDatabase.java
- * 
+ *
  * Copyright 2013 Yuuki Shimizu.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,6 +26,7 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
+import android.util.Log;
 
 public class GeocodingCacheDatabase {
 
@@ -56,8 +57,14 @@ public class GeocodingCacheDatabase {
 
 		double[] latlng = null;
 		if (cursor.moveToNext()) {
-			double lat = cursor.getDouble(0);
-			double lng = cursor.getDouble(1);
+			double lat, lng;
+			if (cursor.isNull(0) || cursor.isNull(1)) {
+				lat = Double.NaN;
+				lng = Double.NaN;
+			} else {
+				lat = cursor.getDouble(0);
+				lng = cursor.getDouble(1);
+			}
 			latlng = new double[] {lat, lng};
 		}
 		return latlng;
@@ -73,8 +80,10 @@ public class GeocodingCacheDatabase {
 
 		ContentValues values = new ContentValues();
 		values.put(DataColumns.HASH, hash);
-		values.put(DataColumns.LAT, lat);
-		values.put(DataColumns.LNG, lng);
+		if (!Double.isNaN(lat) && !Double.isNaN(lng)) {
+			values.put(DataColumns.LAT, lat);
+			values.put(DataColumns.LNG, lng);
+		}
 		try {
 			if (!update(values, hash)) {
 				insert(values);
@@ -116,7 +125,7 @@ public class GeocodingCacheDatabase {
 	private class DatabaseHelper extends SQLiteOpenHelper {
 
 		private static final String DATABASE_NAME = "business_map";
-		private final static int VERSION = 1;
+		private final static int VERSION = 2;
 
 		public DatabaseHelper(Context context) {
 			super(context, DATABASE_NAME, null, VERSION);
@@ -137,6 +146,14 @@ public class GeocodingCacheDatabase {
 
 		@Override
 		public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+			Log.i(GeocodingCacheDatabase.class.getSimpleName(), "Upgrade database.");
+
+			// [v1 -> v2] lat:0, lng:0 で登録されているレコードを一旦削除する
+			if (oldVersion < 2 && newVersion >= 2) {
+				String sql = "DELETE FROM %s WHERE %s = 0 AND %s = 0";
+				sql = String.format(sql, TABLE_NAME, DataColumns.LAT, DataColumns.LNG);
+				db.execSQL(sql);
+			}
 		}
 	}
 
