@@ -52,7 +52,7 @@
             android:layout_below="@android:id/text1"
             android:singleLine="true"
             android:textAppearance="?android:attr/textAppearanceSmallPopupMenu"
-            android:textColor="#44000000" />
+            android:textColor="#ffb7b7b7" />
     </TwoLineListItem>
 
 </LinearLayout>
