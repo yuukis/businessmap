@@ -95,14 +95,6 @@ public class MainActivity extends Activity implements
 		mProgressDialog.setTitle(R.string.title_geocoding);
 		mProgressDialog.setMessage(getString(R.string.message_geocoding));
 		mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-		mProgressDialog.setButton(ProgressDialog.BUTTON_NEGATIVE,
-				getString(android.R.string.cancel),
-				new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						dialog.cancel();
-					}
-				});
 		mProgressDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
 			@Override
 			public void onCancel(DialogInterface dialog) {
