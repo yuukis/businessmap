@@ -1,4 +1,4 @@
-package com.github.yuukis.businessmap.utils;
+package com.github.yuukis.businessmap.util;
 
 import java.util.Iterator;
 

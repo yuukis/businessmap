@@ -43,8 +43,8 @@ import android.widget.SearchView.OnQueryTextListener;
 import android.widget.TextView;
 
 import com.github.yuukis.businessmap.R;
-import com.github.yuukis.businessmap.utils.ActionUtils;
-import com.github.yuukis.businessmap.utils.StringJUtils;
+import com.github.yuukis.businessmap.util.ActionUtils;
+import com.github.yuukis.businessmap.util.StringJUtils;
 import com.slidinglayer.SlidingLayer;
 
 public class ContactsListFragment extends ListFragment implements

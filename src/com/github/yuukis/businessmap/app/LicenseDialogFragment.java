@@ -21,7 +21,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
 import com.github.yuukis.businessmap.R;
-import com.github.yuukis.businessmap.utils.AssetUtils;
+import com.github.yuukis.businessmap.util.AssetUtils;
 
 import android.app.Activity;
 import android.app.DialogFragment;

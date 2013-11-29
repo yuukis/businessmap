@@ -1,6 +1,6 @@
 /*
  * ContactsGroup.java
- * 
+ *
  * Copyright 2013 Yuuki Shimizu.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,6 +21,7 @@ import java.io.Serializable;
 
 public class ContactsGroup implements Serializable {
 
+	public static final long ID_GROUP_ALL_CONTACTS = -1;
 	private static final long serialVersionUID = -3609429759764928253L;
 
 	private long _id;
