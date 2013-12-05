@@ -42,17 +42,15 @@ import com.google.android.gms.maps.model.MarkerOptions;
 public class ContactsMapFragment extends MapFragment implements
 		GoogleMap.OnInfoWindowClickListener {
 
-	private final static float[] MARKER_COLOR_LIST = new float[]{
-		BitmapDescriptorFactory.HUE_AZURE,
-		BitmapDescriptorFactory.HUE_BLUE,
-		BitmapDescriptorFactory.HUE_CYAN,
-		BitmapDescriptorFactory.HUE_GREEN,
-		BitmapDescriptorFactory.HUE_MAGENTA,
-		BitmapDescriptorFactory.HUE_ORANGE,
-		BitmapDescriptorFactory.HUE_RED,
-		BitmapDescriptorFactory.HUE_ROSE,
-		BitmapDescriptorFactory.HUE_VIOLET,
-		BitmapDescriptorFactory.HUE_YELLOW,
+	private final static float[] MARKER_HUE_LIST = new float[]{
+		0.0f,
+		30.0f,
+		60.0f,
+		90.0f,
+		180.0f,
+		210.0f,
+		270.0f,
+		300.0f,
 	};
 
 	private SparseArray<Marker> mMarkerHashMap;
@@ -109,8 +107,8 @@ public class ContactsMapFragment extends MapFragment implements
 				address = getString(R.string.message_no_data);
 			}
 			LatLng latLng = new LatLng(contact.getLat(), contact.getLng());
-			int colorIndex = (int) (Math.random() * MARKER_COLOR_LIST.length);
-			float hue = MARKER_COLOR_LIST[colorIndex % MARKER_COLOR_LIST.length];
+			int hueIndex = (int) (Math.random() * MARKER_HUE_LIST.length);
+			float hue = MARKER_HUE_LIST[hueIndex % MARKER_HUE_LIST.length];
 			Marker marker = getMap().addMarker(new MarkerOptions()
 					.position(latLng)
 					.title(name)
