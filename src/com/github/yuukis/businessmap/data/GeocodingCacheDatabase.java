@@ -53,19 +53,22 @@ public class GeocodingCacheDatabase {
 				DataColumns.LNG };
 		final String selection = String.format(Locale.getDefault(),
 				"%s=%d", DataColumns.HASH, hash);
-		Cursor cursor = query(columns, selection, null, null);
-
 		double[] latlng = null;
-		if (cursor.moveToNext()) {
-			double lat, lng;
-			if (cursor.isNull(0) || cursor.isNull(1)) {
-				lat = Double.NaN;
-				lng = Double.NaN;
-			} else {
-				lat = cursor.getDouble(0);
-				lng = cursor.getDouble(1);
+		Cursor cursor = query(columns, selection, null, null);
+		try {
+			if (cursor.moveToNext()) {
+				double lat, lng;
+				if (cursor.isNull(0) || cursor.isNull(1)) {
+					lat = Double.NaN;
+					lng = Double.NaN;
+				} else {
+					lat = cursor.getDouble(0);
+					lng = cursor.getDouble(1);
+				}
+				latlng = new double[] {lat, lng};
 			}
-			latlng = new double[] {lat, lng};
+		} finally {
+			cursor.close();
 		}
 		return latlng;
 	}
