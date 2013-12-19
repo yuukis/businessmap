@@ -9,6 +9,7 @@
     <string name="action_contacts_detail" translatable="false">連絡先を表示</string>
     <string name="action_directions" translatable="false">経路を調べる</string>
     <string name="action_drive_navigation" translatable="false">ナビを開始</string>
+    <string name="action_marker_color" translatable="false">マーカーの色</string>
     <string name="label_app_name" translatable="false">アプリケーション名</string>
     <string name="label_provider" translatable="false">提供者</string>
     <string name="label_version" translatable="false">バージョン</string>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <array name="marker_hue">
+        <item>0.0f</item>
+        <item>30.0f</item>
+        <item>60.0f</item>
+        <item>90.0f</item>
+        <item>180.0f</item>
+        <item>210.0f</item>
+        <item>270.0f</item>
+        <item>300.0f</item>
+    </array>
+
+</resources>

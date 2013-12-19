@@ -19,6 +19,8 @@ package com.github.yuukis.businessmap.app;
 
 import java.util.List;
 
+import android.content.res.Resources;
+import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.SparseArray;
@@ -42,20 +44,10 @@ import com.google.android.gms.maps.model.MarkerOptions;
 public class ContactsMapFragment extends MapFragment implements
 		GoogleMap.OnInfoWindowClickListener {
 
-	private final static float[] MARKER_HUE_LIST = new float[]{
-		0.0f,
-		30.0f,
-		60.0f,
-		90.0f,
-		180.0f,
-		210.0f,
-		270.0f,
-		300.0f,
-	};
-
 	private SparseArray<Marker> mMarkerHashMap;
 	private SparseArray<ContactsItem> mContactHashMap;
 	private MapStatePreferences mPreferences;
+	private TypedArray mMarkerHueArray;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -69,6 +61,9 @@ public class ContactsMapFragment extends MapFragment implements
 		super.onActivityCreated(savedInstanceState);
 		mPreferences = new MapStatePreferences(getActivity());
 		CameraPosition position = mPreferences.getCameraPosition();
+
+		Resources res = getResources();
+		mMarkerHueArray = res.obtainTypedArray(R.array.marker_hue);
 
 		GoogleMap map = getMap();
 		map.setInfoWindowAdapter(new MyInfoWindowAdapter());
@@ -107,8 +102,8 @@ public class ContactsMapFragment extends MapFragment implements
 				address = getString(R.string.message_no_data);
 			}
 			LatLng latLng = new LatLng(contact.getLat(), contact.getLng());
-			int hueIndex = (int) (Math.random() * MARKER_HUE_LIST.length);
-			float hue = MARKER_HUE_LIST[hueIndex % MARKER_HUE_LIST.length];
+			int hueIndex = (int) (Math.random() * mMarkerHueArray.length());
+			float hue = mMarkerHueArray.getFloat(hueIndex, 0.0f);
 			Marker marker = getMap().addMarker(new MarkerOptions()
 					.position(latLng)
 					.title(name)
