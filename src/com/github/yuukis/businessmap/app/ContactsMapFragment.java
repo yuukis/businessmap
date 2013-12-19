@@ -41,6 +41,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 public class ContactsMapFragment extends MapFragment implements
 		GoogleMap.OnInfoWindowClickListener {
 
+	private GoogleMap mMap;
 	private SparseArray<Marker> mMarkerHashMap;
 	private SparseArray<ContactsItem> mContactHashMap;
 	private MapStatePreferences mPreferences;
@@ -56,26 +57,30 @@ public class ContactsMapFragment extends MapFragment implements
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 		mPreferences = new MapStatePreferences(getActivity());
-		CameraPosition position = mPreferences.getCameraPosition();
-
-		GoogleMap map = getMap();
-		map.setInfoWindowAdapter(new MyInfoWindowAdapter());
-		map.setOnInfoWindowClickListener(this);
-		map.setIndoorEnabled(true);
-		map.setMyLocationEnabled(true);
-		map.moveCamera(CameraUpdateFactory.newCameraPosition(position));
+		setUpMapIfNeeded();
+	}
+	
+	@Override
+	public void onResume() {
+		super.onResume();
+		setUpMapIfNeeded();
 	}
 
 	@Override
 	public void onDestroyView() {
-		CameraPosition position = getMap().getCameraPosition();
-		mPreferences.setCameraPosition(position);
+		if (mMap != null) {
+			CameraPosition position = mMap.getCameraPosition();
+			mPreferences.setCameraPosition(position);
+		}
 
 		super.onDestroyView();
 	}
 
 	public void notifyDataSetChanged() {
-		getMap().clear();
+		if (mMap == null) {
+			return;
+		}
+		mMap.clear();
 		mMarkerHashMap.clear();
 		mContactHashMap.clear();
 		List<ContactsItem> list = getContactsList();
@@ -95,7 +100,7 @@ public class ContactsMapFragment extends MapFragment implements
 				address = getString(R.string.message_no_data);
 			}
 			LatLng latLng = new LatLng(contact.getLat(), contact.getLng());
-			Marker marker = getMap().addMarker(new MarkerOptions()
+			Marker marker = mMap.addMarker(new MarkerOptions()
 					.position(latLng)
 					.title(name)
 					.snippet(address));
@@ -105,11 +110,14 @@ public class ContactsMapFragment extends MapFragment implements
 	}
 
 	public boolean showMarkerInfoWindow(ContactsItem contact) {
+		if (mMap == null) {
+			return false;
+		}
 		final Marker marker = mMarkerHashMap.get(contact.hashCode());
 		if (marker == null) {
 			return false;
 		}
-		getMap().animateCamera(
+		mMap.animateCamera(
 				CameraUpdateFactory.newCameraPosition(
 				new CameraPosition.Builder()
 						.target(marker.getPosition())
@@ -140,6 +148,24 @@ public class ContactsMapFragment extends MapFragment implements
 	private List<ContactsItem> getContactsList() {
 		MainActivity activity = (MainActivity) getActivity();
 		return activity.getCurrentContactsList();
+	}
+
+	private void setUpMapIfNeeded() {
+		if (mMap == null) {
+			mMap = getMap();
+			if (mMap != null) {
+				setUpMap();
+			}
+		}
+	}
+
+	private void setUpMap() {
+		CameraPosition position = mPreferences.getCameraPosition();
+		mMap.setInfoWindowAdapter(new MyInfoWindowAdapter());
+		mMap.setOnInfoWindowClickListener(this);
+		mMap.setIndoorEnabled(true);
+		mMap.setMyLocationEnabled(true);
+		mMap.moveCamera(CameraUpdateFactory.newCameraPosition(position));
 	}
 
 	private class MyInfoWindowAdapter implements InfoWindowAdapter {
