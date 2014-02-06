@@ -34,6 +34,7 @@ import com.github.yuukis.businessmap.util.ContactsItemComparator;
 import com.github.yuukis.businessmap.util.CursorJoinerWithIntKey;
 import com.github.yuukis.businessmap.util.GeocoderUtils;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -44,6 +45,7 @@ import android.provider.ContactsContract.Data;
 import android.provider.ContactsContract.CommonDataKinds.GroupMembership;
 import android.provider.ContactsContract.CommonDataKinds.Note;
 import android.provider.ContactsContract.CommonDataKinds.StructuredPostal;
+import android.view.View;
 
 public class ContactsAsyncTask extends AsyncTask<Void, Integer, Void> implements
 		DialogInterface.OnCancelListener {
@@ -62,28 +64,32 @@ public class ContactsAsyncTask extends AsyncTask<Void, Integer, Void> implements
 	private List<ContactsItem> mContactsList;
 	private Map<String, Double[]> mGeocodingResultCache;
 	private ProgressDialog mProgressDialog;
+	private View mProgressBar;
 
-	public ContactsAsyncTask(Context context, Callback callback) {
-		mContext = context;
+	public ContactsAsyncTask(Activity activity, Callback callback) {
+		mContext = activity;
 		mCallback = callback;
 		mContactsList = new ArrayList<ContactsItem>();
 		mGeocodingResultCache = new HashMap<String, Double[]>();
-		mProgressDialog = new ProgressDialog(context);
+		mProgressDialog = new ProgressDialog(activity);
 		mProgressDialog.setCancelable(true);
 		mProgressDialog.setCanceledOnTouchOutside(false);
 		mProgressDialog.setTitle(R.string.title_geocoding);
-		mProgressDialog.setMessage(context.getString(R.string.message_geocoding));
+		mProgressDialog.setMessage(activity.getString(R.string.message_geocoding));
 		mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
 		mProgressDialog.setOnCancelListener(this);
+		mProgressBar = activity.findViewById(R.id.contacts_progressbar);
 	}
 
 	@Override
 	public void onCancel(DialogInterface dialog) {
+		mProgressBar.setVisibility(View.GONE);
 		cancel(true);
 	}
 
 	@Override
 	protected Void doInBackground(Void... params) {
+		mProgressBar.setVisibility(View.VISIBLE);
 		loadAllContacts();
 		if (!mGeocodingResultCache.isEmpty()) {
 			geocoding();
@@ -133,6 +139,7 @@ public class ContactsAsyncTask extends AsyncTask<Void, Integer, Void> implements
 	@Override
 	protected void onPostExecute(Void result) {
 		super.onPostExecute(result);
+		mProgressBar.setVisibility(View.GONE);
 
 		if (mCallback != null) {
 			mCallback.onContactsLoaded(mContactsList);
