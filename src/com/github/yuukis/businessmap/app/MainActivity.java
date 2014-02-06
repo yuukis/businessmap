@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.json.JSONException;
+
 import com.github.yuukis.businessmap.R;
 import com.github.yuukis.businessmap.data.GeocodingCacheDatabase;
 import com.github.yuukis.businessmap.model.ContactsGroup;
@@ -432,7 +434,6 @@ public class MainActivity extends Activity implements
 		}
 
 		private void geocoding() {
-//			final Map<String, Double[]> map = mGeocodingResultCache;
 			mProgressDialog.setMax(mGeocodingResultCache.size());
 			mHandler.post(new Runnable() {
 				@Override
@@ -468,19 +469,17 @@ public class MainActivity extends Activity implements
 						return;
 					}
 				}
+
 			} catch (IOException e) {
-				mHandler.post(new Runnable() {
-					@Override
-					public void run() {
-						mProgressDialog.dismiss();
-						new AlertDialog.Builder(MainActivity.this)
-								.setTitle(R.string.title_geocoding_ioerror)
-								.setMessage(R.string.message_geocoding_ioerror)
-								.setPositiveButton(android.R.string.ok, null)
-								.show();
-					}
-				});
+				error(R.string.title_geocoding_ioerror,
+						R.string.message_geocoding_ioerror);
 				return;
+
+			} catch (JSONException e) {
+				error(R.string.title_geocoding_jsonerror,
+						R.string.message_geocoding_jsonerror);
+				return;
+
 			} finally {
 				db.close();
 			}
@@ -511,6 +510,20 @@ public class MainActivity extends Activity implements
 				public void run() {
 					mProgressDialog.setProgress(mProgressDialog.getMax());
 					mProgressDialog.dismiss();
+				}
+			});
+		}
+
+		private void error(final int title, final int message) {
+			mHandler.post(new Runnable() {
+				@Override
+				public void run() {
+					mProgressDialog.dismiss();
+					new AlertDialog.Builder(MainActivity.this)
+							.setTitle(title)
+							.setMessage(message)
+							.setPositiveButton(android.R.string.ok, null)
+							.show();
 				}
 			});
 		}

@@ -23,7 +23,7 @@ import android.location.Geocoder;
 public class GeocoderUtils {
 
 	public static Double[] getFromLocationName(Context context, String address)
-			throws IOException {
+			throws IOException, JSONException {
 		Double[] latlng = null;
 		double lat = Double.NaN;
 		double lng = Double.NaN;
@@ -44,7 +44,7 @@ public class GeocoderUtils {
 	}
 
 	private static Double[] getFromLocationNameToGoogleMaps(String address)
-			throws IOException {
+			throws IOException, JSONException {
 		String url = "http://maps.google.com/maps/api/geocode/json?address=%s&ka&sensor=false";
 		address = URLEncoder.encode(address, "UTF-8");
 		url = String.format(Locale.getDefault(), url, address);
@@ -64,12 +64,7 @@ public class GeocoderUtils {
 		} catch (ClientProtocolException e) {
 		}
 
-		JSONObject jsonObject = null;
-		try {
-			jsonObject = new JSONObject(stringBuilder.toString());
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
+		JSONObject jsonObject = new JSONObject(stringBuilder.toString());
 		double lat = Double.NaN;
 		double lng = Double.NaN;
 		try {
