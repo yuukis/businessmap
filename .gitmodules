@@ -1,3 +1,3 @@
-[submodule "android-sliding-layer-lib"]
-	path = android-sliding-layer-lib
-	url = https://github.com/6wunderkinder/android-sliding-layer-lib.git
+[submodule "action-bar-sherlock-lib"]
+	path = action-bar-sherlock-lib
+	url = https://github.com/JakeWharton/ActionBarSherlock.git
