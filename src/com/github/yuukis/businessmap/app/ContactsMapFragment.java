@@ -31,14 +31,14 @@ import com.github.yuukis.businessmap.model.ContactsItem;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.CancelableCallback;
-import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.GoogleMap.InfoWindowAdapter;
+import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-public class ContactsMapFragment extends MapFragment implements
+public class ContactsMapFragment extends SupportMapFragment implements
 		GoogleMap.OnInfoWindowClickListener {
 
 	private GoogleMap mMap;
@@ -59,7 +59,7 @@ public class ContactsMapFragment extends MapFragment implements
 		mPreferences = new MapStatePreferences(getActivity());
 		setUpMapIfNeeded();
 	}
-	
+
 	@Override
 	public void onResume() {
 		super.onResume();

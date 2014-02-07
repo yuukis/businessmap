@@ -1,6 +1,6 @@
 /*
  * ContactsListFragment.java
- * 
+ *
  * Copyright 2013 Yuuki Shimizu.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,26 +20,27 @@ package com.github.yuukis.businessmap.app;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.actionbarsherlock.app.SherlockListFragment;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
+import com.actionbarsherlock.view.MenuItem;
+import com.actionbarsherlock.widget.SearchView;
+import com.actionbarsherlock.widget.SearchView.OnQueryTextListener;
 import com.github.yuukis.businessmap.model.ContactsItem;
 
 import android.app.AlertDialog;
-import android.app.ListFragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.ListView;
-import android.widget.SearchView;
-import android.widget.SearchView.OnQueryTextListener;
 import android.widget.TextView;
 
 import com.github.yuukis.businessmap.R;
@@ -47,7 +48,7 @@ import com.github.yuukis.businessmap.utils.ActionUtils;
 import com.github.yuukis.businessmap.utils.StringJUtils;
 import com.slidinglayer.SlidingLayer;
 
-public class ContactsListFragment extends ListFragment implements
+public class ContactsListFragment extends SherlockListFragment implements
 		OnQueryTextListener {
 
 	private ContactsAdapter mContactsAdapter;
@@ -163,7 +164,6 @@ public class ContactsListFragment extends ListFragment implements
 			mSearchView.clearFocus();
 			listContainer.closeLayer(true);
 		}
-		getFragmentManager().invalidateOptionsMenu();
 	}
 
 	@Override
@@ -264,7 +264,7 @@ public class ContactsListFragment extends ListFragment implements
 						for (ContactsItem contacts : contactsList) {
 							String query = constraint.toString();
 							query = StringJUtils.convertToKatakana(query);
-							
+
 							String name = contacts.getName();
 							if (name != null) {
 								name = StringJUtils.convertToKatakana(name);
@@ -273,7 +273,7 @@ public class ContactsListFragment extends ListFragment implements
 									continue;
 								}
 							}
-							
+
 							String phonetic = contacts.getPhontic();
 							if (phonetic != null) {
 								phonetic = StringJUtils.convertToKatakana(phonetic);

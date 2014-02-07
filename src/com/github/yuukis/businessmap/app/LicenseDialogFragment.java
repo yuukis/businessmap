@@ -1,6 +1,6 @@
 /*
  * LicenseDialogFragment.java
- * 
+ *
  * Copyright 2013 Yuuki Shimizu.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,19 +20,19 @@ package com.github.yuukis.businessmap.app;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
+import com.actionbarsherlock.app.SherlockDialogFragment;
+import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.github.yuukis.businessmap.R;
 import com.github.yuukis.businessmap.utils.AssetUtils;
 
-import android.app.Activity;
-import android.app.DialogFragment;
-import android.app.FragmentManager;
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
 
-public class LicenseDialogFragment extends DialogFragment {
+public class LicenseDialogFragment extends SherlockDialogFragment {
 
 	private static final String TAG = "LicenseDialogFragment";
 	private static final String FILEPATH = "license.html";
@@ -41,8 +41,8 @@ public class LicenseDialogFragment extends DialogFragment {
 		return new LicenseDialogFragment();
 	}
 
-	public static void showDialog(Activity activity) {
-		FragmentManager manager = activity.getFragmentManager();
+	public static void showDialog(SherlockFragmentActivity activity) {
+		FragmentManager manager = activity.getSupportFragmentManager();
 		newInstance().show(manager, TAG);
 	}
 

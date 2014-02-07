@@ -17,17 +17,17 @@
  */
 package com.github.yuukis.businessmap.app;
 
+import com.actionbarsherlock.app.SherlockDialogFragment;
 import com.github.yuukis.businessmap.R;
 import com.github.yuukis.businessmap.model.ContactsItem;
 import com.github.yuukis.businessmap.utils.ActionUtils;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.DialogFragment;
-import android.app.FragmentManager;
 import android.content.Context;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,7 +37,7 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-public class ContactsActionFragment extends DialogFragment implements
+public class ContactsActionFragment extends SherlockDialogFragment implements
 AdapterView.OnItemClickListener {
 
 	private static final String TAG = "ContactsActionFragment";
@@ -68,8 +68,8 @@ AdapterView.OnItemClickListener {
 		return fragment;
 	}
 
-	public static void showDialog(Activity activity, ContactsItem contact) {
-		FragmentManager manager = activity.getFragmentManager();
+	public static void showDialog(FragmentActivity activity, ContactsItem contact) {
+		FragmentManager manager = activity.getSupportFragmentManager();
 		newInstance(contact).show(manager, TAG);
 	}
 

@@ -27,6 +27,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.actionbarsherlock.app.ActionBar;
+import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuItem;
 import com.github.yuukis.businessmap.R;
 import com.github.yuukis.businessmap.data.GeocodingCacheDatabase;
 import com.github.yuukis.businessmap.model.ContactsGroup;
@@ -43,20 +47,16 @@ import android.provider.ContactsContract.Data;
 import android.provider.ContactsContract.Groups;
 import android.provider.ContactsContract.CommonDataKinds.GroupMembership;
 import android.provider.ContactsContract.CommonDataKinds.StructuredPostal;
-import android.app.ActionBar;
-import android.app.Activity;
+import android.support.v4.app.FragmentManager;
 import android.app.AlertDialog;
-import android.app.FragmentManager;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.database.Cursor;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.Window;
 import android.view.WindowManager;
 
-public class MainActivity extends Activity implements
-		ActionBar.OnNavigationListener {
+public class MainActivity extends SherlockFragmentActivity implements
+	ActionBar.OnNavigationListener {
 
 	private static final String KEY_NAVIGATION_INDEX = "navigation_index";
 	private static final String KEY_CONTACTSLIST = "contacts_list";
@@ -82,7 +82,7 @@ public class MainActivity extends Activity implements
 
 		setProgressBarVisibility(false);
 
-		FragmentManager fm = getFragmentManager();
+		FragmentManager fm = getSupportFragmentManager();
 		mMapFragment = (ContactsMapFragment) fm
 				.findFragmentById(R.id.contacts_map);
 		mListFragment = (ContactsListFragment) fm
@@ -105,7 +105,7 @@ public class MainActivity extends Activity implements
 		});
 
 		GroupAdapter adapter = new GroupAdapter(this, mGroupList);
-		ActionBar actionBar = getActionBar();
+		ActionBar actionBar = getSupportActionBar();
 		actionBar.setDisplayShowTitleEnabled(false);
 		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
 		actionBar.setListNavigationCallbacks(adapter, this);
@@ -135,7 +135,7 @@ public class MainActivity extends Activity implements
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		getMenuInflater().inflate(R.menu.main, menu);
+		getSupportMenuInflater().inflate(R.menu.main, menu);
 		return true;
 	}
 
@@ -151,7 +151,7 @@ public class MainActivity extends Activity implements
 
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
-		outState.putInt(KEY_NAVIGATION_INDEX, getActionBar()
+		outState.putInt(KEY_NAVIGATION_INDEX, getSupportActionBar()
 				.getSelectedNavigationIndex());
 		outState.putSerializable(KEY_CONTACTSLIST, (Serializable) mContactsList);
 		super.onSaveInstanceState(outState);
@@ -411,7 +411,7 @@ public class MainActivity extends Activity implements
 				geocoding();
 			}
 
-			int index = getActionBar().getSelectedNavigationIndex();
+			int index = getSupportActionBar().getSelectedNavigationIndex();
 			ContactsGroup group = mGroupList.get(index);
 			long groupId = group.getId();
 			changeCurrentGroup(groupId);

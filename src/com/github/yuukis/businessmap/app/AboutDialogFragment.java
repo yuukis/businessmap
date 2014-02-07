@@ -1,6 +1,6 @@
 /*
  * AboutDialogFragment.java
- * 
+ *
  * Copyright 2013 Yuuki Shimizu.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,23 +17,23 @@
  */
 package com.github.yuukis.businessmap.app;
 
+import com.actionbarsherlock.app.SherlockDialogFragment;
+import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.github.yuukis.businessmap.R;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.DialogFragment;
-import android.app.FragmentManager;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
 
-public class AboutDialogFragment extends DialogFragment implements
+public class AboutDialogFragment extends SherlockDialogFragment implements
 		View.OnClickListener {
 
 	private static final String TAG = "AboutDialogFragment";
@@ -42,8 +42,8 @@ public class AboutDialogFragment extends DialogFragment implements
 		return new AboutDialogFragment();
 	}
 
-	public static void showDialog(Activity activity) {
-		FragmentManager manager = activity.getFragmentManager();
+	public static void showDialog(SherlockFragmentActivity activity) {
+		FragmentManager manager = activity.getSupportFragmentManager();
 		newInstance().show(manager, TAG);
 	}
 
@@ -63,7 +63,7 @@ public class AboutDialogFragment extends DialogFragment implements
 	@Override
 	public void onClick(View v) {
 		// オープンソース ライセンス表示
-		LicenseDialogFragment.showDialog(getActivity());
+		LicenseDialogFragment.showDialog(getSherlockActivity());
 	}
 
 	private String getVersion() {

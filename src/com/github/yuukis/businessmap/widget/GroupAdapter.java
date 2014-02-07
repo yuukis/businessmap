@@ -19,6 +19,7 @@ package com.github.yuukis.businessmap.widget;
 
 import java.util.List;
 
+import com.actionbarsherlock.app.SherlockActivity;
 import com.github.yuukis.businessmap.R;
 import com.github.yuukis.businessmap.model.ContactsGroup;
 
