@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.json.JSONException;
+
 import com.github.yuukis.businessmap.R;
 import com.github.yuukis.businessmap.data.GeocodingCacheDatabase;
 import com.github.yuukis.businessmap.model.ContactsGroup;
@@ -57,7 +59,8 @@ public class ContactsAsyncTask extends AsyncTask<Void, Integer, Void> implements
 	private static final int STATE_START = 1;
 	private static final int STATE_PROGRESS = 2;
 	private static final int STATE_FINISH = 3;
-	private static final int STATE_FAILED = 4;
+	private static final int STATE_FAILED_IO_EXCEPTION = 101;
+	private static final int STATE_FAILED_JSON_EXCEPTION = 102;
 
 	private Context mContext;
 	private Callback mCallback;
@@ -125,13 +128,15 @@ public class ContactsAsyncTask extends AsyncTask<Void, Integer, Void> implements
 			break;
 
 		// 4. 失敗時
-		case STATE_FAILED:
+		case STATE_FAILED_IO_EXCEPTION:
 			mProgressDialog.dismiss();
-			new AlertDialog.Builder(mContext)
-					.setTitle(R.string.title_geocoding_ioerror)
-					.setMessage(R.string.message_geocoding_ioerror)
-					.setPositiveButton(android.R.string.ok, null)
-					.show();
+			showErrorDialog(R.string.title_geocoding_ioerror,
+					R.string.message_geocoding_ioerror);
+			break;
+		case STATE_FAILED_JSON_EXCEPTION:
+			mProgressDialog.dismiss();
+			showErrorDialog(R.string.title_geocoding_jsonerror,
+					R.string.message_geocoding_jsonerror);
 			break;
 		}
 	}
@@ -351,7 +356,10 @@ public class ContactsAsyncTask extends AsyncTask<Void, Integer, Void> implements
 				}
 			}
 		} catch (IOException e) {
-			publishProgress(STATE_FAILED);
+			publishProgress(STATE_FAILED_IO_EXCEPTION);
+			return;
+		} catch (JSONException e) {
+			publishProgress(STATE_FAILED_JSON_EXCEPTION);
 			return;
 		} finally {
 			db.close();
@@ -378,5 +386,13 @@ public class ContactsAsyncTask extends AsyncTask<Void, Integer, Void> implements
 			}
 		}
 		publishProgress(STATE_FINISH);
+	}
+
+	private void showErrorDialog(int title, int message) {
+		new AlertDialog.Builder(mContext)
+			.setTitle(title)
+			.setMessage(message)
+			.setPositiveButton(android.R.string.ok, null)
+			.show();
 	}
 }
