@@ -17,15 +17,27 @@
  */
 package com.github.yuukis.businessmap.app;
 
+import com.github.yuukis.businessmap.model.ContactsGroup;
+
 import android.os.Bundle;
+import android.widget.Toast;
 import android.app.Activity;
 
-public class IncomingShortcutActivity extends Activity {
+public class IncomingShortcutActivity extends Activity implements
+		ContactsGroupDialogFragment.OnSelectListener {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		ContactsGroupDialogFragment.showDialog(this);
 	}
 
-
+	@Override
+	public void onContactsGroupSelected(ContactsGroup group) {
+		if (group != null) {
+			String title = group.getTitle();
+			Toast.makeText(this, title, Toast.LENGTH_SHORT).show();
+		}
+		finish();
+	}
 }

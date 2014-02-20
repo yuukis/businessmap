@@ -25,14 +25,13 @@ import com.github.yuukis.businessmap.R;
 import com.github.yuukis.businessmap.model.ContactsGroup;
 import com.github.yuukis.businessmap.model.ContactsItem;
 import com.github.yuukis.businessmap.task.ContactsAsyncTask;
+import com.github.yuukis.businessmap.util.ContactUtils;
 import com.github.yuukis.businessmap.widget.GroupAdapter;
 
 import android.os.Bundle;
-import android.provider.ContactsContract.Groups;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.FragmentManager;
-import android.database.Cursor;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
@@ -131,7 +130,7 @@ public class MainActivity extends Activity implements
 				.findFragmentById(R.id.contacts_map);
 		mListFragment = (ContactsListFragment) fm
 				.findFragmentById(R.id.contacts_list);
-		mGroupList = getContactsGroupList();
+		mGroupList = ContactUtils.getContactsGroupList(this);
 
 		GroupAdapter adapter = new GroupAdapter(this, mGroupList);
 		ActionBar actionBar = getActionBar();
@@ -151,38 +150,6 @@ public class MainActivity extends Activity implements
 			mContactsTask = new ContactsAsyncTask(this, this);
 			mContactsTask.execute();
 		}
-	}
-
-	private List<ContactsGroup> getContactsGroupList() {
-		List<ContactsGroup> list = new ArrayList<ContactsGroup>();
-		ContactsGroup all = new ContactsGroup(ContactsGroup.ID_GROUP_ALL_CONTACTS,
-				getString(R.string.group_all_contacts), "");
-		list.add(all);
-
-		Cursor groupCursor = null;
-		try {
-			groupCursor = getContentResolver().query(
-					Groups.CONTENT_URI,
-					new String[] {
-							Groups._ID,
-							Groups.TITLE,
-							Groups.ACCOUNT_NAME },
-					Groups.DELETED + "=0",
-					null,
-					null);
-			while (groupCursor.moveToNext()) {
-				long _id = groupCursor.getLong(0);
-				String title = groupCursor.getString(1);
-				String accountName = groupCursor.getString(2);
-				ContactsGroup group = new ContactsGroup(_id, title, accountName);
-				list.add(group);
-			}
-		} finally {
-			if (groupCursor != null) {
-				groupCursor.close();
-			}
-		}
-		return list;
 	}
 
 	private void changeCurrentGroup(long groupId) {
