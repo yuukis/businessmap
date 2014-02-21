@@ -40,8 +40,9 @@ import android.view.WindowManager;
 public class MainActivity extends Activity implements
 		ActionBar.OnNavigationListener, ContactsAsyncTask.Callback {
 
+	public static final String KEY_CONTACTS_GROUP_ID = "contacts_group_id";
 	private static final String KEY_NAVIGATION_INDEX = "navigation_index";
-	private static final String KEY_CONTACTSLIST = "contacts_list";
+	private static final String KEY_CONTACTS_LIST = "contacts_list";
 
 	private List<ContactsGroup> mGroupList;
 	private List<ContactsItem> mContactsList;
@@ -90,7 +91,7 @@ public class MainActivity extends Activity implements
 	protected void onSaveInstanceState(Bundle outState) {
 		int navigationIndex = getActionBar().getSelectedNavigationIndex();
 		outState.putInt(KEY_NAVIGATION_INDEX, navigationIndex);
-		outState.putSerializable(KEY_CONTACTSLIST, (Serializable) mContactsList);
+		outState.putSerializable(KEY_CONTACTS_LIST, (Serializable) mContactsList);
 		super.onSaveInstanceState(outState);
 	}
 
@@ -125,6 +126,8 @@ public class MainActivity extends Activity implements
 
 	@SuppressWarnings("unchecked")
 	private void initialize(Bundle savedInstanceState) {
+		Bundle args = getIntent().getExtras();
+
 		FragmentManager fm = getFragmentManager();
 		mMapFragment = (ContactsMapFragment) fm
 				.findFragmentById(R.id.contacts_map);
@@ -138,12 +141,24 @@ public class MainActivity extends Activity implements
 		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
 		actionBar.setListNavigationCallbacks(adapter, this);
 
+		int navigationIndex = 0;
 		if (savedInstanceState != null) {
-			actionBar.setSelectedNavigationItem(savedInstanceState
-					.getInt(KEY_NAVIGATION_INDEX));
+			navigationIndex = savedInstanceState.getInt(KEY_NAVIGATION_INDEX);
 			mContactsList = (List<ContactsItem>) savedInstanceState
-					.getSerializable(KEY_CONTACTSLIST);
+					.getSerializable(KEY_CONTACTS_LIST);
+		} else if (args != null) {
+			if (args.containsKey(KEY_CONTACTS_GROUP_ID)) {
+				long groupId = args.getLong(KEY_CONTACTS_GROUP_ID);
+				for (int i = 0; i < mGroupList.size(); i++) {
+					ContactsGroup contactsGroup = mGroupList.get(i);
+					if (groupId == contactsGroup.getId()) {
+						navigationIndex = i;
+						break;
+					}
+				}
+			}
 		}
+		actionBar.setSelectedNavigationItem(navigationIndex);
 		mCurrentGroupContactsList = new ArrayList<ContactsItem>();
 		if (mContactsList == null) {
 			mContactsList = new ArrayList<ContactsItem>();

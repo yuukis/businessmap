@@ -17,11 +17,13 @@
  */
 package com.github.yuukis.businessmap.app;
 
+import com.github.yuukis.businessmap.R;
 import com.github.yuukis.businessmap.model.ContactsGroup;
 
 import android.os.Bundle;
-import android.widget.Toast;
+import android.os.Parcelable;
 import android.app.Activity;
+import android.content.Intent;
 
 public class IncomingShortcutActivity extends Activity implements
 		ContactsGroupDialogFragment.OnSelectListener {
@@ -34,10 +36,35 @@ public class IncomingShortcutActivity extends Activity implements
 
 	@Override
 	public void onContactsGroupSelected(ContactsGroup group) {
-		if (group != null) {
-			String title = group.getTitle();
-			Toast.makeText(this, title, Toast.LENGTH_SHORT).show();
-		}
+		createShortcut(group);
 		finish();
+	}
+
+	private void createShortcut(ContactsGroup group) {
+		if (group == null) {
+			setResult(RESULT_CANCELED, null);
+			return;
+		}
+		long groupId = group.getId();
+		String shortcutTitle = group.getTitle();
+		if (shortcutTitle.isEmpty()) {
+			shortcutTitle = getString(R.string.app_name);
+		}
+
+		Intent shortcutIntent = new Intent(getApplicationContext(),
+				MainActivity.class);
+		shortcutIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+		shortcutIntent.putExtra(MainActivity.KEY_CONTACTS_GROUP_ID, groupId);
+
+		Intent intent = new Intent();
+		intent.putExtra(Intent.EXTRA_SHORTCUT_INTENT, shortcutIntent);
+		Parcelable iconResource = Intent.ShortcutIconResource.fromContext(
+				getApplicationContext(), R.drawable.ic_launcher);
+		// ホーム画面に設置した場合に表示されるアイコンの設定
+		intent.putExtra(Intent.EXTRA_SHORTCUT_ICON_RESOURCE, iconResource);
+		// ホーム画面に設置した場合に表示されるラベル名の設定
+		intent.putExtra(Intent.EXTRA_SHORTCUT_NAME, shortcutTitle);
+
+		setResult(RESULT_OK, intent);
 	}
 }
