@@ -9,6 +9,7 @@
     <string name="action_contacts_detail" translatable="false">Show contacts</string>
     <string name="action_directions" translatable="false">Directions</string>
     <string name="action_drive_navigation" translatable="false">Drive navigation</string>
+    <string name="action_select_group" translatable="false">Select group</string>
     <string name="label_app_name" translatable="false">Application Name</string>
     <string name="label_provider" translatable="false">Provider</string>
     <string name="label_version" translatable="false">Version</string>
