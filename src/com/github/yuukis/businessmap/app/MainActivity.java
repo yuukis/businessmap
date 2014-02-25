@@ -28,6 +28,7 @@ import com.github.yuukis.businessmap.task.ContactsAsyncTask;
 import com.github.yuukis.businessmap.util.ContactUtils;
 import com.github.yuukis.businessmap.widget.GroupAdapter;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.ActionBar;
 import android.app.Activity;
@@ -88,7 +89,9 @@ public class MainActivity extends Activity implements
 	protected void onSaveInstanceState(Bundle outState) {
 		int navigationIndex = getActionBar().getSelectedNavigationIndex();
 		outState.putInt(KEY_NAVIGATION_INDEX, navigationIndex);
-		outState.putSerializable(KEY_CONTACTS_LIST, (Serializable) mContactsList);
+		if (mContactsTask == null || mContactsTask.getStatus() == AsyncTask.Status.FINISHED) {
+			outState.putSerializable(KEY_CONTACTS_LIST, (Serializable) mContactsList);
+		}
 		super.onSaveInstanceState(outState);
 	}
 
