@@ -24,7 +24,6 @@ import java.util.List;
 import com.github.yuukis.businessmap.R;
 import com.github.yuukis.businessmap.model.ContactsGroup;
 import com.github.yuukis.businessmap.model.ContactsItem;
-import com.github.yuukis.businessmap.task.ContactsAsyncTask;
 import com.github.yuukis.businessmap.widget.GroupAdapter;
 
 import android.os.Bundle;
@@ -39,7 +38,7 @@ import android.view.Window;
 import android.view.WindowManager;
 
 public class MainActivity extends Activity implements
-		ActionBar.OnNavigationListener, ContactsAsyncTask.Callback {
+		ActionBar.OnNavigationListener, ContactsTaskFragment.TaskCallback {
 
 	private static final String KEY_NAVIGATION_INDEX = "navigation_index";
 	private static final String KEY_CONTACTSLIST = "contacts_list";
@@ -49,7 +48,7 @@ public class MainActivity extends Activity implements
 	private List<ContactsItem> mCurrentGroupContactsList;
 	private ContactsMapFragment mMapFragment;
 	private ContactsListFragment mListFragment;
-	private ContactsAsyncTask mContactsTask;
+	private ContactsTaskFragment mTaskFragment;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -63,12 +62,14 @@ public class MainActivity extends Activity implements
 	}
 
 	@Override
-	protected void onDestroy() {
-		if (mContactsTask != null) {
-			mContactsTask.cancel(true);
-			mContactsTask = null;
+	protected void onStart() {
+		super.onStart();
+		if (mContactsList == null) {
+			mContactsList = new ArrayList<ContactsItem>();
+			if (!mTaskFragment.isRunning()) {
+				mTaskFragment.start();
+			}
 		}
-		super.onDestroy();
 	}
 
 	@Override
@@ -131,7 +132,13 @@ public class MainActivity extends Activity implements
 				.findFragmentById(R.id.contacts_map);
 		mListFragment = (ContactsListFragment) fm
 				.findFragmentById(R.id.contacts_list);
+		mTaskFragment = (ContactsTaskFragment) fm.findFragmentByTag("task");
 		mGroupList = getContactsGroupList();
+
+		if (mTaskFragment == null) {
+			mTaskFragment = new ContactsTaskFragment();
+			fm.beginTransaction().add(mTaskFragment, "task").commit();
+		}
 
 		GroupAdapter adapter = new GroupAdapter(this, mGroupList);
 		ActionBar actionBar = getActionBar();
@@ -146,11 +153,6 @@ public class MainActivity extends Activity implements
 					.getSerializable(KEY_CONTACTSLIST);
 		}
 		mCurrentGroupContactsList = new ArrayList<ContactsItem>();
-		if (mContactsList == null) {
-			mContactsList = new ArrayList<ContactsItem>();
-			mContactsTask = new ContactsAsyncTask(this, this);
-			mContactsTask.execute();
-		}
 	}
 
 	private List<ContactsGroup> getContactsGroupList() {
