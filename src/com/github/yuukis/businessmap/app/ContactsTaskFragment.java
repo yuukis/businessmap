@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import com.github.yuukis.businessmap.R;
+import com.github.yuukis.businessmap.app.ProgressDialogFragment.ProgressDialogFragmentListener;
 import com.github.yuukis.businessmap.data.GeocodingCacheDatabase;
 import com.github.yuukis.businessmap.model.ContactsGroup;
 import com.github.yuukis.businessmap.model.ContactsItem;
@@ -36,8 +37,8 @@ import com.github.yuukis.businessmap.util.GeocoderUtils;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.DialogFragment;
 import android.app.Fragment;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.database.Cursor;
@@ -48,7 +49,7 @@ import android.provider.ContactsContract.CommonDataKinds.GroupMembership;
 import android.provider.ContactsContract.CommonDataKinds.Note;
 import android.provider.ContactsContract.CommonDataKinds.StructuredPostal;
 
-public class ContactsTaskFragment extends Fragment {
+public class ContactsTaskFragment extends Fragment implements ProgressDialogFragmentListener {
 
 	public interface TaskCallback {
 		void onContactsLoaded(List<ContactsItem> contactsList);
@@ -57,6 +58,8 @@ public class ContactsTaskFragment extends Fragment {
 	private TaskCallback mCallback;
 	private ContactsAsyncTask mContactsTask;
 	private boolean mRunning;
+	private List<ContactsItem> mContactsList;
+	private Map<String, Double[]> mGeocodingResultCache;
 
 	@Override
 	public void onAttach(Activity activity) {
@@ -100,17 +103,8 @@ public class ContactsTaskFragment extends Fragment {
 		return mRunning;
 	}
 
-	private class ContactsAsyncTask extends AsyncTask<Void, Integer, Void>
+	class ContactsAsyncTask extends AsyncTask<Void, Integer, Void>
 			implements DialogInterface.OnCancelListener {
-
-		private static final int STATE_START = 1;
-		private static final int STATE_PROGRESS = 2;
-		private static final int STATE_FINISH = 3;
-		private static final int STATE_FAILED = 4;
-
-		private List<ContactsItem> mContactsList;
-		private Map<String, Double[]> mGeocodingResultCache;
-		private ProgressDialog mProgressDialog;
 
 		@Override
 		public void onCancel(DialogInterface dialog) {
@@ -120,17 +114,8 @@ public class ContactsTaskFragment extends Fragment {
 		@Override
 		protected void onPreExecute() {
 			super.onPreExecute();
-			Context context = getActivity();
 			mContactsList = new ArrayList<ContactsItem>();
 			mGeocodingResultCache = new HashMap<String, Double[]>();
-			mProgressDialog = new ProgressDialog(context);
-			mProgressDialog.setCancelable(true);
-			mProgressDialog.setCanceledOnTouchOutside(false);
-			mProgressDialog.setTitle(R.string.title_geocoding);
-			mProgressDialog.setMessage(context
-					.getString(R.string.message_geocoding));
-			mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-			mProgressDialog.setOnCancelListener(this);
 			mRunning = true;
 		}
 
@@ -146,6 +131,8 @@ public class ContactsTaskFragment extends Fragment {
 		@Override
 		protected void onProgressUpdate(Integer... values) {
 			super.onProgressUpdate(values);
+			updateProgress(values);
+			/*
 			Context context = getActivity();
 
 			if (values.length == 0) {
@@ -156,30 +143,31 @@ public class ContactsTaskFragment extends Fragment {
 			switch (state) {
 			// 1. 開始時
 			case STATE_START:
-				mProgressDialog.show();
+				mDialogFragment.showDialog();
 				break;
 
 			// 2. 処理時
 			case STATE_PROGRESS:
 				int progress = values[1];
-				mProgressDialog.setProgress(progress);
+				mDialogFragment.updateProgress(progress);
 				break;
 
 			// 3. 終了時
 			case STATE_FINISH:
-				mProgressDialog.setProgress(mProgressDialog.getMax());
-				mProgressDialog.dismiss();
+				mDialogFragment.updateProgress(mDialogFragment.getMax());
+				mDialogFragment.dismiss();
 				break;
 
 			// 4. 失敗時
 			case STATE_FAILED:
-				mProgressDialog.dismiss();
+				mDialogFragment.dismiss();
 				new AlertDialog.Builder(context)
 						.setTitle(R.string.title_geocoding_ioerror)
 						.setMessage(R.string.message_geocoding_ioerror)
 						.setPositiveButton(android.R.string.ok, null).show();
 				break;
 			}
+			*/
 		}
 
 		@Override
@@ -380,11 +368,9 @@ public class ContactsTaskFragment extends Fragment {
 
 		private void geocoding() {
 			Context context = getActivity();
-			mProgressDialog.setMax(mGeocodingResultCache.size());
-			publishProgress(STATE_START);
+			showProgress();
 
-			final GeocodingCacheDatabase db = new GeocodingCacheDatabase(
-					context);
+			final GeocodingCacheDatabase db = new GeocodingCacheDatabase(context);
 			int count = 0;
 			try {
 				for (Iterator<Entry<String, Double[]>> it = mGeocodingResultCache
@@ -399,14 +385,15 @@ public class ContactsTaskFragment extends Fragment {
 
 					count++;
 					final int progress = count;
-					publishProgress(STATE_PROGRESS, progress);
+					publishProgress(progress);
 
 					if (isCancelled()) {
 						return;
 					}
 				}
 			} catch (IOException e) {
-				publishProgress(STATE_FAILED);
+				//publishProgress(STATE_FAILED);
+				hideProgress();
 				return;
 			} finally {
 				db.close();
@@ -432,8 +419,51 @@ public class ContactsTaskFragment extends Fragment {
 					mContactsList.set(j, contact);
 				}
 			}
-			publishProgress(STATE_FINISH);
+			hideProgress();
 		}
+	}
+
+	private void showProgress() {
+		String title = getString(R.string.title_geocoding);
+		String message = getString(R.string.message_geocoding);
+		int max = mGeocodingResultCache.size();
+
+		Bundle args = new Bundle();
+		args.putString(ProgressDialogFragment.TITLE, title);
+		args.putString(ProgressDialogFragment.MESSAGE, message);
+		args.putBoolean(ProgressDialogFragment.CANCELABLE, true);
+		args.putInt(ProgressDialogFragment.MAX, max);
+		DialogFragment dialog = ProgressDialogFragment.newInstance();
+		dialog.setArguments(args);
+		dialog.show(getActivity().getFragmentManager(),
+				ProgressDialogFragment.TAG);
+	}
+
+	private void updateProgress(Integer... values) {
+		ProgressDialogFragment progress = getProgressDialogFragment();
+		if (progress == null) {
+			return;
+		}
+		progress.updateProgress(values[0]);
+	}
+
+	private void hideProgress() {
+		ProgressDialogFragment progress = getProgressDialogFragment();
+		if (progress == null) {
+			return;
+		}
+		progress.dismissAllowingStateLoss();
+	}
+
+	private ProgressDialogFragment getProgressDialogFragment() {
+		Fragment fragment = getFragmentManager().findFragmentByTag(
+				ProgressDialogFragment.TAG);
+		return (ProgressDialogFragment) fragment;
+	}
+
+	// ProgressDialogFragmentListener
+	@Override
+	public void onProgressCancelled() {
 	}
 
 }
