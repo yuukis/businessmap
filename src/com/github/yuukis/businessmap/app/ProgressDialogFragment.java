@@ -42,20 +42,17 @@ public class ProgressDialogFragment extends DialogFragment {
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        // キャンセル設定(DialogFragment)
         boolean cancelable = getArguments().getBoolean(CANCELABLE, false);
         setCancelable(cancelable);
 
-        // ProgressDialog
         String title = getArguments().getString(TITLE);
         String message = getArguments().getString(MESSAGE);
         ProgressDialog dialog = new ProgressDialog(getActivity());
         dialog.setTitle(title);
         dialog.setMessage(message);
         dialog.setIndeterminate(false);
+		dialog.setCanceledOnTouchOutside(false);
 
-        // 進捗
-        // dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
         dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
         dialog.setMax(getArguments().getInt(MAX));
 

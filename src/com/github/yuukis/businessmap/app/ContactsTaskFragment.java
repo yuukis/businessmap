@@ -44,6 +44,8 @@ import android.content.DialogInterface;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.ContactsContract.Data;
 import android.provider.ContactsContract.CommonDataKinds.GroupMembership;
 import android.provider.ContactsContract.CommonDataKinds.Note;
@@ -80,6 +82,12 @@ public class ContactsTaskFragment extends Fragment implements ProgressDialogFrag
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
+		cancel();
+	}
+
+	// ProgressDialogFragmentListener
+	@Override
+	public void onProgressCancelled() {
 		cancel();
 	}
 
@@ -132,42 +140,6 @@ public class ContactsTaskFragment extends Fragment implements ProgressDialogFrag
 		protected void onProgressUpdate(Integer... values) {
 			super.onProgressUpdate(values);
 			updateProgress(values);
-			/*
-			Context context = getActivity();
-
-			if (values.length == 0) {
-				return;
-			}
-			int state = values[0];
-
-			switch (state) {
-			// 1. 開始時
-			case STATE_START:
-				mDialogFragment.showDialog();
-				break;
-
-			// 2. 処理時
-			case STATE_PROGRESS:
-				int progress = values[1];
-				mDialogFragment.updateProgress(progress);
-				break;
-
-			// 3. 終了時
-			case STATE_FINISH:
-				mDialogFragment.updateProgress(mDialogFragment.getMax());
-				mDialogFragment.dismiss();
-				break;
-
-			// 4. 失敗時
-			case STATE_FAILED:
-				mDialogFragment.dismiss();
-				new AlertDialog.Builder(context)
-						.setTitle(R.string.title_geocoding_ioerror)
-						.setMessage(R.string.message_geocoding_ioerror)
-						.setPositiveButton(android.R.string.ok, null).show();
-				break;
-			}
-			*/
 		}
 
 		@Override
@@ -392,8 +364,10 @@ public class ContactsTaskFragment extends Fragment implements ProgressDialogFrag
 					}
 				}
 			} catch (IOException e) {
-				//publishProgress(STATE_FAILED);
 				hideProgress();
+				String title = getString(R.string.title_geocoding_ioerror);
+				String message = getString(R.string.message_geocoding_ioerror);
+				showError(title, message);
 				return;
 			} finally {
 				db.close();
@@ -460,10 +434,18 @@ public class ContactsTaskFragment extends Fragment implements ProgressDialogFrag
 				ProgressDialogFragment.TAG);
 		return (ProgressDialogFragment) fragment;
 	}
-
-	// ProgressDialogFragmentListener
-	@Override
-	public void onProgressCancelled() {
+	
+	private void showError(final String title, final String message) {
+		new Handler(Looper.getMainLooper()).post(new Runnable() {
+			@Override
+			public void run() {
+				new AlertDialog.Builder(getActivity())
+				.setTitle(title)
+				.setMessage(message)
+				.setPositiveButton(android.R.string.ok, null)
+				.show();
+			}
+		});
 	}
 
 }
