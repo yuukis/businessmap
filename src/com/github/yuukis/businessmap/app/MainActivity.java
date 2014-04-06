@@ -24,14 +24,13 @@ import java.util.List;
 import com.github.yuukis.businessmap.R;
 import com.github.yuukis.businessmap.model.ContactsGroup;
 import com.github.yuukis.businessmap.model.ContactsItem;
+import com.github.yuukis.businessmap.util.ContactUtils;
 import com.github.yuukis.businessmap.widget.GroupAdapter;
 
 import android.os.Bundle;
-import android.provider.ContactsContract.Groups;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.FragmentManager;
-import android.database.Cursor;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
@@ -40,8 +39,9 @@ import android.view.WindowManager;
 public class MainActivity extends Activity implements
 		ActionBar.OnNavigationListener, ContactsTaskFragment.TaskCallback {
 
+	public static final String KEY_CONTACTS_GROUP_ID = "contacts_group_id";
 	private static final String KEY_NAVIGATION_INDEX = "navigation_index";
-	private static final String KEY_CONTACTSLIST = "contacts_list";
+	private static final String KEY_CONTACTS_LIST = "contacts_list";
 
 	private List<ContactsGroup> mGroupList;
 	private List<ContactsItem> mContactsList;
@@ -92,7 +92,7 @@ public class MainActivity extends Activity implements
 	protected void onSaveInstanceState(Bundle outState) {
 		int navigationIndex = getActionBar().getSelectedNavigationIndex();
 		outState.putInt(KEY_NAVIGATION_INDEX, navigationIndex);
-		outState.putSerializable(KEY_CONTACTSLIST, (Serializable) mContactsList);
+		outState.putSerializable(KEY_CONTACTS_LIST, (Serializable) mContactsList);
 		super.onSaveInstanceState(outState);
 	}
 
@@ -127,13 +127,15 @@ public class MainActivity extends Activity implements
 
 	@SuppressWarnings("unchecked")
 	private void initialize(Bundle savedInstanceState) {
+		Bundle args = getIntent().getExtras();
+
 		FragmentManager fm = getFragmentManager();
 		mMapFragment = (ContactsMapFragment) fm
 				.findFragmentById(R.id.contacts_map);
 		mListFragment = (ContactsListFragment) fm
 				.findFragmentById(R.id.contacts_list);
 		mTaskFragment = (ContactsTaskFragment) fm.findFragmentByTag("task");
-		mGroupList = getContactsGroupList();
+		mGroupList = ContactUtils.getContactsGroupList(this);
 
 		if (mTaskFragment == null) {
 			mTaskFragment = new ContactsTaskFragment();
@@ -146,45 +148,25 @@ public class MainActivity extends Activity implements
 		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
 		actionBar.setListNavigationCallbacks(adapter, this);
 
+		int navigationIndex = 0;
 		if (savedInstanceState != null) {
-			actionBar.setSelectedNavigationItem(savedInstanceState
-					.getInt(KEY_NAVIGATION_INDEX));
+			navigationIndex = savedInstanceState.getInt(KEY_NAVIGATION_INDEX);
 			mContactsList = (List<ContactsItem>) savedInstanceState
-					.getSerializable(KEY_CONTACTSLIST);
+					.getSerializable(KEY_CONTACTS_LIST);
+		} else if (args != null) {
+			if (args.containsKey(KEY_CONTACTS_GROUP_ID)) {
+				long groupId = args.getLong(KEY_CONTACTS_GROUP_ID);
+				for (int i = 0; i < mGroupList.size(); i++) {
+					ContactsGroup contactsGroup = mGroupList.get(i);
+					if (groupId == contactsGroup.getId()) {
+						navigationIndex = i;
+						break;
+					}
+				}
+			}
 		}
+		actionBar.setSelectedNavigationItem(navigationIndex);
 		mCurrentGroupContactsList = new ArrayList<ContactsItem>();
-	}
-
-	private List<ContactsGroup> getContactsGroupList() {
-		List<ContactsGroup> list = new ArrayList<ContactsGroup>();
-		ContactsGroup all = new ContactsGroup(ContactsGroup.ID_GROUP_ALL_CONTACTS,
-				getString(R.string.group_all_contacts), "");
-		list.add(all);
-
-		Cursor groupCursor = null;
-		try {
-			groupCursor = getContentResolver().query(
-					Groups.CONTENT_URI,
-					new String[] {
-							Groups._ID,
-							Groups.TITLE,
-							Groups.ACCOUNT_NAME },
-					Groups.DELETED + "=0",
-					null,
-					null);
-			while (groupCursor.moveToNext()) {
-				long _id = groupCursor.getLong(0);
-				String title = groupCursor.getString(1);
-				String accountName = groupCursor.getString(2);
-				ContactsGroup group = new ContactsGroup(_id, title, accountName);
-				list.add(group);
-			}
-		} finally {
-			if (groupCursor != null) {
-				groupCursor.close();
-			}
-		}
-		return list;
 	}
 
 	private void changeCurrentGroup(long groupId) {
