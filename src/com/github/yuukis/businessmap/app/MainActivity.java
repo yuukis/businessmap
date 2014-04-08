@@ -36,7 +36,8 @@ import android.view.MenuItem;
 import android.view.WindowManager;
 
 public class MainActivity extends Activity implements
-		ActionBar.OnNavigationListener, ContactsTaskFragment.TaskCallback {
+		ActionBar.OnNavigationListener, ContactsTaskFragment.TaskCallback,
+		ProgressDialogFragment.ProgressDialogFragmentListener {
 
 	public static final String KEY_CONTACTS_GROUP_ID = "contacts_group_id";
 	private static final String KEY_NAVIGATION_INDEX = "navigation_index";
@@ -118,6 +119,11 @@ public class MainActivity extends Activity implements
 		mListFragment.notifyDataSetChanged();
 	}
 
+	@Override
+	public void onProgressCancelled() {
+		mTaskFragment.cancel();
+	}
+
 	public List<ContactsItem> getCurrentContactsList() {
 		return mCurrentGroupContactsList;
 	}
@@ -127,17 +133,10 @@ public class MainActivity extends Activity implements
 		Bundle args = getIntent().getExtras();
 
 		FragmentManager fm = getFragmentManager();
-		mMapFragment = (ContactsMapFragment) fm
-				.findFragmentById(R.id.contacts_map);
-		mListFragment = (ContactsListFragment) fm
-				.findFragmentById(R.id.contacts_list);
-		mTaskFragment = (ContactsTaskFragment) fm.findFragmentByTag("task");
+		mMapFragment = (ContactsMapFragment) fm.findFragmentById(R.id.contacts_map);
+		mListFragment = (ContactsListFragment) fm.findFragmentById(R.id.contacts_list);
+		mTaskFragment = (ContactsTaskFragment) fm.findFragmentById(R.id.contacts_task);
 		mGroupList = ContactUtils.getContactsGroupList(this);
-
-		if (mTaskFragment == null) {
-			mTaskFragment = new ContactsTaskFragment();
-			fm.beginTransaction().add(mTaskFragment, "task").commit();
-		}
 
 		GroupAdapter adapter = new GroupAdapter(this, mGroupList);
 		ActionBar actionBar = getActionBar();

@@ -29,7 +29,7 @@ import java.util.Map.Entry;
 import org.json.JSONException;
 
 import com.github.yuukis.businessmap.R;
-import com.github.yuukis.businessmap.app.ProgressDialogFragment.ProgressDialogFragmentListener;
+import com.github.yuukis.businessmap.app.ProgressDialogFragment;
 import com.github.yuukis.businessmap.data.GeocodingCacheDatabase;
 import com.github.yuukis.businessmap.model.ContactsGroup;
 import com.github.yuukis.businessmap.model.ContactsItem;
@@ -52,9 +52,11 @@ import android.provider.ContactsContract.Data;
 import android.provider.ContactsContract.CommonDataKinds.GroupMembership;
 import android.provider.ContactsContract.CommonDataKinds.Note;
 import android.provider.ContactsContract.CommonDataKinds.StructuredPostal;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 
-public class ContactsTaskFragment extends Fragment implements ProgressDialogFragmentListener {
+public class ContactsTaskFragment extends Fragment {
 
 	public interface TaskCallback {
 		void onContactsLoaded(List<ContactsItem> contactsList);
@@ -65,7 +67,6 @@ public class ContactsTaskFragment extends Fragment implements ProgressDialogFrag
 	private boolean mRunning;
 	private List<ContactsItem> mContactsList;
 	private Map<String, Double[]> mGeocodingResultCache;
-	private View mProgressBar;
 
 	@Override
 	public void onAttach(Activity activity) {
@@ -75,7 +76,6 @@ public class ContactsTaskFragment extends Fragment implements ProgressDialogFrag
 					"Activity must implement the TaskCallback interface.");
 		}
 		mCallback = (TaskCallback) activity;
-		mProgressBar = activity.findViewById(R.id.contacts_progressbar);
 	}
 
 	@Override
@@ -85,14 +85,14 @@ public class ContactsTaskFragment extends Fragment implements ProgressDialogFrag
 	}
 
 	@Override
-	public void onDestroy() {
-		super.onDestroy();
-		cancel();
+	public View onCreateView(LayoutInflater inflater, ViewGroup container,
+			Bundle savedInstanceState) {
+		return inflater.inflate(R.layout.fragment_contacts_task, null);
 	}
 
-	// ProgressDialogFragmentListener
 	@Override
-	public void onProgressCancelled() {
+	public void onDestroy() {
+		super.onDestroy();
 		cancel();
 	}
 
@@ -118,10 +118,12 @@ public class ContactsTaskFragment extends Fragment implements ProgressDialogFrag
 
 	private void setRunning(boolean running) {
 		mRunning = running;
+
+		View progressBar = getView().findViewById(R.id.contacts_progressbar);
 		if (running) {
-			mProgressBar.setVisibility(View.VISIBLE);
+			progressBar.setVisibility(View.VISIBLE);
 		} else {
-			mProgressBar.setVisibility(View.GONE);
+			progressBar.setVisibility(View.GONE);
 		}
 	}
 
@@ -168,10 +170,10 @@ public class ContactsTaskFragment extends Fragment implements ProgressDialogFrag
 			@Override
 			public void run() {
 				new AlertDialog.Builder(getActivity())
-				.setTitle(title)
-				.setMessage(message)
-				.setPositiveButton(android.R.string.ok, null)
-				.show();
+						.setTitle(title)
+						.setMessage(message)
+						.setPositiveButton(android.R.string.ok, null)
+						.show();
 			}
 		});
 	}
