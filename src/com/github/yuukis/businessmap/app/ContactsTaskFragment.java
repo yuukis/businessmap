@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.json.JSONException;
+
 import com.github.yuukis.businessmap.R;
 import com.github.yuukis.businessmap.app.ProgressDialogFragment.ProgressDialogFragmentListener;
 import com.github.yuukis.businessmap.data.GeocodingCacheDatabase;
@@ -50,6 +52,7 @@ import android.provider.ContactsContract.Data;
 import android.provider.ContactsContract.CommonDataKinds.GroupMembership;
 import android.provider.ContactsContract.CommonDataKinds.Note;
 import android.provider.ContactsContract.CommonDataKinds.StructuredPostal;
+import android.view.View;
 
 public class ContactsTaskFragment extends Fragment implements ProgressDialogFragmentListener {
 
@@ -62,6 +65,7 @@ public class ContactsTaskFragment extends Fragment implements ProgressDialogFrag
 	private boolean mRunning;
 	private List<ContactsItem> mContactsList;
 	private Map<String, Double[]> mGeocodingResultCache;
+	private View mProgressBar;
 
 	@Override
 	public void onAttach(Activity activity) {
@@ -71,6 +75,7 @@ public class ContactsTaskFragment extends Fragment implements ProgressDialogFrag
 					"Activity must implement the TaskCallback interface.");
 		}
 		mCallback = (TaskCallback) activity;
+		mProgressBar = activity.findViewById(R.id.contacts_progressbar);
 	}
 
 	@Override
@@ -95,7 +100,7 @@ public class ContactsTaskFragment extends Fragment implements ProgressDialogFrag
 		if (!mRunning) {
 			mContactsTask = new ContactsAsyncTask();
 			mContactsTask.execute();
-			mRunning = true;
+			setRunning(true);
 		}
 	}
 
@@ -103,7 +108,7 @@ public class ContactsTaskFragment extends Fragment implements ProgressDialogFrag
 		if (mRunning) {
 			mContactsTask.cancel(false);
 			mContactsTask = null;
-			mRunning = false;
+			setRunning(false);
 		}
 	}
 
@@ -111,7 +116,67 @@ public class ContactsTaskFragment extends Fragment implements ProgressDialogFrag
 		return mRunning;
 	}
 
-	class ContactsAsyncTask extends AsyncTask<Void, Integer, Void>
+	private void setRunning(boolean running) {
+		mRunning = running;
+		if (running) {
+			mProgressBar.setVisibility(View.VISIBLE);
+		} else {
+			mProgressBar.setVisibility(View.GONE);
+		}
+	}
+
+	private void showProgress() {
+		String title = getString(R.string.title_geocoding);
+		String message = getString(R.string.message_geocoding);
+		int max = mGeocodingResultCache.size();
+
+		Bundle args = new Bundle();
+		args.putString(ProgressDialogFragment.TITLE, title);
+		args.putString(ProgressDialogFragment.MESSAGE, message);
+		args.putBoolean(ProgressDialogFragment.CANCELABLE, true);
+		args.putInt(ProgressDialogFragment.MAX, max);
+		DialogFragment dialog = ProgressDialogFragment.newInstance();
+		dialog.setArguments(args);
+		dialog.show(getActivity().getFragmentManager(),
+				ProgressDialogFragment.TAG);
+	}
+
+	private void updateProgress(Integer... values) {
+		ProgressDialogFragment progress = getProgressDialogFragment();
+		if (progress == null) {
+			return;
+		}
+		progress.updateProgress(values[0]);
+	}
+
+	private void hideProgress() {
+		ProgressDialogFragment progress = getProgressDialogFragment();
+		if (progress == null) {
+			return;
+		}
+		progress.dismissAllowingStateLoss();
+	}
+
+	private ProgressDialogFragment getProgressDialogFragment() {
+		Fragment fragment = getFragmentManager().findFragmentByTag(
+				ProgressDialogFragment.TAG);
+		return (ProgressDialogFragment) fragment;
+	}
+
+	private void showError(final String title, final String message) {
+		new Handler(Looper.getMainLooper()).post(new Runnable() {
+			@Override
+			public void run() {
+				new AlertDialog.Builder(getActivity())
+				.setTitle(title)
+				.setMessage(message)
+				.setPositiveButton(android.R.string.ok, null)
+				.show();
+			}
+		});
+	}
+
+	private class ContactsAsyncTask extends AsyncTask<Void, Integer, Void>
 			implements DialogInterface.OnCancelListener {
 
 		@Override
@@ -124,7 +189,7 @@ public class ContactsTaskFragment extends Fragment implements ProgressDialogFrag
 			super.onPreExecute();
 			mContactsList = new ArrayList<ContactsItem>();
 			mGeocodingResultCache = new HashMap<String, Double[]>();
-			mRunning = true;
+			setRunning(true);
 		}
 
 		@Override
@@ -145,7 +210,7 @@ public class ContactsTaskFragment extends Fragment implements ProgressDialogFrag
 		@Override
 		protected void onCancelled() {
 			super.onCancelled();
-			mRunning = false;
+			setRunning(false);
 		}
 
 		@Override
@@ -155,7 +220,7 @@ public class ContactsTaskFragment extends Fragment implements ProgressDialogFrag
 			if (mCallback != null) {
 				mCallback.onContactsLoaded(mContactsList);
 			}
-			mRunning = false;
+			setRunning(false);
 		}
 
 		private void loadAllContacts() {
@@ -369,6 +434,12 @@ public class ContactsTaskFragment extends Fragment implements ProgressDialogFrag
 				String message = getString(R.string.message_geocoding_ioerror);
 				showError(title, message);
 				return;
+			} catch (JSONException e) {
+				hideProgress();
+				String title = getString(R.string.title_geocoding_jsonerror);
+				String message = getString(R.string.message_geocoding_jsonerror);
+				showError(title, message);
+				return;
 			} finally {
 				db.close();
 			}
@@ -395,57 +466,6 @@ public class ContactsTaskFragment extends Fragment implements ProgressDialogFrag
 			}
 			hideProgress();
 		}
-	}
-
-	private void showProgress() {
-		String title = getString(R.string.title_geocoding);
-		String message = getString(R.string.message_geocoding);
-		int max = mGeocodingResultCache.size();
-
-		Bundle args = new Bundle();
-		args.putString(ProgressDialogFragment.TITLE, title);
-		args.putString(ProgressDialogFragment.MESSAGE, message);
-		args.putBoolean(ProgressDialogFragment.CANCELABLE, true);
-		args.putInt(ProgressDialogFragment.MAX, max);
-		DialogFragment dialog = ProgressDialogFragment.newInstance();
-		dialog.setArguments(args);
-		dialog.show(getActivity().getFragmentManager(),
-				ProgressDialogFragment.TAG);
-	}
-
-	private void updateProgress(Integer... values) {
-		ProgressDialogFragment progress = getProgressDialogFragment();
-		if (progress == null) {
-			return;
-		}
-		progress.updateProgress(values[0]);
-	}
-
-	private void hideProgress() {
-		ProgressDialogFragment progress = getProgressDialogFragment();
-		if (progress == null) {
-			return;
-		}
-		progress.dismissAllowingStateLoss();
-	}
-
-	private ProgressDialogFragment getProgressDialogFragment() {
-		Fragment fragment = getFragmentManager().findFragmentByTag(
-				ProgressDialogFragment.TAG);
-		return (ProgressDialogFragment) fragment;
-	}
-	
-	private void showError(final String title, final String message) {
-		new Handler(Looper.getMainLooper()).post(new Runnable() {
-			@Override
-			public void run() {
-				new AlertDialog.Builder(getActivity())
-				.setTitle(title)
-				.setMessage(message)
-				.setPositiveButton(android.R.string.ok, null)
-				.show();
-			}
-		});
 	}
 
 }

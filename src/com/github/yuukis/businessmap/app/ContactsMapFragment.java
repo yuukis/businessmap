@@ -59,7 +59,7 @@ public class ContactsMapFragment extends MapFragment implements
 		mPreferences = new MapStatePreferences(getActivity());
 		setUpMapIfNeeded();
 	}
-	
+
 	@Override
 	public void onResume() {
 		super.onResume();
@@ -163,7 +163,7 @@ public class ContactsMapFragment extends MapFragment implements
 		CameraPosition position = mPreferences.getCameraPosition();
 		mMap.setInfoWindowAdapter(new MyInfoWindowAdapter());
 		mMap.setOnInfoWindowClickListener(this);
-		mMap.setIndoorEnabled(true);
+		mMap.setIndoorEnabled(false);
 		mMap.setMyLocationEnabled(true);
 		mMap.moveCamera(CameraUpdateFactory.newCameraPosition(position));
 	}

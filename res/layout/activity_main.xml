@@ -9,6 +9,15 @@
         android:layout_height="match_parent"
         class="com.github.yuukis.businessmap.app.ContactsMapFragment" />
 
+    <fr.castorflex.android.smoothprogressbar.SmoothProgressBar
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/contacts_progressbar"
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:indeterminate="true"
+        android:visibility="gone"
+        app:spb_stroke_width="2dp" />
+
     <com.slidinglayer.SlidingLayer
         xmlns:slidingLayer="http://schemas.android.com/apk/res-auto"
         android:id="@+id/list_container"

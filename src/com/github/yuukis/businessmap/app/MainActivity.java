@@ -33,7 +33,6 @@ import android.app.Activity;
 import android.app.FragmentManager;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.Window;
 import android.view.WindowManager;
 
 public class MainActivity extends Activity implements
@@ -53,11 +52,9 @@ public class MainActivity extends Activity implements
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		requestWindowFeature(Window.FEATURE_PROGRESS);
 		getWindow().setSoftInputMode(
 				WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 		setContentView(R.layout.activity_main);
-		setProgressBarVisibility(false);
 		initialize(savedInstanceState);
 	}
 
