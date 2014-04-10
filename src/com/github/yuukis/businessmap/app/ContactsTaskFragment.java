@@ -128,11 +128,14 @@ public class ContactsTaskFragment extends Fragment {
 	}
 
 	private void setProgressBarVisibie(boolean visible) {
-		View progressBar = getView().findViewById(R.id.contacts_progressbar);
-		if (visible) {
-			progressBar.setVisibility(View.VISIBLE);
-		} else {
-			progressBar.setVisibility(View.GONE);
+		View view = getView();
+		if (view != null) {
+			View progressBar = view.findViewById(R.id.contacts_progressbar);
+			if (visible) {
+				progressBar.setVisibility(View.VISIBLE);
+			} else {
+				progressBar.setVisibility(View.GONE);
+			}
 		}
 	}
 
@@ -148,8 +151,10 @@ public class ContactsTaskFragment extends Fragment {
 		args.putInt(ProgressDialogFragment.MAX, max);
 		DialogFragment dialog = ProgressDialogFragment.newInstance();
 		dialog.setArguments(args);
-		dialog.show(getActivity().getFragmentManager(),
-				ProgressDialogFragment.TAG);
+		if (getActivity() != null) {
+			dialog.show(getActivity().getFragmentManager(),
+					ProgressDialogFragment.TAG);
+		}
 	}
 
 	private void updateProgress(Integer... values) {
@@ -175,16 +180,18 @@ public class ContactsTaskFragment extends Fragment {
 	}
 
 	private void showError(final String title, final String message) {
-		new Handler(Looper.getMainLooper()).post(new Runnable() {
-			@Override
-			public void run() {
-				new AlertDialog.Builder(getActivity())
-						.setTitle(title)
-						.setMessage(message)
-						.setPositiveButton(android.R.string.ok, null)
-						.show();
-			}
-		});
+		if (getActivity() != null){
+			new Handler(Looper.getMainLooper()).post(new Runnable() {
+				@Override
+				public void run() {
+					new AlertDialog.Builder(getActivity())
+					.setTitle(title)
+					.setMessage(message)
+					.setPositiveButton(android.R.string.ok, null)
+					.show();
+				}
+			});
+		}
 	}
 
 	private class ContactsAsyncTask extends AsyncTask<Void, Integer, Void>
