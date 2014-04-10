@@ -64,7 +64,7 @@ public class ContactsTaskFragment extends Fragment {
 
 	private TaskCallback mCallback;
 	private ContactsAsyncTask mContactsTask;
-	private boolean mRunning;
+	private boolean mRunning = false;
 	private List<ContactsItem> mContactsList;
 	private Map<String, Double[]> mGeocodingResultCache;
 
@@ -88,6 +88,12 @@ public class ContactsTaskFragment extends Fragment {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 		return inflater.inflate(R.layout.fragment_contacts_task, null);
+	}
+
+	@Override
+	public void onStart() {
+		super.onStart();
+		setProgressBarVisibie(mRunning);
 	}
 
 	@Override
@@ -118,9 +124,12 @@ public class ContactsTaskFragment extends Fragment {
 
 	private void setRunning(boolean running) {
 		mRunning = running;
+		setProgressBarVisibie(mRunning);
+	}
 
+	private void setProgressBarVisibie(boolean visible) {
 		View progressBar = getView().findViewById(R.id.contacts_progressbar);
-		if (running) {
+		if (visible) {
 			progressBar.setVisibility(View.VISIBLE);
 		} else {
 			progressBar.setVisibility(View.GONE);
