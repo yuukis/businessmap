@@ -1,3 +1,11 @@
+[submodule "google-play-services_lib"]
+	path = google-play-services_lib
+	url = https://github.com/yuukis/google-play-services_lib.git
+
+[submodule "android-sliding-layer-lib"]
+	path = android-sliding-layer-lib
+	url = https://github.com/6wunderkinder/android-sliding-layer-lib.git
+
 [submodule "smooth-progress-bar-lib"]
 	path = smooth-progress-bar-lib
 	url = https://github.com/joaspacce/SmoothProgressBar.git
