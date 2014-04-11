@@ -9,13 +9,16 @@
     <string name="action_contacts_detail" translatable="false">連絡先を表示</string>
     <string name="action_directions" translatable="false">経路を調べる</string>
     <string name="action_drive_navigation" translatable="false">ナビを開始</string>
+    <string name="action_select_group" translatable="false">グループを選択</string>
     <string name="label_app_name" translatable="false">アプリケーション名</string>
     <string name="label_provider" translatable="false">提供者</string>
     <string name="label_version" translatable="false">バージョン</string>
     <string name="title_geocoding" translatable="false">しばらくお待ちください</string>
     <string name="title_geocoding_ioerror" translatable="false">ネットワークに接続できません</string>
+    <string name="title_geocoding_jsonerror" translatable="false">サーバ エラー</string>
     <string name="message_geocoding" translatable="false">新しく登録された住所を座標に変換しています&#8230;</string>
     <string name="message_geocoding_ioerror" translatable="false">ネットワークへの接続に失敗したため、住所から座標へ変換できませんでした。</string>
+    <string name="message_geocoding_jsonerror" translatable="false">サーバ エラーが発生したため、住所から座標へ変換できませんでした。しばらく経ってから再度実行してください。</string>
     <string name="message_no_data" translatable="false">(未登録)</string>
     <string name="message_no_contacts" translatable="false">このグループに連絡先はありません</string>
     <string name="hint_searchview" translatable="false">連絡先を検索</string>

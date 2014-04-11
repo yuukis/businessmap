@@ -1,6 +1,7 @@
-package com.github.yuukis.businessmap.utils;
+package com.github.yuukis.businessmap.util;
 
 import java.util.Iterator;
+import java.util.Locale;
 
 import android.database.Cursor;
 
@@ -60,7 +61,15 @@ public final class CursorJoinerWithIntKey implements
 	private int[] buildColumnIndiciesArray(Cursor cursor, String[] columnNames) {
 		int[] columns = new int[columnNames.length];
 		for (int i = 0; i < columnNames.length; i++) {
-			columns[i] = cursor.getColumnIndexOrThrow(columnNames[i]);
+			try {
+				columns[i] = cursor.getColumnIndexOrThrow(columnNames[i]);
+			} catch (IllegalArgumentException e) {
+				String message = e.getMessage();
+				String[] names = cursor.getColumnNames();
+				message = String.format(Locale.getDefault(), "%s / exist columns: %s",
+						message, StringUtils.join(names, ", "));
+				throw new IllegalArgumentException(message);
+			}
 		}
 		return columns;
 	}

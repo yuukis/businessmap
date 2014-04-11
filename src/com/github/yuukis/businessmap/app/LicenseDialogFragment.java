@@ -23,7 +23,7 @@ import java.net.URLEncoder;
 import com.actionbarsherlock.app.SherlockDialogFragment;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.github.yuukis.businessmap.R;
-import com.github.yuukis.businessmap.utils.AssetUtils;
+import com.github.yuukis.businessmap.util.AssetUtils;
 
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;

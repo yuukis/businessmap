@@ -163,7 +163,7 @@ public class ContactsMapFragment extends SupportMapFragment implements
 		CameraPosition position = mPreferences.getCameraPosition();
 		mMap.setInfoWindowAdapter(new MyInfoWindowAdapter());
 		mMap.setOnInfoWindowClickListener(this);
-		mMap.setIndoorEnabled(true);
+		mMap.setIndoorEnabled(false);
 		mMap.setMyLocationEnabled(true);
 		mMap.moveCamera(CameraUpdateFactory.newCameraPosition(position));
 	}

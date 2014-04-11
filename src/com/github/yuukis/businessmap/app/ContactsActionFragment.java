@@ -20,7 +20,7 @@ package com.github.yuukis.businessmap.app;
 import com.actionbarsherlock.app.SherlockDialogFragment;
 import com.github.yuukis.businessmap.R;
 import com.github.yuukis.businessmap.model.ContactsItem;
-import com.github.yuukis.businessmap.utils.ActionUtils;
+import com.github.yuukis.businessmap.util.ActionUtils;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
