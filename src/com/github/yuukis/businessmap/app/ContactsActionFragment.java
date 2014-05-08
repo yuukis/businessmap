@@ -25,6 +25,7 @@ import com.github.yuukis.businessmap.util.ActionUtils;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
@@ -86,6 +87,7 @@ AdapterView.OnItemClickListener {
 		gridView.setNumColumns(columns);
 		gridView.setAdapter(adapter);
 		gridView.setOnItemClickListener(this);
+		gridView.setBackgroundColor(Color.WHITE);
 		String title = mContact.getName();
 
 		return new AlertDialog.Builder(getActivity())
