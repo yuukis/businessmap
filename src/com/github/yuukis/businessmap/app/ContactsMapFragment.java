@@ -17,6 +17,7 @@
  */
 package com.github.yuukis.businessmap.app;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import android.os.Bundle;
@@ -43,14 +44,14 @@ public class ContactsMapFragment extends MapFragment implements
 
 	private GoogleMap mMap;
 	private SparseArray<Marker> mMarkerHashMap;
-	private SparseArray<ContactsItem> mContactHashMap;
+	private SparseArray<List<ContactsItem>> mContactHashMap;
 	private MapStatePreferences mPreferences;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mMarkerHashMap = new SparseArray<Marker>();
-		mContactHashMap = new SparseArray<ContactsItem>();
+		mContactHashMap = new SparseArray<List<ContactsItem>>();
 	}
 
 	@Override
@@ -100,12 +101,23 @@ public class ContactsMapFragment extends MapFragment implements
 				address = getString(R.string.message_no_data);
 			}
 			LatLng latLng = new LatLng(contact.getLat(), contact.getLng());
-			Marker marker = mMap.addMarker(new MarkerOptions()
-					.position(latLng)
-					.title(name)
-					.snippet(address));
+			Marker marker = mMarkerHashMap.get(contact.hashCode());
+			if (marker == null) {
+				marker = mMap.addMarker(new MarkerOptions()
+						.position(latLng)
+						.title(name)
+						.snippet(address));
+			}
+
+			LatLng position = marker.getPosition();
+			List<ContactsItem> contacts = mContactHashMap.get(position.hashCode());
+			if (contacts == null) {
+				contacts = new ArrayList<ContactsItem>();
+			}
+			contacts.add(contact);
+
 			mMarkerHashMap.put(contact.hashCode(), marker);
-			mContactHashMap.put(marker.hashCode(), contact);
+			mContactHashMap.put(position.hashCode(), contacts);
 		}
 	}
 
@@ -138,11 +150,13 @@ public class ContactsMapFragment extends MapFragment implements
 
 	@Override
 	public void onInfoWindowClick(Marker marker) {
-		final ContactsItem contact = mContactHashMap.get(marker.hashCode());
-		if (contact == null) {
+		final LatLng latLng = marker.getPosition();
+		final List<ContactsItem> contacts = mContactHashMap.get(latLng.hashCode());
+		if (contacts == null || contacts.isEmpty()) {
 			return;
 		}
-		ContactsActionFragment.showDialog(getActivity(), contact);
+		// TODO: 複数の連絡先が対象の場合、連絡先選択ダイアログを表示
+		ContactsActionFragment.showDialog(getActivity(), contacts.get(0));
 	}
 
 	private List<ContactsItem> getContactsList() {
@@ -172,7 +186,8 @@ public class ContactsMapFragment extends MapFragment implements
 
 		@Override
 		public View getInfoContents(Marker marker) {
-			ContactsItem contacts = mContactHashMap.get(marker.hashCode());
+			final LatLng position = marker.getPosition();
+			List<ContactsItem> contacts = mContactHashMap.get(position.hashCode());
 			View view = getActivity().getLayoutInflater().inflate(
 					R.layout.marker_info_contents, null);
 			TextView tvTitle = (TextView) view.findViewById(R.id.title);
@@ -180,15 +195,17 @@ public class ContactsMapFragment extends MapFragment implements
 			TextView tvNote = (TextView) view.findViewById(R.id.note);
 			View separator = view.findViewById(R.id.separator);
 
-			if (contacts != null) {
-				String title = marker.getTitle();
+			if (contacts != null && !contacts.isEmpty()) {
+				// TODO: 複数の連絡先が対象の場合、ふきだしのレイアウトを変える
+				ContactsItem contact = contacts.get(0);
+				String title = contact.getName();
 				tvTitle.setText(title);
 
-				String snippet = marker.getSnippet();
+				String snippet = contact.getAddress();
 				snippet = snippet.replaceAll("[ 　]", "\n");
 				tvSnippet.setText(snippet);
 
-				String note = contacts.getNote();
+				String note = contact.getNote();
 				if (TextUtils.isEmpty(note)) {
 					separator.setVisibility(View.GONE);
 					tvNote.setVisibility(View.GONE);
