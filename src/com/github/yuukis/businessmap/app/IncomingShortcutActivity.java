@@ -17,15 +17,15 @@
  */
 package com.github.yuukis.businessmap.app;
 
+import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.github.yuukis.businessmap.R;
 import com.github.yuukis.businessmap.model.ContactsGroup;
 
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.app.Activity;
 import android.content.Intent;
 
-public class IncomingShortcutActivity extends Activity implements
+public class IncomingShortcutActivity extends SherlockFragmentActivity implements
 		ContactsGroupDialogFragment.OnSelectListener {
 
 	@Override
@@ -53,7 +53,7 @@ public class IncomingShortcutActivity extends Activity implements
 
 		Intent shortcutIntent = new Intent(getApplicationContext(),
 				MainActivity.class);
-		shortcutIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+		shortcutIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 		shortcutIntent.putExtra(MainActivity.KEY_CONTACTS_GROUP_ID, groupId);
 
 		Intent intent = new Intent();
