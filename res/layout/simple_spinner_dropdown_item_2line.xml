@@ -40,8 +40,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:singleLine="true"
-            android:textAppearance="?android:attr/textAppearanceLargePopupMenu"
-            android:textColor="#ff000000" />
+            android:textColor="#ff000000"
+            android:textSize="@dimen/action_bar_title_text_size" />
 
         <TextView
             android:id="@android:id/text2"
@@ -51,8 +51,8 @@
             android:layout_alignStart="@android:id/text1"
             android:layout_below="@android:id/text1"
             android:singleLine="true"
-            android:textAppearance="?android:attr/textAppearanceSmallPopupMenu"
-            android:textColor="#ffb7b7b7" />
+            android:textColor="#ffb7b7b7"
+            android:textSize="@dimen/action_bar_subtitle_text_size" />
     </TwoLineListItem>
 
 </LinearLayout>

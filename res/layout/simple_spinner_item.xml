@@ -25,4 +25,4 @@
     android:ellipsize="marquee"
     android:singleLine="true"
     android:textAlignment="inherit"
-    android:textAppearance="?android:attr/textAppearanceLargePopupMenu" />
+    android:textSize="@dimen/action_bar_title_text_size" />
