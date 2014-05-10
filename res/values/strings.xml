@@ -21,6 +21,7 @@
     <string name="message_geocoding_jsonerror" translatable="false">Failed to find coordinates from the address because the server returned an error.</string>
     <string name="message_no_data" translatable="false">No data.</string>
     <string name="message_no_contacts" translatable="false">No contacts in this group.</string>
+    <string name="message_other_items" translatable="false">%d other</string>
     <string name="hint_searchview" translatable="false">Find contacts</string>
     <string name="group_all_contacts" translatable="false">All contacts</string>
     <string name="desc_appicon" translatable="false">icon</string>
