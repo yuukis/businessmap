@@ -21,8 +21,8 @@ import java.io.Serializable;
 
 public class ContactsItem implements Serializable {
 
-	private static final long serialVersionUID = -9036992472158055718L;
-
+	private static final long serialVersionUID = -3544608120200322040L;
+	
 	private long cid;
 	private String name;
 	private String phonetic;
@@ -31,9 +31,10 @@ public class ContactsItem implements Serializable {
 	private Double lat;
 	private Double lng;
 	private String note;
+	private String companyName;
 
 	public ContactsItem(long cid, String name, String phonetic, long groupId,
-			String address, String note) {
+			String address, String note, String companyName) {
 		this.cid = cid;
 		this.name = name;
 		this.phonetic = phonetic;
@@ -42,6 +43,7 @@ public class ContactsItem implements Serializable {
 		this.lat = null;
 		this.lng = null;
 		this.note = note;
+		this.companyName = companyName;
 	}
 
 	public long getCID() {
@@ -74,6 +76,9 @@ public class ContactsItem implements Serializable {
 	
 	public String getNote() {
 		return note;
+	}
+	public String getCompanyName() {
+		return companyName;
 	}
 
 	public void setName(String name) {
@@ -110,6 +115,10 @@ public class ContactsItem implements Serializable {
 	
 	public void setNote(String note) {
 		this.note = note;
+	}
+	
+	public void setCompanyName(String companyName) {
+		this.companyName = companyName;
 	}
 
 }

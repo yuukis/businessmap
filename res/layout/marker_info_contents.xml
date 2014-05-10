@@ -23,7 +23,6 @@
         android:background="@drawable/rounded_corner"
         android:ellipsize="end"
         android:singleLine="true"
-        android:text="COMPANY NAME"
         android:textColor="#ff444444"
         android:textSize="10dp" />
 
