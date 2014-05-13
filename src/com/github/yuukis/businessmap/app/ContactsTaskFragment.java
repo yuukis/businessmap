@@ -150,11 +150,16 @@ public class ContactsTaskFragment extends Fragment {
 		args.putString(ProgressDialogFragment.MESSAGE, message);
 		args.putBoolean(ProgressDialogFragment.CANCELABLE, true);
 		args.putInt(ProgressDialogFragment.MAX, max);
-		DialogFragment dialog = ProgressDialogFragment.newInstance();
+		final DialogFragment dialog = ProgressDialogFragment.newInstance();
 		dialog.setArguments(args);
 		if (getActivity() != null) {
-			dialog.show(getActivity().getFragmentManager(),
-					ProgressDialogFragment.TAG);
+			new Handler(Looper.getMainLooper()).post(new Runnable() {
+				@Override
+				public void run() {
+					dialog.show(getActivity().getFragmentManager(),
+							ProgressDialogFragment.TAG);
+				}
+			});
 		}
 	}
 
@@ -186,10 +191,10 @@ public class ContactsTaskFragment extends Fragment {
 				@Override
 				public void run() {
 					new AlertDialog.Builder(getActivity())
-					.setTitle(title)
-					.setMessage(message)
-					.setPositiveButton(android.R.string.ok, null)
-					.show();
+							.setTitle(title)
+							.setMessage(message)
+							.setPositiveButton(android.R.string.ok, null)
+							.show();
 				}
 			});
 		}
