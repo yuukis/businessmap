@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.SparseArray;
@@ -30,6 +31,7 @@ import android.widget.TextView;
 import com.github.yuukis.businessmap.R;
 import com.github.yuukis.businessmap.data.MapStatePreferences;
 import com.github.yuukis.businessmap.model.ContactsItem;
+import com.github.yuukis.businessmap.widget.MapWrapperLayout;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.CancelableCallback;
@@ -169,6 +171,7 @@ public class ContactsMapFragment extends MapFragment implements
 			mMap = getMap();
 			if (mMap != null) {
 				setUpMap();
+				initMapWrapperLayout();
 			}
 		}
 	}
@@ -182,6 +185,17 @@ public class ContactsMapFragment extends MapFragment implements
 		mMap.moveCamera(CameraUpdateFactory.newCameraPosition(position));
 	}
 
+	private void initMapWrapperLayout() {
+		final MapWrapperLayout mapWrapperLayout = (MapWrapperLayout) getActivity()
+				.findViewById(R.id.map_relative_layout);
+		mapWrapperLayout.init(getMap(), getPixelsFromDp(getActivity(), 39 + 20));
+	}
+
+	private static int getPixelsFromDp(Context context, float dp) {
+        final float scale = context.getResources().getDisplayMetrics().density;
+        return (int)(dp * scale + 0.5f);
+    }
+
 	private class MyInfoWindowAdapter implements InfoWindowAdapter {
 
 		@Override
@@ -189,7 +203,7 @@ public class ContactsMapFragment extends MapFragment implements
 			final ContactsItem contacts = mMarkerContactHashMap.get(marker.hashCode());
 			final LatLng position = marker.getPosition();
 			final List<ContactsItem> samePositionContacts = mLatlngContactsHashMap.get(position.hashCode());
-			
+
 			View view = getActivity().getLayoutInflater().inflate(
 					R.layout.marker_info_contents, null);
 			TextView tvTitle = (TextView) view.findViewById(R.id.title);
@@ -215,7 +229,7 @@ public class ContactsMapFragment extends MapFragment implements
 					separator.setVisibility(View.VISIBLE);
 					tvNote.setVisibility(View.VISIBLE);
 				}
-				
+
 				if (samePositionContacts != null && samePositionContacts.size() > 1) {
 					String otherCount = getString(R.string.message_other_items);
 					otherCount = String.format(Locale.getDefault(), otherCount, samePositionContacts.size() - 1);
