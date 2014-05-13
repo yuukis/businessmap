@@ -26,11 +26,14 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.SparseArray;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.github.yuukis.businessmap.R;
 import com.github.yuukis.businessmap.data.MapStatePreferences;
 import com.github.yuukis.businessmap.model.ContactsItem;
+import com.github.yuukis.businessmap.view.OnInfoWindowElemTouchListener;
 import com.github.yuukis.businessmap.widget.MapWrapperLayout;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -46,6 +49,7 @@ public class ContactsMapFragment extends MapFragment implements
 		GoogleMap.OnInfoWindowClickListener {
 
 	private GoogleMap mMap;
+	private MapWrapperLayout mMapWrapperLayout;
 	private SparseArray<Marker> mContactMarkerHashMap;
 	private SparseArray<ContactsItem> mMarkerContactHashMap;
 	private SparseArray<List<ContactsItem>> mLatlngContactsHashMap;
@@ -186,9 +190,11 @@ public class ContactsMapFragment extends MapFragment implements
 	}
 
 	private void initMapWrapperLayout() {
-		final MapWrapperLayout mapWrapperLayout = (MapWrapperLayout) getActivity()
-				.findViewById(R.id.map_relative_layout);
-		mapWrapperLayout.init(getMap(), getPixelsFromDp(getActivity(), 39 + 20));
+		if (mMapWrapperLayout == null) {
+			mMapWrapperLayout = (MapWrapperLayout) getActivity()
+					.findViewById(R.id.map_relative_layout);
+			mMapWrapperLayout.init(getMap(), getPixelsFromDp(getActivity(), 39 + 20));
+		}
 	}
 
 	private static int getPixelsFromDp(Context context, float dp) {
@@ -209,8 +215,21 @@ public class ContactsMapFragment extends MapFragment implements
 			TextView tvTitle = (TextView) view.findViewById(R.id.title);
 			TextView tvSnippet = (TextView) view.findViewById(R.id.snippet);
 			TextView tvNote = (TextView) view.findViewById(R.id.note);
-			TextView tvOtherCount = (TextView) view.findViewById(R.id.other_count);
+			Button btnOtherCount = (Button) view.findViewById(R.id.other_count);
 			View separator = view.findViewById(R.id.separator);
+			OnInfoWindowElemTouchListener infoButtonListener = new OnInfoWindowElemTouchListener(
+					view, getResources().getDrawable(
+							android.R.drawable.btn_default), getResources()
+							.getDrawable(android.R.drawable.btn_default)) {
+				@Override
+				protected void onClickConfirmed(View v, Marker marker) {
+					// TODO 自動生成されたメソッド・スタブ
+					Toast.makeText(getActivity(), marker.getTitle(),
+							Toast.LENGTH_SHORT).show();
+				}
+			};
+			infoButtonListener.setMarker(marker);
+			btnOtherCount.setOnTouchListener(infoButtonListener);
 
 			if (contacts != null) {
 				String title = marker.getTitle();
@@ -233,12 +252,17 @@ public class ContactsMapFragment extends MapFragment implements
 				if (samePositionContacts != null && samePositionContacts.size() > 1) {
 					String otherCount = getString(R.string.message_other_items);
 					otherCount = String.format(Locale.getDefault(), otherCount, samePositionContacts.size() - 1);
-					tvOtherCount.setText(otherCount);
-					tvOtherCount.setVisibility(View.VISIBLE);
+					btnOtherCount.setText(otherCount);
+					btnOtherCount.setVisibility(View.VISIBLE);
 				} else {
-					tvOtherCount.setVisibility(View.GONE);
+					btnOtherCount.setVisibility(View.GONE);
 				}
 			}
+
+			if (mMapWrapperLayout != null) {
+				mMapWrapperLayout.setMarkerWithInfoWindow(marker, view);
+			}
+
 			return view;
 		}
 
