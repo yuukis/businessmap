@@ -30,7 +30,9 @@ import com.github.yuukis.businessmap.widget.GroupAdapter;
 import android.os.Bundle;
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.Fragment;
 import android.app.FragmentManager;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.WindowManager;
@@ -122,6 +124,24 @@ public class MainActivity extends Activity implements
 	@Override
 	public void onProgressCancelled() {
 		mTaskFragment.cancel();
+	}
+
+	@Override
+	public boolean dispatchKeyEvent(KeyEvent event) {
+		if (event.getAction() == KeyEvent.ACTION_DOWN) {
+			switch (event.getKeyCode()) {
+			case KeyEvent.KEYCODE_BACK:
+				// バックキーを押下
+				ContactsListFragment listFragment = (ContactsListFragment) getFragmentManager()
+						.findFragmentById(R.id.contacts_list);
+				if (listFragment != null && listFragment.getVisibility()) {
+					// 連絡先一覧が表示されている場合は、連絡先レイヤーを閉じる
+					listFragment.setVisibility(false);
+					return true;
+				}
+			}
+		}
+		return super.dispatchKeyEvent(event);
 	}
 
 	public List<ContactsItem> getCurrentContactsList() {
