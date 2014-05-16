@@ -17,17 +17,23 @@
  */
 package com.github.yuukis.businessmap.app;
 
+import java.io.IOException;
 import java.util.List;
 
+import org.json.JSONException;
+
+import android.location.Address;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.SparseArray;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.github.yuukis.businessmap.R;
 import com.github.yuukis.businessmap.data.MapStatePreferences;
 import com.github.yuukis.businessmap.model.ContactsItem;
+import com.github.yuukis.businessmap.util.GeocoderUtils;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.CancelableCallback;
@@ -39,7 +45,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 public class ContactsMapFragment extends MapFragment implements
-		GoogleMap.OnInfoWindowClickListener {
+		GoogleMap.OnInfoWindowClickListener, GoogleMap.OnMapLongClickListener {
 
 	private GoogleMap mMap;
 	private SparseArray<Marker> mMarkerHashMap;
@@ -145,6 +151,26 @@ public class ContactsMapFragment extends MapFragment implements
 		ContactsActionFragment.showDialog(getActivity(), contact);
 	}
 
+	@Override
+	public void onMapLongClick(LatLng latLng) {
+		double lat = latLng.latitude;
+		double lng = latLng.longitude;
+		try {
+			Address addr = GeocoderUtils.getFromLocationLatLng(getActivity(), lat, lng);
+			String address = "";
+			int lineIndex = addr.getMaxAddressLineIndex();
+			for (int i = 0; i < lineIndex; i++) {
+				address += addr.getAddressLine(i) + " ";
+			}
+			Toast.makeText(getActivity(), address, Toast.LENGTH_SHORT).show();
+
+		} catch (IOException e) {
+			Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_LONG).show();
+		} catch (JSONException e) {
+			Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_LONG).show();
+		}
+	}
+
 	private List<ContactsItem> getContactsList() {
 		MainActivity activity = (MainActivity) getActivity();
 		return activity.getCurrentContactsList();
@@ -162,6 +188,7 @@ public class ContactsMapFragment extends MapFragment implements
 	private void setUpMap() {
 		CameraPosition position = mPreferences.getCameraPosition();
 		mMap.setInfoWindowAdapter(new MyInfoWindowAdapter());
+		mMap.setOnMapLongClickListener(this);
 		mMap.setOnInfoWindowClickListener(this);
 		mMap.setIndoorEnabled(false);
 		mMap.setMyLocationEnabled(true);
@@ -184,7 +211,7 @@ public class ContactsMapFragment extends MapFragment implements
 			if (contacts != null) {
 				String title = marker.getTitle();
 				tvTitle.setText(title);
-				
+
 				String companyName = contacts.getCompanyName();
 				if (TextUtils.isEmpty(companyName)) {
 					tvCompanyName.setVisibility(View.GONE);

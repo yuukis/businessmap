@@ -43,6 +43,22 @@ public class GeocoderUtils {
 		return latlng;
 	}
 
+	public static Address getFromLocationLatLng(Context context, double lat, double lng)
+			throws IOException, JSONException {
+		Address addr = null;
+
+		try {
+			List<Address> list = new Geocoder(context, Locale.getDefault())
+					.getFromLocation(lat, lng, 1);
+			if (list.size() != 0) {
+				addr = list.get(0);
+			}
+		} catch (IOException e) {
+			//addr = getFromLocationNameToGoogleMaps(address);
+		}
+		return addr;
+	}
+
 	private static Double[] getFromLocationNameToGoogleMaps(String address)
 			throws IOException, JSONException {
 		String url = "http://maps.google.com/maps/api/geocode/json?address=%s&ka&sensor=false";
