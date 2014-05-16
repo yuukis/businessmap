@@ -193,6 +193,7 @@ public class ContactsMapFragment extends MapFragment implements
 			View view = getActivity().getLayoutInflater().inflate(
 					R.layout.marker_info_contents, null);
 			TextView tvTitle = (TextView) view.findViewById(R.id.title);
+			TextView tvCompanyName = (TextView) view.findViewById(R.id.company_name);
 			TextView tvSnippet = (TextView) view.findViewById(R.id.snippet);
 			TextView tvNote = (TextView) view.findViewById(R.id.note);
 			TextView tvOtherCount = (TextView) view.findViewById(R.id.other_count);
@@ -201,6 +202,14 @@ public class ContactsMapFragment extends MapFragment implements
 			if (contacts != null) {
 				String title = marker.getTitle();
 				tvTitle.setText(title);
+				
+				String companyName = contacts.getCompanyName();
+				if (TextUtils.isEmpty(companyName)) {
+					tvCompanyName.setVisibility(View.GONE);
+				} else {
+					tvCompanyName.setText(companyName);
+					tvCompanyName.setVisibility(View.VISIBLE);
+				}
 
 				String snippet = marker.getSnippet();
 				snippet = snippet.replaceAll("[ 　]", "\n");
