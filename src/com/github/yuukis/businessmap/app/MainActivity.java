@@ -36,10 +36,12 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.WindowManager;
+import android.widget.Toast;
 
 public class MainActivity extends Activity implements
 		ActionBar.OnNavigationListener, ContactsTaskFragment.TaskCallback,
-		ProgressDialogFragment.ProgressDialogFragmentListener {
+		ProgressDialogFragment.ProgressDialogFragmentListener,
+		ContactsItemsDialogFragment.OnSelectListener {
 
 	public static final String KEY_CONTACTS_GROUP_ID = "contacts_group_id";
 	private static final String KEY_NAVIGATION_INDEX = "navigation_index";
@@ -119,6 +121,14 @@ public class MainActivity extends Activity implements
 		changeCurrentGroup(groupId);
 		mMapFragment.notifyDataSetChanged();
 		mListFragment.notifyDataSetChanged();
+	}
+
+	@Override
+	public void onContactsSelected(ContactsItem contacts) {
+		if (contacts == null) {
+			return;
+		}
+		Toast.makeText(this, contacts.getName(), Toast.LENGTH_SHORT).show();
 	}
 
 	@Override

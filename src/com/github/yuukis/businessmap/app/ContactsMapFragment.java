@@ -152,11 +152,18 @@ public class ContactsMapFragment extends MapFragment implements
 
 	@Override
 	public void onInfoWindowClick(Marker marker) {
+		// TODO: 確認用 : あとで消す
+		LatLng position = marker.getPosition();
+		List<ContactsItem> contactsList = mLatlngContactsHashMap.get(position.hashCode());
+		ContactsItemsDialogFragment.showDialog(getActivity(), contactsList);
+
+		/*
 		final ContactsItem contact = mMarkerContactHashMap.get(marker.hashCode());
 		if (contact == null) {
 			return;
 		}
 		ContactsActionFragment.showDialog(getActivity(), contact);
+		*/
 	}
 
 	private List<ContactsItem> getContactsList() {
@@ -189,7 +196,7 @@ public class ContactsMapFragment extends MapFragment implements
 			final ContactsItem contacts = mMarkerContactHashMap.get(marker.hashCode());
 			final LatLng position = marker.getPosition();
 			final List<ContactsItem> samePositionContacts = mLatlngContactsHashMap.get(position.hashCode());
-			
+
 			View view = getActivity().getLayoutInflater().inflate(
 					R.layout.marker_info_contents, null);
 			TextView tvTitle = (TextView) view.findViewById(R.id.title);
@@ -202,7 +209,7 @@ public class ContactsMapFragment extends MapFragment implements
 			if (contacts != null) {
 				String title = marker.getTitle();
 				tvTitle.setText(title);
-				
+
 				String companyName = contacts.getCompanyName();
 				if (TextUtils.isEmpty(companyName)) {
 					tvCompanyName.setVisibility(View.GONE);
@@ -224,7 +231,7 @@ public class ContactsMapFragment extends MapFragment implements
 					separator.setVisibility(View.VISIBLE);
 					tvNote.setVisibility(View.VISIBLE);
 				}
-				
+
 				if (samePositionContacts != null && samePositionContacts.size() > 1) {
 					String otherCount = getString(R.string.message_other_items);
 					otherCount = String.format(Locale.getDefault(), otherCount, samePositionContacts.size() - 1);
