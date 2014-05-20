@@ -22,13 +22,13 @@ import java.util.List;
 
 import org.json.JSONException;
 
-import android.location.Address;
 import android.os.Bundle;
+import android.os.Looper;
 import android.text.TextUtils;
+import android.util.Log;
 import android.util.SparseArray;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.github.yuukis.businessmap.R;
 import com.github.yuukis.businessmap.data.MapStatePreferences;
@@ -153,22 +153,22 @@ public class ContactsMapFragment extends MapFragment implements
 
 	@Override
 	public void onMapLongClick(LatLng latLng) {
-		double lat = latLng.latitude;
-		double lng = latLng.longitude;
-		try {
-			Address addr = GeocoderUtils.getFromLocationLatLng(getActivity(), lat, lng);
-			String address = "";
-			int lineIndex = addr.getMaxAddressLineIndex();
-			for (int i = 0; i < lineIndex; i++) {
-				address += addr.getAddressLine(i) + " ";
+		final double lat = latLng.latitude;
+		final double lng = latLng.longitude;
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				Looper.prepare();
+				try {
+					String addressText = GeocoderUtils.getFromLocationLatLng(getActivity(), lat, lng);
+					Log.d("ContactsMapFragment#onMapLongClick", addressText);
+				} catch (IOException e) {
+					Log.i("ContactsMapFragment#onMapLongClick", e.getMessage());
+				} catch (JSONException e) {
+					Log.i("ContactsMapFragment#onMapLongClick", e.getMessage());
+				}
 			}
-			Toast.makeText(getActivity(), address, Toast.LENGTH_SHORT).show();
-
-		} catch (IOException e) {
-			Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_LONG).show();
-		} catch (JSONException e) {
-			Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_LONG).show();
-		}
+		}).start();
 	}
 
 	private List<ContactsItem> getContactsList() {

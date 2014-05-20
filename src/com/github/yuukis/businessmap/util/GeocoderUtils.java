@@ -19,6 +19,7 @@ import org.json.JSONObject;
 import android.content.Context;
 import android.location.Address;
 import android.location.Geocoder;
+import android.util.Log;
 
 public class GeocoderUtils {
 
@@ -43,25 +44,15 @@ public class GeocoderUtils {
 		return latlng;
 	}
 
-	public static Address getFromLocationLatLng(Context context, double lat, double lng)
+	public static String getFromLocationLatLng(Context context, double lat, double lng)
 			throws IOException, JSONException {
-		Address addr = null;
-
-		try {
-			List<Address> list = new Geocoder(context, Locale.getDefault())
-					.getFromLocation(lat, lng, 1);
-			if (list.size() != 0) {
-				addr = list.get(0);
-			}
-		} catch (IOException e) {
-			//addr = getFromLocationNameToGoogleMaps(address);
-		}
-		return addr;
+		String addressText = getFromLocationLatLngToGoogleMaps(lat, lng);
+		return addressText;
 	}
 
 	private static Double[] getFromLocationNameToGoogleMaps(String address)
 			throws IOException, JSONException {
-		String url = "http://maps.google.com/maps/api/geocode/json?address=%s&ka&sensor=false";
+		String url = "http://maps.google.com/maps/api/geocode/json?address=%s&sensor=false";
 		address = URLEncoder.encode(address, "UTF-8");
 		url = String.format(Locale.getDefault(), url, address);
 		HttpGet httpGet = new HttpGet(url);
@@ -102,4 +93,37 @@ public class GeocoderUtils {
 		return latlng;
 	}
 
+	private static String getFromLocationLatLngToGoogleMaps(double lat, double lng)
+			throws IOException, JSONException {
+		String url = "http://maps.google.com/maps/api/geocode/json?latlng=%f,%f&language=ja&sensor=false";
+		url = String.format(Locale.getDefault(), url, lat, lng);
+		HttpGet httpGet = new HttpGet(url);
+		HttpClient client = new DefaultHttpClient();
+		HttpResponse response;
+		StringBuilder stringBuilder = new StringBuilder();
+
+		try {
+			response = client.execute(httpGet);
+			HttpEntity entity = response.getEntity();
+			InputStream stream = entity.getContent();
+			int b;
+			while ((b = stream.read()) != -1) {
+				stringBuilder.append((char) b);
+			}
+		} catch (ClientProtocolException e) {
+		}
+
+		JSONObject jsonObject = new JSONObject(stringBuilder.toString());
+		String formattedAddress = "";
+		try {
+			Log.d("GeocoderUtils.getFromLocationLatLngToGoogleMaps", jsonObject.toString());
+			formattedAddress = ((JSONArray) jsonObject.get("results"))
+					.getJSONObject(0)
+					.getString("formatted_address");
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+
+		return formattedAddress;
+	}
 }
