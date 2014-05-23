@@ -4,6 +4,7 @@
     <string name="app_name" translatable="false">営業マップ</string>
     <string name="provider" translatable="false">しみず ゆうき</string>
     <string name="action_list" translatable="false">連絡先一覧</string>
+    <string name="action_add_person" translatable="false">連絡先登録</string>
     <string name="action_about" translatable="false">このアプリについて</string>
     <string name="label_licenses" translatable="false"><u>オープンソース ライセンス</u></string>
     <string name="action_contacts_detail" translatable="false">連絡先を表示</string>

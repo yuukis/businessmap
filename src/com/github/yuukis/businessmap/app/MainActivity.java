@@ -30,7 +30,6 @@ import com.github.yuukis.businessmap.widget.GroupAdapter;
 import android.os.Bundle;
 import android.app.ActionBar;
 import android.app.Activity;
-import android.app.Fragment;
 import android.app.FragmentManager;
 import android.view.KeyEvent;
 import android.view.Menu;

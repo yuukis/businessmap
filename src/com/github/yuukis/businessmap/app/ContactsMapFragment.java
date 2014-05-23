@@ -27,6 +27,9 @@ import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.SparseArray;
+import android.view.ActionMode;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
@@ -169,6 +172,7 @@ public class ContactsMapFragment extends MapFragment implements
 				}
 			}
 		}).start();
+		getActivity().startActionMode(new MyActionModeCallback());
 	}
 
 	private List<ContactsItem> getContactsList() {
@@ -242,6 +246,30 @@ public class ContactsMapFragment extends MapFragment implements
 			return null;
 		}
 
+	}
+
+	private final class MyActionModeCallback implements ActionMode.Callback {
+
+		@Override
+		public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+			getActivity().getMenuInflater().inflate(R.menu.contacts_map_edit, menu);
+			return true;
+		}
+
+		@Override
+		public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+			return false;
+		}
+
+		@Override
+		public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+			mode.finish();
+			return true;
+		}
+
+		@Override
+		public void onDestroyActionMode(ActionMode mode) {
+		}
 	}
 
 }
