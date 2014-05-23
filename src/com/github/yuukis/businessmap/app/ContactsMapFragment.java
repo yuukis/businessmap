@@ -54,6 +54,7 @@ public class ContactsMapFragment extends MapFragment implements
 	private SparseArray<Marker> mMarkerHashMap;
 	private SparseArray<ContactsItem> mContactHashMap;
 	private MapStatePreferences mPreferences;
+	private Marker mActionTargetMarker;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -89,9 +90,7 @@ public class ContactsMapFragment extends MapFragment implements
 		if (mMap == null) {
 			return;
 		}
-		mMap.clear();
-		mMarkerHashMap.clear();
-		mContactHashMap.clear();
+		clearMap();
 		List<ContactsItem> list = getContactsList();
 		if (list == null) {
 			return;
@@ -172,7 +171,7 @@ public class ContactsMapFragment extends MapFragment implements
 				}
 			}
 		}).start();
-		getActivity().startActionMode(new MyActionModeCallback());
+		getActivity().startActionMode(new MyActionModeCallback(latLng));
 	}
 
 	private List<ContactsItem> getContactsList() {
@@ -197,6 +196,16 @@ public class ContactsMapFragment extends MapFragment implements
 		mMap.setIndoorEnabled(false);
 		mMap.setMyLocationEnabled(true);
 		mMap.moveCamera(CameraUpdateFactory.newCameraPosition(position));
+	}
+
+	private void clearMap() {
+		if (mMap == null) {
+			return;
+		}
+		mMap.clear();
+		mMarkerHashMap.clear();
+		mContactHashMap.clear();
+		mActionTargetMarker = null;
 	}
 
 	private class MyInfoWindowAdapter implements InfoWindowAdapter {
@@ -250,9 +259,17 @@ public class ContactsMapFragment extends MapFragment implements
 
 	private final class MyActionModeCallback implements ActionMode.Callback {
 
+		private LatLng mPosition;
+
+		public MyActionModeCallback(LatLng position) {
+			mPosition = position;
+		}
+
 		@Override
 		public boolean onCreateActionMode(ActionMode mode, Menu menu) {
 			getActivity().getMenuInflater().inflate(R.menu.contacts_map_edit, menu);
+			// マーカー追加
+			addTargetMarker();
 			return true;
 		}
 
@@ -263,12 +280,34 @@ public class ContactsMapFragment extends MapFragment implements
 
 		@Override
 		public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-			mode.finish();
-			return true;
+			switch (item.getItemId()) {
+			case R.id.action_add_person:
+				// TODO: 連絡先登録画面へ遷移
+				mode.finish();
+				return true;
+			}
+			return false;
 		}
 
 		@Override
 		public void onDestroyActionMode(ActionMode mode) {
+			// マーカー削除
+			clearTargetMarker();
+		}
+
+		private void addTargetMarker() {
+			clearTargetMarker();
+			mActionTargetMarker = mMap.addMarker(new MarkerOptions()
+					.position(mPosition)
+					.title("name")
+					.snippet("address"));
+		}
+
+		private void clearTargetMarker() {
+			if (mActionTargetMarker != null) {
+				mActionTargetMarker.remove();
+				mActionTargetMarker = null;
+			}
 		}
 	}
 
