@@ -1,6 +1,6 @@
 /*
  * ActionUtils.java
- * 
+ *
  * Copyright 2013 Yuuki Shimizu.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,15 +23,15 @@ import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.provider.ContactsContract.Contacts;
+import android.provider.ContactsContract;
 
 import com.github.yuukis.businessmap.model.ContactsItem;
 
 public class ActionUtils {
 
 	public static void doShowContact(Context context, ContactsItem contact) {
-		Uri contactUri = ContentUris.withAppendedId(Contacts.CONTENT_URI,
-				contact.getCID());
+		Uri contactUri = ContentUris.withAppendedId(
+				ContactsContract.Contacts.CONTENT_URI, contact.getCID());
 		Intent intent = new Intent(Intent.ACTION_VIEW, contactUri);
 		context.startActivity(intent);
 	}
@@ -52,6 +52,13 @@ public class ActionUtils {
 		Intent intent = new Intent(Intent.ACTION_VIEW, uri);
 		intent.setClassName("com.google.android.apps.maps",
 				"com.google.android.maps.driveabout.app.NavigationActivity");
+		context.startActivity(intent);
+	}
+
+	public static void doInsertContact(Context context, String postal) {
+		Intent intent = new Intent(Intent.ACTION_INSERT_OR_EDIT);
+		intent.setType(ContactsContract.Contacts.CONTENT_ITEM_TYPE);
+		intent.putExtra(ContactsContract.Intents.Insert.POSTAL, postal);
 		context.startActivity(intent);
 	}
 

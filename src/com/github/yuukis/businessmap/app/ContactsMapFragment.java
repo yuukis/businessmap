@@ -36,6 +36,7 @@ import android.widget.TextView;
 import com.github.yuukis.businessmap.R;
 import com.github.yuukis.businessmap.data.MapStatePreferences;
 import com.github.yuukis.businessmap.model.ContactsItem;
+import com.github.yuukis.businessmap.util.ActionUtils;
 import com.github.yuukis.businessmap.util.GeocoderUtils;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -282,7 +283,13 @@ public class ContactsMapFragment extends MapFragment implements
 		public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
 			switch (item.getItemId()) {
 			case R.id.action_add_person:
-				// TODO: 連絡先登録画面へ遷移
+				// 連絡先登録画面へ遷移
+				if (mPosition != null) {
+					double lat = mPosition.latitude;
+					double lng = mPosition.longitude;
+					String postal = String.format("%f, %f", lat, lng);
+					ActionUtils.doInsertContact(getActivity(), postal);
+				}
 				mode.finish();
 				return true;
 			}
