@@ -43,6 +43,8 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.CancelableCallback;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.GoogleMap.InfoWindowAdapter;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
@@ -304,7 +306,9 @@ public class ContactsMapFragment extends MapFragment implements
 
 		private void addTargetMarker() {
 			clearTargetMarker();
+			BitmapDescriptor icon = BitmapDescriptorFactory.fromResource(R.drawable.ic_led_orange);
 			mActionTargetMarker = mMap.addMarker(new MarkerOptions()
+					.icon(icon)
 					.position(mPosition)
 					.title("name")
 					.snippet("address"));
