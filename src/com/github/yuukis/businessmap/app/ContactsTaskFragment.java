@@ -17,7 +17,9 @@
  */
 package com.github.yuukis.businessmap.app;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -33,9 +35,11 @@ import com.github.yuukis.businessmap.app.ProgressDialogFragment;
 import com.github.yuukis.businessmap.data.GeocodingCacheDatabase;
 import com.github.yuukis.businessmap.model.ContactsGroup;
 import com.github.yuukis.businessmap.model.ContactsItem;
+import com.github.yuukis.businessmap.util.CacheUtils;
 import com.github.yuukis.businessmap.util.ContactsItemComparator;
 import com.github.yuukis.businessmap.util.CursorJoinerWithIntKey;
 import com.github.yuukis.businessmap.util.GeocoderUtils;
+import com.github.yuukis.businessmap.util.SerializationUtils;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -62,6 +66,8 @@ public class ContactsTaskFragment extends Fragment {
 	public interface TaskCallback {
 		void onContactsLoaded(List<ContactsItem> contactsList);
 	}
+
+	private static final String FILENAME_CACHE_CONTACTS_LIST = "contacts_list.cache";
 
 	private TaskCallback mCallback;
 	private ContactsAsyncTask mContactsTask;
@@ -211,8 +217,15 @@ public class ContactsTaskFragment extends Fragment {
 		@Override
 		protected void onPreExecute() {
 			super.onPreExecute();
-			mContactsList = new ArrayList<ContactsItem>();
+
+			mContactsList = readContactsListFromCache();
+			if (mContactsList == null) {
+				mContactsList = new ArrayList<ContactsItem>();
+			}
 			mGeocodingResultCache = new HashMap<String, Double[]>();
+			if (mCallback != null) {
+				mCallback.onContactsLoaded(mContactsList);
+			}
 			setRunning(true);
 		}
 
@@ -241,6 +254,7 @@ public class ContactsTaskFragment extends Fragment {
 		protected void onPostExecute(Void result) {
 			super.onPostExecute(result);
 
+			writeContactsListInCache(mContactsList);
 			if (mCallback != null) {
 				mCallback.onContactsLoaded(mContactsList);
 			}
@@ -304,21 +318,21 @@ public class ContactsTaskFragment extends Fragment {
 						Data.MIMETYPE + "=?",
 						new String[] { Organization.CONTENT_ITEM_TYPE },
 						Data.RAW_CONTACT_ID);
-				
+
 				HashMap<Long, String> noteMap = new HashMap<Long, String>();
 				while (noteCursor.moveToNext()) {
 					long rowId = noteCursor.getLong(0);
 					String note = noteCursor.getString(1);
 					noteMap.put(rowId, note);
 				}
-				
+
 				HashMap<Long, String> companyMap = new HashMap<Long, String>();
 				while (companyCursor.moveToNext()) {
 					long rowId = companyCursor.getLong(0);
 					String company = companyCursor.getString(1);
 					companyMap.put(rowId, company);
 				}
-				
+
 				CursorJoinerWithIntKey joiner = new CursorJoinerWithIntKey(
 						groupCursor, new String[] { Data.RAW_CONTACT_ID },
 						postalCursor, new String[] { Data.RAW_CONTACT_ID });
@@ -513,6 +527,37 @@ public class ContactsTaskFragment extends Fragment {
 				}
 			}
 			hideProgress();
+		}
+
+		@SuppressWarnings("unchecked")
+		private List<ContactsItem> readContactsListFromCache() {
+			Context context = getActivity();
+			Object object = null;
+			try {
+				byte[] bytes = CacheUtils.read(context, FILENAME_CACHE_CONTACTS_LIST);
+				object = SerializationUtils.deserialize(bytes);
+			} catch (FileNotFoundException e) {
+				// Nothing to do.
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			return (List<ContactsItem>) object;
+		}
+
+		private void writeContactsListInCache(List<ContactsItem> contactsList) {
+			Context context = getActivity();
+			if (contactsList == null) {
+				return;
+			}
+
+			byte[] bytes = SerializationUtils.serialize((Serializable) contactsList);
+			try {
+				CacheUtils.write(context, bytes, FILENAME_CACHE_CONTACTS_LIST);
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
