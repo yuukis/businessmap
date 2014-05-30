@@ -17,6 +17,8 @@
  */
 package com.github.yuukis.businessmap.app;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,13 +26,14 @@ import java.util.List;
 import com.github.yuukis.businessmap.R;
 import com.github.yuukis.businessmap.model.ContactsGroup;
 import com.github.yuukis.businessmap.model.ContactsItem;
+import com.github.yuukis.businessmap.util.CacheUtils;
 import com.github.yuukis.businessmap.util.ContactUtils;
+import com.github.yuukis.businessmap.util.SerializationUtils;
 import com.github.yuukis.businessmap.widget.GroupAdapter;
 
 import android.os.Bundle;
 import android.app.ActionBar;
 import android.app.Activity;
-import android.app.Fragment;
 import android.app.FragmentManager;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -44,6 +47,7 @@ public class MainActivity extends Activity implements
 	public static final String KEY_CONTACTS_GROUP_ID = "contacts_group_id";
 	private static final String KEY_NAVIGATION_INDEX = "navigation_index";
 	private static final String KEY_CONTACTS_LIST = "contacts_list";
+	private static final String FILENAME_CACHE_CONTACTS_LIST = "contacts_list.cache";
 
 	private List<ContactsGroup> mGroupList;
 	private List<ContactsItem> mContactsList;
@@ -66,6 +70,13 @@ public class MainActivity extends Activity implements
 		super.onStart();
 		if (mContactsList == null) {
 			mContactsList = new ArrayList<ContactsItem>();
+
+			List<ContactsItem> contactsList = readContactsListFromCache();
+			if (contactsList != null) {
+				mContactsList = contactsList;
+				notifyDataSetChanged();
+			}
+
 			if (!mTaskFragment.isRunning()) {
 				mTaskFragment.start();
 			}
@@ -113,12 +124,9 @@ public class MainActivity extends Activity implements
 	@Override
 	public void onContactsLoaded(List<ContactsItem> contactsList) {
 		mContactsList = contactsList;
-		int index = getActionBar().getSelectedNavigationIndex();
-		ContactsGroup group = mGroupList.get(index);
-		long groupId = group.getId();
-		changeCurrentGroup(groupId);
-		mMapFragment.notifyDataSetChanged();
-		mListFragment.notifyDataSetChanged();
+		notifyDataSetChanged();
+
+		writeContactsListInCache(contactsList);
 	}
 
 	@Override
@@ -185,12 +193,49 @@ public class MainActivity extends Activity implements
 		mCurrentGroupContactsList = new ArrayList<ContactsItem>();
 	}
 
+	private void notifyDataSetChanged() {
+		int index = getActionBar().getSelectedNavigationIndex();
+		ContactsGroup group = mGroupList.get(index);
+		long groupId = group.getId();
+		changeCurrentGroup(groupId);
+		mMapFragment.notifyDataSetChanged();
+		mListFragment.notifyDataSetChanged();
+	}
+
 	private void changeCurrentGroup(long groupId) {
 		mCurrentGroupContactsList.clear();
 		for (ContactsItem contact : mContactsList) {
 			if (contact.getGroupId() == groupId) {
 				mCurrentGroupContactsList.add(contact);
 			}
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private List<ContactsItem> readContactsListFromCache() {
+		Object object = null;
+		try {
+			byte[] bytes = CacheUtils.read(this, FILENAME_CACHE_CONTACTS_LIST);
+			object = SerializationUtils.deserialize(bytes);
+		} catch (FileNotFoundException e) {
+			// Nothing to do.
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return (List<ContactsItem>) object;
+	}
+
+	private void writeContactsListInCache(List<ContactsItem> contactsList) {
+		if (contactsList == null) {
+			return;
+		}
+		byte[] bytes = SerializationUtils.serialize((Serializable) contactsList);
+		try {
+			CacheUtils.write(this, bytes, FILENAME_CACHE_CONTACTS_LIST);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 }
