@@ -7,9 +7,9 @@
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/contacts_progressbar"
         android:layout_width="match_parent"
-        android:layout_height="2dp"
+        android:layout_height="3dp"
         android:indeterminate="true"
         android:visibility="gone"
-        app:spb_stroke_width="2dp" />
+        app:spb_stroke_width="3dp" />
 
 </FrameLayout>
