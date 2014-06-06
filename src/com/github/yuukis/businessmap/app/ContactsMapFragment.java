@@ -80,33 +80,59 @@ public class ContactsMapFragment extends MapFragment implements
 		if (mMap == null) {
 			return;
 		}
-		mMap.clear();
-		mMarkerHashMap.clear();
-		mContactHashMap.clear();
 		List<ContactsItem> list = getContactsList();
+		SparseArray<Marker> removeMarkerHashMap = mMarkerHashMap.clone();
 		if (list == null) {
 			return;
 		}
-		for (ContactsItem contact : list) {
-			if (contact.getLat() == null || contact.getLng() == null) {
-				continue;
+
+		for (ContactsItem contacts : list) {
+			if (removeMarkerHashMap.get(contacts.hashCode()) == null) {
+				Marker marker = createMarker(contacts);
+				if (marker != null) {
+					mMarkerHashMap.put(contacts.hashCode(), marker);
+					mContactHashMap.put(marker.hashCode(), contacts);
+				}
+			} else {
+				removeMarkerHashMap.remove(contacts.hashCode());
 			}
-			String name = contact.getName();
-			if (name == null) {
-				name = getString(R.string.message_no_data);
-			}
-			String address = contact.getAddress();
-			if (address == null) {
-				address = getString(R.string.message_no_data);
-			}
-			LatLng latLng = new LatLng(contact.getLat(), contact.getLng());
-			Marker marker = mMap.addMarker(new MarkerOptions()
-					.position(latLng)
-					.title(name)
-					.snippet(address));
-			mMarkerHashMap.put(contact.hashCode(), marker);
-			mContactHashMap.put(marker.hashCode(), contact);
 		}
+
+		// 存在しない連絡先を地図から削除
+		for (int i = 0; i < removeMarkerHashMap.size(); i++) {
+			int key = removeMarkerHashMap.keyAt(i);
+			Marker marker = removeMarkerHashMap.get(key);
+			if (marker != null) {
+				ContactsItem contacts = mContactHashMap.get(marker.hashCode());
+				if (contacts != null) {
+					mMarkerHashMap.remove(contacts.hashCode());
+				}
+				mContactHashMap.remove(marker.hashCode());
+				marker.remove();
+				marker = null;
+			}
+		}
+		removeMarkerHashMap.clear();
+	}
+
+	private Marker createMarker(ContactsItem contacts) {
+		if (contacts.getLat() == null || contacts.getLng() == null) {
+			return null;
+		}
+		String name = contacts.getName();
+		if (name == null) {
+			name = getString(R.string.message_no_data);
+		}
+		String address = contacts.getAddress();
+		if (address == null) {
+			address = getString(R.string.message_no_data);
+		}
+		LatLng latLng = new LatLng(contacts.getLat(), contacts.getLng());
+		Marker marker = mMap.addMarker(new MarkerOptions()
+				.position(latLng)
+				.title(name)
+				.snippet(address));
+		return marker;
 	}
 
 	public boolean showMarkerInfoWindow(ContactsItem contact) {
@@ -184,7 +210,7 @@ public class ContactsMapFragment extends MapFragment implements
 			if (contacts != null) {
 				String title = marker.getTitle();
 				tvTitle.setText(title);
-				
+
 				String companyName = contacts.getCompanyName();
 				if (TextUtils.isEmpty(companyName)) {
 					tvCompanyName.setVisibility(View.GONE);

@@ -1,6 +1,6 @@
 /*
  * ContactsItem.java
- * 
+ *
  * Copyright 2013 Yuuki Shimizu.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,8 +21,8 @@ import java.io.Serializable;
 
 public class ContactsItem implements Serializable {
 
-	private static final long serialVersionUID = -3544608120200322040L;
-	
+	private static final long serialVersionUID = -5022460356265154213L;
+
 	private long cid;
 	private String name;
 	private String phonetic;
@@ -73,7 +73,7 @@ public class ContactsItem implements Serializable {
 	public Double getLng() {
 		return lng;
 	}
-	
+
 	public String getNote() {
 		return note;
 	}
@@ -112,13 +112,30 @@ public class ContactsItem implements Serializable {
 			this.lng = lng;
 		}
 	}
-	
+
 	public void setNote(String note) {
 		this.note = note;
 	}
-	
+
 	public void setCompanyName(String companyName) {
 		this.companyName = companyName;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (o == null || o instanceof ContactsItem == false) {
+			return false;
+		}
+		ContactsItem other = (ContactsItem) o;
+		return cid == other.cid
+				&& name == other.name
+				&& phonetic == other.phonetic
+				&& groupId == other.groupId
+				&& address == other.address
+				&& lat == other.lat
+				&& lng == other.lng
+				&& note == other.note
+				&& companyName == other.companyName;
 	}
 
 }
