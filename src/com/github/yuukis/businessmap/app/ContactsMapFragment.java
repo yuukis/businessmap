@@ -115,26 +115,6 @@ public class ContactsMapFragment extends MapFragment implements
 		removeMarkerHashMap.clear();
 	}
 
-	private Marker createMarker(ContactsItem contacts) {
-		if (contacts.getLat() == null || contacts.getLng() == null) {
-			return null;
-		}
-		String name = contacts.getName();
-		if (name == null) {
-			name = getString(R.string.message_no_data);
-		}
-		String address = contacts.getAddress();
-		if (address == null) {
-			address = getString(R.string.message_no_data);
-		}
-		LatLng latLng = new LatLng(contacts.getLat(), contacts.getLng());
-		Marker marker = mMap.addMarker(new MarkerOptions()
-				.position(latLng)
-				.title(name)
-				.snippet(address));
-		return marker;
-	}
-
 	public boolean showMarkerInfoWindow(ContactsItem contact) {
 		if (mMap == null) {
 			return false;
@@ -192,6 +172,26 @@ public class ContactsMapFragment extends MapFragment implements
 		mMap.setIndoorEnabled(false);
 		mMap.setMyLocationEnabled(true);
 		mMap.moveCamera(CameraUpdateFactory.newCameraPosition(position));
+	}
+
+	private Marker createMarker(ContactsItem contacts) {
+		if (contacts.getLat() == null || contacts.getLng() == null) {
+			return null;
+		}
+		String name = contacts.getName();
+		if (name == null) {
+			name = getString(R.string.message_no_data);
+		}
+		String address = contacts.getAddress();
+		if (address == null) {
+			address = getString(R.string.message_no_data);
+		}
+		LatLng latLng = new LatLng(contacts.getLat(), contacts.getLng());
+		Marker marker = mMap.addMarker(new MarkerOptions()
+				.position(latLng)
+				.title(name)
+				.snippet(address));
+		return marker;
 	}
 
 	private class MyInfoWindowAdapter implements InfoWindowAdapter {
