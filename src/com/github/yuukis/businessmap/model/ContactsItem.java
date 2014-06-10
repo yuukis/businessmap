@@ -122,20 +122,68 @@ public class ContactsItem implements Serializable {
 	}
 
 	@Override
-	public boolean equals(Object o) {
-		if (o == null || o instanceof ContactsItem == false) {
-			return false;
-		}
-		ContactsItem other = (ContactsItem) o;
-		return cid == other.cid
-				&& name == other.name
-				&& phonetic == other.phonetic
-				&& groupId == other.groupId
-				&& address == other.address
-				&& lat == other.lat
-				&& lng == other.lng
-				&& note == other.note
-				&& companyName == other.companyName;
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((address == null) ? 0 : address.hashCode());
+		result = prime * result + (int) (cid ^ (cid >>> 32));
+		result = prime * result
+				+ ((companyName == null) ? 0 : companyName.hashCode());
+		result = prime * result + ((lat == null) ? 0 : lat.hashCode());
+		result = prime * result + ((lng == null) ? 0 : lng.hashCode());
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result + ((note == null) ? 0 : note.hashCode());
+		result = prime * result
+				+ ((phonetic == null) ? 0 : phonetic.hashCode());
+		return result;
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ContactsItem other = (ContactsItem) obj;
+		if (address == null) {
+			if (other.address != null)
+				return false;
+		} else if (!address.equals(other.address))
+			return false;
+		if (cid != other.cid)
+			return false;
+		if (companyName == null) {
+			if (other.companyName != null)
+				return false;
+		} else if (!companyName.equals(other.companyName))
+			return false;
+		if (lat == null) {
+			if (other.lat != null)
+				return false;
+		} else if (!lat.equals(other.lat))
+			return false;
+		if (lng == null) {
+			if (other.lng != null)
+				return false;
+		} else if (!lng.equals(other.lng))
+			return false;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
+			return false;
+		if (note == null) {
+			if (other.note != null)
+				return false;
+		} else if (!note.equals(other.note))
+			return false;
+		if (phonetic == null) {
+			if (other.phonetic != null)
+				return false;
+		} else if (!phonetic.equals(other.phonetic))
+			return false;
+		return true;
+	}
 }

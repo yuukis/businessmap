@@ -81,27 +81,27 @@ public class ContactsMapFragment extends MapFragment implements
 			return;
 		}
 		List<ContactsItem> list = getContactsList();
-		SparseArray<Marker> removeMarkerHashMap = mMarkerHashMap.clone();
+		SparseArray<Marker> removeMarkerMap = mMarkerHashMap.clone();
 		if (list == null) {
 			return;
 		}
 
 		for (ContactsItem contacts : list) {
-			if (removeMarkerHashMap.get(contacts.hashCode()) == null) {
+			if (removeMarkerMap.get(contacts.hashCode()) == null) {
 				Marker marker = createMarker(contacts);
 				if (marker != null) {
 					mMarkerHashMap.put(contacts.hashCode(), marker);
 					mContactHashMap.put(marker.hashCode(), contacts);
 				}
 			} else {
-				removeMarkerHashMap.remove(contacts.hashCode());
+				removeMarkerMap.remove(contacts.hashCode());
 			}
 		}
 
 		// 存在しない連絡先を地図から削除
-		for (int i = 0; i < removeMarkerHashMap.size(); i++) {
-			int key = removeMarkerHashMap.keyAt(i);
-			Marker marker = removeMarkerHashMap.get(key);
+		for (int i = 0; i < removeMarkerMap.size(); i++) {
+			int key = removeMarkerMap.keyAt(i);
+			Marker marker = removeMarkerMap.get(key);
 			if (marker != null) {
 				ContactsItem contacts = mContactHashMap.get(marker.hashCode());
 				if (contacts != null) {
@@ -112,7 +112,7 @@ public class ContactsMapFragment extends MapFragment implements
 				marker = null;
 			}
 		}
-		removeMarkerHashMap.clear();
+		removeMarkerMap.clear();
 	}
 
 	public boolean showMarkerInfoWindow(ContactsItem contact) {
