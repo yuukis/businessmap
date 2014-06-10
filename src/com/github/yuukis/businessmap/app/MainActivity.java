@@ -98,15 +98,7 @@ public class MainActivity extends Activity implements
 
 	@Override
 	public boolean onNavigationItemSelected(int itemPosition, long itemId) {
-		if (mGroupList.size() <= itemPosition) {
-			return false;
-		}
-		ContactsGroup group = mGroupList.get(itemPosition);
-		long groupId = group.getId();
-		changeCurrentGroup(groupId);
-		mMapFragment.notifyDataSetChanged();
-		mListFragment.notifyDataSetChanged();
-
+		notifyDataSetChanged();
 		return true;
 	}
 
