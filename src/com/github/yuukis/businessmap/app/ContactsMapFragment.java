@@ -28,7 +28,6 @@ import android.util.SparseArray;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.github.yuukis.businessmap.R;
 import com.github.yuukis.businessmap.data.MapStatePreferences;
@@ -207,9 +206,9 @@ public class ContactsMapFragment extends MapFragment implements
 							.getDrawable(android.R.drawable.btn_default)) {
 				@Override
 				protected void onClickConfirmed(View v, Marker marker) {
-					// TODO 自動生成されたメソッド・スタブ
-					Toast.makeText(getActivity(), marker.getTitle(),
-							Toast.LENGTH_SHORT).show();
+					LatLng position = marker.getPosition();
+					List<ContactsItem> contactsList = mLatlngContactsHashMap.get(position.hashCode());
+					ContactsItemsDialogFragment.showDialog(getActivity(), contactsList);
 				}
 			};
 			mInfoButton.setOnTouchListener(mInfoButtonListener);
