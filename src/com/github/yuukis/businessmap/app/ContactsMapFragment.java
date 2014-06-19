@@ -131,30 +131,34 @@ public class ContactsMapFragment extends MapFragment implements
 		}
 	}
 
-	public boolean showMarkerInfoWindow(ContactsItem contact) {
-		if (mMap == null) {
+	public boolean showMarkerInfoWindow(ContactsItem contact, boolean animate) {
+		if (mMap == null || contact == null) {
 			return false;
 		}
 		final Marker marker = mContactMarkerHashMap.get(contact.hashCode());
 		if (marker == null) {
 			return false;
 		}
-		mMap.animateCamera(
-				CameraUpdateFactory.newCameraPosition(
-				new CameraPosition.Builder()
-						.target(marker.getPosition())
-						.zoom(15.5f)
-						.build()),
-				new CancelableCallback() {
-					@Override
-					public void onCancel() {
-					}
+		if (animate) {
+			mMap.animateCamera(
+					CameraUpdateFactory.newCameraPosition(
+							new CameraPosition.Builder()
+							.target(marker.getPosition())
+							.zoom(15.5f)
+							.build()),
+							new CancelableCallback() {
+						@Override
+						public void onCancel() {
+						}
 
-					@Override
-					public void onFinish() {
-						marker.showInfoWindow();
-					}
-				});
+						@Override
+						public void onFinish() {
+							marker.showInfoWindow();
+						}
+					});
+		} else {
+			marker.showInfoWindow();
+		}
 		return true;
 	}
 

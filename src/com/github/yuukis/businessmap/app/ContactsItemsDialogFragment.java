@@ -20,6 +20,7 @@ package com.github.yuukis.businessmap.app;
 import java.io.Serializable;
 import java.util.List;
 
+import com.github.yuukis.businessmap.R;
 import com.github.yuukis.businessmap.model.ContactsItem;
 
 import android.app.Activity;
@@ -73,9 +74,8 @@ public class ContactsItemsDialogFragment extends DialogFragment implements
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		CharSequence[] items = getContactsItemsTitleArray();
 		return new AlertDialog.Builder(getActivity())
-				// .setTitle(R.string.action_select_group)
+				.setTitle(R.string.action_select_contacts)
 				.setItems(items, this)
-				.setNegativeButton(android.R.string.cancel, this)
 				.create();
 	}
 

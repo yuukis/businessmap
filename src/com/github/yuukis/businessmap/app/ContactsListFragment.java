@@ -1,6 +1,6 @@
 /*
  * ContactsListFragment.java
- * 
+ *
  * Copyright 2013 Yuuki Shimizu.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -101,7 +101,8 @@ public class ContactsListFragment extends ListFragment implements
 		ContactsMapFragment mapFragment = (ContactsMapFragment) getFragmentManager()
 				.findFragmentById(R.id.contacts_map);
 		if (mapFragment != null) {
-			boolean result = mapFragment.showMarkerInfoWindow(contact);
+			boolean animate = true;
+			boolean result = mapFragment.showMarkerInfoWindow(contact, animate);
 			if (result) {
 				setVisibility(false);
 				return;
@@ -264,7 +265,7 @@ public class ContactsListFragment extends ListFragment implements
 						for (ContactsItem contacts : contactsList) {
 							String query = constraint.toString();
 							query = StringJUtils.convertToKatakana(query);
-							
+
 							String name = contacts.getName();
 							if (name != null) {
 								name = StringJUtils.convertToKatakana(name);
@@ -273,7 +274,7 @@ public class ContactsListFragment extends ListFragment implements
 									continue;
 								}
 							}
-							
+
 							String phonetic = contacts.getPhontic();
 							if (phonetic != null) {
 								phonetic = StringJUtils.convertToKatakana(phonetic);
@@ -282,7 +283,7 @@ public class ContactsListFragment extends ListFragment implements
 									continue;
 								}
 							}
-							
+
 							String companyName = contacts.getCompanyName();
 							if (companyName != null) {
 								companyName = StringJUtils.convertToKatakana(companyName);

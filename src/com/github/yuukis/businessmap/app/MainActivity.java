@@ -30,13 +30,11 @@ import com.github.yuukis.businessmap.widget.GroupAdapter;
 import android.os.Bundle;
 import android.app.ActionBar;
 import android.app.Activity;
-import android.app.Fragment;
 import android.app.FragmentManager;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.WindowManager;
-import android.widget.Toast;
 
 public class MainActivity extends Activity implements
 		ActionBar.OnNavigationListener, ContactsTaskFragment.TaskCallback,
@@ -125,10 +123,8 @@ public class MainActivity extends Activity implements
 
 	@Override
 	public void onContactsSelected(ContactsItem contacts) {
-		if (contacts == null) {
-			return;
-		}
-		Toast.makeText(this, contacts.getName(), Toast.LENGTH_SHORT).show();
+		boolean animate = false;
+		mMapFragment.showMarkerInfoWindow(contacts, animate);
 	}
 
 	@Override
