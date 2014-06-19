@@ -50,6 +50,9 @@ public class ContactsMapFragment extends MapFragment implements
 
 	private GoogleMap mMap;
 	private MapWrapperLayout mMapWrapperLayout;
+	private View mInfoWindow;
+	private Button mInfoButton;
+	private OnInfoWindowElemTouchListener mInfoButtonListener;
 	private SparseArray<Marker> mContactMarkerHashMap;
 	private SparseArray<ContactsItem> mMarkerContactHashMap;
 	private SparseArray<List<ContactsItem>> mLatlngContactsHashMap;
@@ -194,6 +197,22 @@ public class ContactsMapFragment extends MapFragment implements
 			mMapWrapperLayout = (MapWrapperLayout) getActivity()
 					.findViewById(R.id.map_relative_layout);
 			mMapWrapperLayout.init(getMap(), getPixelsFromDp(getActivity(), 39 + 20));
+
+			mInfoWindow = getActivity().getLayoutInflater().inflate(
+					R.layout.marker_info_contents, null);
+			mInfoButton = (Button) mInfoWindow.findViewById(R.id.other_count);
+			mInfoButtonListener = new OnInfoWindowElemTouchListener(
+					mInfoButton, getResources().getDrawable(
+							android.R.drawable.btn_default), getResources()
+							.getDrawable(android.R.drawable.btn_default)) {
+				@Override
+				protected void onClickConfirmed(View v, Marker marker) {
+					// TODO 自動生成されたメソッド・スタブ
+					Toast.makeText(getActivity(), marker.getTitle(),
+							Toast.LENGTH_SHORT).show();
+				}
+			};
+			mInfoButton.setOnTouchListener(mInfoButtonListener);
 		}
 	}
 
@@ -210,32 +229,19 @@ public class ContactsMapFragment extends MapFragment implements
 			final LatLng position = marker.getPosition();
 			final List<ContactsItem> samePositionContacts = mLatlngContactsHashMap.get(position.hashCode());
 
-			View view = getActivity().getLayoutInflater().inflate(
-					R.layout.marker_info_contents, null);
+			View view = mInfoWindow;
 			TextView tvTitle = (TextView) view.findViewById(R.id.title);
 			TextView tvCompanyName = (TextView) view.findViewById(R.id.company_name);
 			TextView tvSnippet = (TextView) view.findViewById(R.id.snippet);
 			TextView tvNote = (TextView) view.findViewById(R.id.note);
-			Button btnOtherCount = (Button) view.findViewById(R.id.other_count);
+			Button btnOtherCount = mInfoButton;
 			View separator = view.findViewById(R.id.separator);
-			OnInfoWindowElemTouchListener infoButtonListener = new OnInfoWindowElemTouchListener(
-					view, getResources().getDrawable(
-							android.R.drawable.btn_default), getResources()
-							.getDrawable(android.R.drawable.btn_default)) {
-				@Override
-				protected void onClickConfirmed(View v, Marker marker) {
-					// TODO 自動生成されたメソッド・スタブ
-					Toast.makeText(getActivity(), marker.getTitle(),
-							Toast.LENGTH_SHORT).show();
-				}
-			};
-			infoButtonListener.setMarker(marker);
-			btnOtherCount.setOnTouchListener(infoButtonListener);
+			mInfoButtonListener.setMarker(marker);
 
 			if (contacts != null) {
 				String title = marker.getTitle();
 				tvTitle.setText(title);
-				
+
 				String companyName = contacts.getCompanyName();
 				if (TextUtils.isEmpty(companyName)) {
 					tvCompanyName.setVisibility(View.GONE);
