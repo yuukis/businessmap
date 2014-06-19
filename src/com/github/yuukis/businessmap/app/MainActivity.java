@@ -38,7 +38,8 @@ import android.view.WindowManager;
 
 public class MainActivity extends Activity implements
 		ActionBar.OnNavigationListener, ContactsTaskFragment.TaskCallback,
-		ProgressDialogFragment.ProgressDialogFragmentListener {
+		ProgressDialogFragment.ProgressDialogFragmentListener,
+		ContactsItemsDialogFragment.OnSelectListener {
 
 	public static final String KEY_CONTACTS_GROUP_ID = "contacts_group_id";
 	private static final String KEY_NAVIGATION_INDEX = "navigation_index";
@@ -106,6 +107,12 @@ public class MainActivity extends Activity implements
 	public void onContactsLoaded(List<ContactsItem> contactsList) {
 		mContactsList = contactsList;
 		notifyDataSetChanged();
+	}
+
+	@Override
+	public void onContactsSelected(ContactsItem contacts) {
+		boolean animate = false;
+		mMapFragment.showMarkerInfoWindow(contacts, animate);
 	}
 
 	@Override

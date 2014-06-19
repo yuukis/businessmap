@@ -17,17 +17,23 @@
  */
 package com.github.yuukis.businessmap.app;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.SparseArray;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.github.yuukis.businessmap.R;
 import com.github.yuukis.businessmap.data.MapStatePreferences;
 import com.github.yuukis.businessmap.model.ContactsItem;
+import com.github.yuukis.businessmap.view.OnInfoWindowElemTouchListener;
+import com.github.yuukis.businessmap.widget.MapWrapperLayout;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.CancelableCallback;
@@ -42,15 +48,21 @@ public class ContactsMapFragment extends MapFragment implements
 		GoogleMap.OnInfoWindowClickListener {
 
 	private GoogleMap mMap;
-	private SparseArray<Marker> mMarkerHashMap;
-	private SparseArray<ContactsItem> mContactHashMap;
+	private MapWrapperLayout mMapWrapperLayout;
+	private View mInfoWindow;
+	private Button mInfoButton;
+	private OnInfoWindowElemTouchListener mInfoButtonListener;
+	private SparseArray<Marker> mContactMarkerHashMap;
+	private SparseArray<ContactsItem> mMarkerContactHashMap;
+	private SparseArray<List<ContactsItem>> mLatlngContactsHashMap;
 	private MapStatePreferences mPreferences;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		mMarkerHashMap = new SparseArray<Marker>();
-		mContactHashMap = new SparseArray<ContactsItem>();
+		mContactMarkerHashMap = new SparseArray<Marker>();
+		mMarkerContactHashMap = new SparseArray<ContactsItem>();
+		mLatlngContactsHashMap = new SparseArray<List<ContactsItem>>();
 	}
 
 	@Override
@@ -81,7 +93,7 @@ public class ContactsMapFragment extends MapFragment implements
 			return;
 		}
 		List<ContactsItem> list = getContactsList();
-		SparseArray<Marker> removeMarkerMap = mMarkerHashMap.clone();
+		SparseArray<Marker> removeMarkerMap = mContactMarkerHashMap.clone();
 		if (list == null) {
 			return;
 		}
@@ -90,8 +102,16 @@ public class ContactsMapFragment extends MapFragment implements
 			if (removeMarkerMap.get(contacts.hashCode()) == null) {
 				Marker marker = createMarker(contacts);
 				if (marker != null) {
-					mMarkerHashMap.put(contacts.hashCode(), marker);
-					mContactHashMap.put(marker.hashCode(), contacts);
+					LatLng position = marker.getPosition();
+					List<ContactsItem> contactList = mLatlngContactsHashMap.get(position.hashCode());
+					if (contactList == null) {
+						contactList = new ArrayList<ContactsItem>();
+					}
+					contactList.add(contacts);
+
+					mContactMarkerHashMap.put(contacts.hashCode(), marker);
+					mMarkerContactHashMap.put(marker.hashCode(), contacts);
+					mLatlngContactsHashMap.put(position.hashCode(), contactList);
 				}
 			} else {
 				removeMarkerMap.remove(contacts.hashCode());
@@ -103,11 +123,20 @@ public class ContactsMapFragment extends MapFragment implements
 			int key = removeMarkerMap.keyAt(i);
 			Marker marker = removeMarkerMap.get(key);
 			if (marker != null) {
-				ContactsItem contacts = mContactHashMap.get(marker.hashCode());
+				ContactsItem contacts = mMarkerContactHashMap.get(marker.hashCode());
 				if (contacts != null) {
-					mMarkerHashMap.remove(contacts.hashCode());
+					mContactMarkerHashMap.remove(contacts.hashCode());
 				}
-				mContactHashMap.remove(marker.hashCode());
+
+				LatLng position = marker.getPosition();
+				List<ContactsItem> contactList = mLatlngContactsHashMap.get(position.hashCode());
+				if (contactList == null) {
+					contactList = new ArrayList<ContactsItem>();
+				}
+				contactList.remove(contacts);
+				mLatlngContactsHashMap.put(position.hashCode(), contactList);
+
+				mMarkerContactHashMap.remove(marker.hashCode());
 				marker.remove();
 				marker = null;
 			}
@@ -115,20 +144,22 @@ public class ContactsMapFragment extends MapFragment implements
 		removeMarkerMap.clear();
 	}
 
-	public boolean showMarkerInfoWindow(ContactsItem contact) {
-		if (mMap == null) {
+	public boolean showMarkerInfoWindow(ContactsItem contact, boolean animate) {
+		if (mMap == null || contact == null) {
 			return false;
 		}
-		final Marker marker = mMarkerHashMap.get(contact.hashCode());
+		final Marker marker = mContactMarkerHashMap.get(contact.hashCode());
 		if (marker == null) {
 			return false;
 		}
-		mMap.animateCamera(
+		if (animate) {
+			mMap.animateCamera(
 				CameraUpdateFactory.newCameraPosition(
-				new CameraPosition.Builder()
+					new CameraPosition.Builder()
 						.target(marker.getPosition())
 						.zoom(15.5f)
-						.build()),
+						.build()
+				),
 				new CancelableCallback() {
 					@Override
 					public void onCancel() {
@@ -138,13 +169,17 @@ public class ContactsMapFragment extends MapFragment implements
 					public void onFinish() {
 						marker.showInfoWindow();
 					}
-				});
+				}
+			);
+		} else {
+			marker.showInfoWindow();
+		}
 		return true;
 	}
 
 	@Override
 	public void onInfoWindowClick(Marker marker) {
-		final ContactsItem contact = mContactHashMap.get(marker.hashCode());
+		final ContactsItem contact = mMarkerContactHashMap.get(marker.hashCode());
 		if (contact == null) {
 			return;
 		}
@@ -161,6 +196,7 @@ public class ContactsMapFragment extends MapFragment implements
 			mMap = getMap();
 			if (mMap != null) {
 				setUpMap();
+				setUpMapInfoWindow();
 			}
 		}
 	}
@@ -194,18 +230,50 @@ public class ContactsMapFragment extends MapFragment implements
 		return marker;
 	}
 
+	private void setUpMapInfoWindow() {
+		mMapWrapperLayout = (MapWrapperLayout) getActivity()
+				.findViewById(R.id.map_relative_layout);
+		mMapWrapperLayout.init(getMap(), getPixelsFromDp(getActivity(), 39 + 20));
+
+		mInfoWindow = getActivity().getLayoutInflater().inflate(
+				R.layout.marker_info_contents, null);
+		mInfoButton = (Button) mInfoWindow.findViewById(R.id.other_count);
+		mInfoButtonListener = new OnInfoWindowElemTouchListener(
+				mInfoButton,
+				getResources().getDrawable(R.drawable.infowindow_button_normal),
+				getResources().getDrawable(R.drawable.infowindow_button_pressed)) {
+			@Override
+			protected void onClickConfirmed(View v, Marker marker) {
+				LatLng position = marker.getPosition();
+				List<ContactsItem> contactsList = mLatlngContactsHashMap.get(position.hashCode());
+				ContactsItemsDialogFragment.showDialog(getActivity(), contactsList);
+			}
+		};
+		mInfoButton.setOnTouchListener(mInfoButtonListener);
+	}
+
+	private static int getPixelsFromDp(Context context, float dp) {
+        final float scale = context.getResources().getDisplayMetrics().density;
+        return (int)(dp * scale + 0.5f);
+    }
+
 	private class MyInfoWindowAdapter implements InfoWindowAdapter {
 
 		@Override
 		public View getInfoContents(Marker marker) {
-			ContactsItem contacts = mContactHashMap.get(marker.hashCode());
-			View view = getActivity().getLayoutInflater().inflate(
-					R.layout.marker_info_contents, null);
+			final ContactsItem contacts = mMarkerContactHashMap.get(marker.hashCode());
+			final LatLng position = marker.getPosition();
+			final List<ContactsItem> samePositionContacts = mLatlngContactsHashMap
+					.get(position.hashCode());
+
+			View view = mInfoWindow;
 			TextView tvTitle = (TextView) view.findViewById(R.id.title);
 			TextView tvCompanyName = (TextView) view.findViewById(R.id.company_name);
 			TextView tvSnippet = (TextView) view.findViewById(R.id.snippet);
 			TextView tvNote = (TextView) view.findViewById(R.id.note);
+			Button btnOtherCount = mInfoButton;
 			View separator = view.findViewById(R.id.separator);
+			mInfoButtonListener.setMarker(marker);
 
 			if (contacts != null) {
 				String title = marker.getTitle();
@@ -232,7 +300,22 @@ public class ContactsMapFragment extends MapFragment implements
 					separator.setVisibility(View.VISIBLE);
 					tvNote.setVisibility(View.VISIBLE);
 				}
+
+				if (samePositionContacts != null && samePositionContacts.size() > 1) {
+					String otherCount = getString(R.string.message_other_items);
+					otherCount = String.format(Locale.getDefault(), otherCount,
+							samePositionContacts.size() - 1);
+					btnOtherCount.setText(otherCount);
+					btnOtherCount.setVisibility(View.VISIBLE);
+				} else {
+					btnOtherCount.setVisibility(View.GONE);
+				}
 			}
+
+			if (mMapWrapperLayout != null) {
+				mMapWrapperLayout.setMarkerWithInfoWindow(marker, view);
+			}
+
 			return view;
 		}
 
