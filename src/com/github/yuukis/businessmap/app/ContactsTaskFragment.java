@@ -39,6 +39,7 @@ import com.github.yuukis.businessmap.util.CacheUtils;
 import com.github.yuukis.businessmap.util.ContactsItemComparator;
 import com.github.yuukis.businessmap.util.CursorJoinerWithIntKey;
 import com.github.yuukis.businessmap.util.GeocoderUtils;
+import com.github.yuukis.businessmap.util.SerializationException;
 import com.github.yuukis.businessmap.util.SerializationUtils;
 
 import android.app.Activity;
@@ -536,6 +537,9 @@ public class ContactsTaskFragment extends Fragment {
 			try {
 				byte[] bytes = CacheUtils.read(context, FILENAME_CACHE_CONTACTS_LIST);
 				object = SerializationUtils.deserialize(bytes);
+			} catch (SerializationException e) {
+				// デシリアライズに失敗
+				object = null;
 			} catch (FileNotFoundException e) {
 				// Nothing to do.
 			} catch (IOException e) {
