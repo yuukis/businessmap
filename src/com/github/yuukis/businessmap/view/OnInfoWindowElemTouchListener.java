@@ -6,6 +6,7 @@
 package com.github.yuukis.businessmap.view;
 
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Handler;
 import android.view.MotionEvent;
 import android.view.View;
@@ -60,7 +61,7 @@ public abstract class OnInfoWindowElemTouchListener implements OnTouchListener {
         if (!pressed) {
             pressed = true;
             handler.removeCallbacks(confirmClickRunnable);
-            view.setBackground(bgDrawablePressed);
+            setBackground(bgDrawablePressed);
             if (marker != null)
                 marker.showInfoWindow();
         }
@@ -70,13 +71,23 @@ public abstract class OnInfoWindowElemTouchListener implements OnTouchListener {
         if (pressed) {
             this.pressed = false;
             handler.removeCallbacks(confirmClickRunnable);
-            view.setBackground(bgDrawableNormal);
+            setBackground(bgDrawableNormal);
             if (marker != null)
                 marker.showInfoWindow();
             return true;
         }
         else
             return false;
+    }
+    
+    @SuppressWarnings("deprecation")
+	private void setBackground(Drawable drawable) {
+    	int sdk = Build.VERSION.SDK_INT;
+    	if (sdk < Build.VERSION_CODES.JELLY_BEAN) {
+    	    view.setBackgroundDrawable(drawable);
+    	} else {
+    	    view.setBackground(drawable);
+    	}
     }
 
     private final Runnable confirmClickRunnable = new Runnable() {
