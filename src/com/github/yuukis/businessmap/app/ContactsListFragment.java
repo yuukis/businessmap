@@ -281,6 +281,15 @@ public class ContactsListFragment extends SherlockListFragment implements
 									continue;
 								}
 							}
+							
+							String companyName = contacts.getCompanyName();
+							if (companyName != null) {
+								companyName = StringJUtils.convertToKatakana(companyName);
+								if (companyName.indexOf(query) >= 0) {
+									filterResultData.add(contacts);
+									continue;
+								}
+							}
 						}
 						results.values = filterResultData;
 						results.count = filterResultData.size();

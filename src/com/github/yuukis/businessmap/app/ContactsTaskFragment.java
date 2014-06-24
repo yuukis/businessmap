@@ -48,6 +48,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.ContactsContract.CommonDataKinds.Organization;
 import android.provider.ContactsContract.Data;
 import android.provider.ContactsContract.CommonDataKinds.GroupMembership;
 import android.provider.ContactsContract.CommonDataKinds.Note;
@@ -150,11 +151,16 @@ public class ContactsTaskFragment extends SherlockFragment {
 		args.putString(ProgressDialogFragment.MESSAGE, message);
 		args.putBoolean(ProgressDialogFragment.CANCELABLE, true);
 		args.putInt(ProgressDialogFragment.MAX, max);
-		SherlockDialogFragment dialog = ProgressDialogFragment.newInstance();
+		final SherlockDialogFragment dialog = ProgressDialogFragment.newInstance();
 		dialog.setArguments(args);
 		if (getActivity() != null) {
-			dialog.show(getActivity().getSupportFragmentManager(),
-					ProgressDialogFragment.TAG);
+			new Handler(Looper.getMainLooper()).post(new Runnable() {
+				@Override
+				public void run() {
+					dialog.show(getActivity().getSupportFragmentManager(),
+							ProgressDialogFragment.TAG);
+				}
+			});
 		}
 	}
 
@@ -186,17 +192,17 @@ public class ContactsTaskFragment extends SherlockFragment {
 				@Override
 				public void run() {
 					new AlertDialog.Builder(getActivity())
-					.setTitle(title)
-					.setMessage(message)
-					.setPositiveButton(android.R.string.ok, null)
-					.show();
+							.setTitle(title)
+							.setMessage(message)
+							.setPositiveButton(android.R.string.ok, null)
+							.show();
 				}
 			});
 		}
 	}
 
 	private class ContactsAsyncTask extends AsyncTask<Void, Integer, Void>
-			implements DialogInterface.OnCancelListener {
+	implements DialogInterface.OnCancelListener {
 
 		@Override
 		public void onCancel(DialogInterface dialog) {
@@ -250,6 +256,7 @@ public class ContactsTaskFragment extends SherlockFragment {
 			Cursor groupCursor = null;
 			Cursor postalCursor = null;
 			Cursor noteCursor = null;
+			Cursor companyCursor = null;
 			GeocodingCacheDatabase db = null;
 
 			try {
@@ -260,10 +267,10 @@ public class ContactsTaskFragment extends SherlockFragment {
 								GroupMembership.CONTACT_ID,
 								GroupMembership.DISPLAY_NAME,
 								GroupMembership.PHONETIC_NAME,
-								GroupMembership.GROUP_ROW_ID },
+								GroupMembership.GROUP_ROW_ID
+						},
 						Data.MIMETYPE + "=?",
-						new String[] {
-								GroupMembership.CONTENT_ITEM_TYPE },
+						new String[] { GroupMembership.CONTENT_ITEM_TYPE },
 						Data.RAW_CONTACT_ID);
 
 				postalCursor = context.getContentResolver().query(
@@ -273,7 +280,8 @@ public class ContactsTaskFragment extends SherlockFragment {
 								StructuredPostal.CONTACT_ID,
 								StructuredPostal.DISPLAY_NAME,
 								StructuredPostal.PHONETIC_NAME,
-								StructuredPostal.FORMATTED_ADDRESS },
+								StructuredPostal.FORMATTED_ADDRESS
+						},
 						null,
 						null,
 						StructuredPostal.RAW_CONTACT_ID);
@@ -282,16 +290,34 @@ public class ContactsTaskFragment extends SherlockFragment {
 						Data.CONTENT_URI,
 						new String[] {
 								Note.RAW_CONTACT_ID,
-								Note.NOTE },
+								Note.NOTE
+						},
 						Data.MIMETYPE + "=?",
-						new String[] {
-								Note.CONTENT_ITEM_TYPE },
+						new String[] { Note.CONTENT_ITEM_TYPE },
 						Data.RAW_CONTACT_ID);
+
+				companyCursor = context.getContentResolver().query(
+						Data.CONTENT_URI,
+						new String[] {
+								Organization.RAW_CONTACT_ID,
+								Organization.COMPANY
+						},
+						Data.MIMETYPE + "=?",
+						new String[] { Organization.CONTENT_ITEM_TYPE },
+						Data.RAW_CONTACT_ID);
+
 				HashMap<Long, String> noteMap = new HashMap<Long, String>();
 				while (noteCursor.moveToNext()) {
 					long rowId = noteCursor.getLong(0);
 					String note = noteCursor.getString(1);
 					noteMap.put(rowId, note);
+				}
+
+				HashMap<Long, String> companyMap = new HashMap<Long, String>();
+				while (companyCursor.moveToNext()) {
+					long rowId = companyCursor.getLong(0);
+					String company = companyCursor.getString(1);
+					companyMap.put(rowId, company);
 				}
 
 				CursorJoinerWithIntKey joiner = new CursorJoinerWithIntKey(
@@ -300,13 +326,13 @@ public class ContactsTaskFragment extends SherlockFragment {
 
 				db = new GeocodingCacheDatabase(context);
 				long _rowId = -1, _cid = -1;
-				String _name = null, _phonetic = null, _note = null;
+				String _name = null, _phonetic = null, _note = null, _companyName = null;
 				List<Long> _groupIds = new ArrayList<Long>();
 				List<String> _address = new ArrayList<String>();
 
 				for (CursorJoinerWithIntKey.Result result : joiner) {
 					long rowId, cid, groupId;
-					String name, phonetic, address, note;
+					String name, phonetic, address, note, companyName;
 
 					switch (result) {
 					case LEFT:
@@ -317,6 +343,7 @@ public class ContactsTaskFragment extends SherlockFragment {
 						groupId = groupCursor.getLong(4);
 						address = null;
 						note = noteMap.get(rowId);
+						companyName = companyMap.get(rowId);
 						break;
 
 					case RIGHT:
@@ -327,6 +354,7 @@ public class ContactsTaskFragment extends SherlockFragment {
 						groupId = ContactsGroup.ID_GROUP_ALL_CONTACTS;
 						address = postalCursor.getString(4);
 						note = noteMap.get(rowId);
+						companyName = companyMap.get(rowId);
 						break;
 
 					case BOTH:
@@ -337,6 +365,7 @@ public class ContactsTaskFragment extends SherlockFragment {
 						groupId = groupCursor.getLong(4);
 						address = postalCursor.getString(4);
 						note = noteMap.get(rowId);
+						companyName = companyMap.get(rowId);
 						break;
 
 					default:
@@ -347,12 +376,12 @@ public class ContactsTaskFragment extends SherlockFragment {
 						for (long gid : _groupIds) {
 							if (_address.isEmpty()) {
 								contactsList.add(new ContactsItem(_cid, _name,
-										_phonetic, gid, null, _note));
+										_phonetic, gid, null, _note, _companyName));
 								continue;
 							}
 							for (String addr : _address) {
 								ContactsItem contact = new ContactsItem(_cid,
-										_name, _phonetic, gid, addr, _note);
+										_name, _phonetic, gid, addr, _note, _companyName);
 								double[] latlng = db.get(addr);
 								if (latlng != null && latlng.length == 2) {
 									contact.setLat(latlng[0]);
@@ -373,6 +402,7 @@ public class ContactsTaskFragment extends SherlockFragment {
 						_groupIds.add(ContactsGroup.ID_GROUP_ALL_CONTACTS);
 						_address.clear();
 						_note = note;
+						_companyName = companyName;
 					}
 
 					if (_groupIds.indexOf(groupId) < 0) {
@@ -386,12 +416,12 @@ public class ContactsTaskFragment extends SherlockFragment {
 				for (long gid : _groupIds) {
 					if (_address.isEmpty()) {
 						contactsList.add(new ContactsItem(_cid, _name, _phonetic,
-								gid, null, _note));
+								gid, null, _note, _companyName));
 						continue;
 					}
 					for (String addr : _address) {
 						ContactsItem contact = new ContactsItem(_cid, _name,
-								_phonetic, gid, addr, _note);
+								_phonetic, gid, addr, _note, _companyName);
 						double[] latlng = db.get(addr);
 						if (latlng != null && latlng.length == 2) {
 							contact.setLat(latlng[0]);
