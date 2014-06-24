@@ -1,16 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.github.yuukis.businessmap.widget.MapWrapperLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/map_relative_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.github.yuukis.businessmap.app.MainActivity" >
 
-    <fragment
-        android:id="@+id/contacts_map"
+    <com.github.yuukis.businessmap.widget.MapWrapperLayout
+        android:id="@+id/map_relative_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        class="com.github.yuukis.businessmap.app.ContactsMapFragment" />
+        android:layout_height="match_parent" >
+
+        <fragment
+            android:id="@+id/contacts_map"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            class="com.github.yuukis.businessmap.app.ContactsMapFragment" />
+    </com.github.yuukis.businessmap.widget.MapWrapperLayout>
 
     <fragment
         android:id="@+id/contacts_task"
@@ -43,4 +48,4 @@
         </FrameLayout>
     </com.slidinglayer.SlidingLayer>
 
-</com.github.yuukis.businessmap.widget.MapWrapperLayout>
+</RelativeLayout>
