@@ -20,20 +20,19 @@ package com.github.yuukis.businessmap.app;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.actionbarsherlock.app.SherlockListFragment;
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuInflater;
-import com.actionbarsherlock.view.MenuItem;
-import com.actionbarsherlock.widget.SearchView;
-import com.actionbarsherlock.widget.SearchView.OnQueryTextListener;
 import com.github.yuukis.businessmap.model.ContactsItem;
 
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.v4.app.ListFragment;
+import android.support.v7.widget.SearchView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -47,8 +46,8 @@ import com.github.yuukis.businessmap.util.ActionUtils;
 import com.github.yuukis.businessmap.util.StringJUtils;
 import com.slidinglayer.SlidingLayer;
 
-public class ContactsListFragment extends SherlockListFragment implements
-		OnQueryTextListener {
+public class ContactsListFragment extends ListFragment implements
+		SearchView.OnQueryTextListener {
 
 	private ContactsAdapter mContactsAdapter;
 	private SearchView mSearchView;

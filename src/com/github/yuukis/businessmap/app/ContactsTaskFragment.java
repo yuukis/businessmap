@@ -30,8 +30,6 @@ import java.util.Map.Entry;
 
 import org.json.JSONException;
 
-import com.actionbarsherlock.app.SherlockDialogFragment;
-import com.actionbarsherlock.app.SherlockFragment;
 import com.github.yuukis.businessmap.R;
 import com.github.yuukis.businessmap.app.ProgressDialogFragment;
 import com.github.yuukis.businessmap.data.GeocodingCacheDatabase;
@@ -58,12 +56,13 @@ import android.provider.ContactsContract.Data;
 import android.provider.ContactsContract.CommonDataKinds.GroupMembership;
 import android.provider.ContactsContract.CommonDataKinds.Note;
 import android.provider.ContactsContract.CommonDataKinds.StructuredPostal;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-public class ContactsTaskFragment extends SherlockFragment {
+public class ContactsTaskFragment extends Fragment {
 
 	public interface TaskCallback {
 		void onContactsLoaded(List<ContactsItem> contactsList);
@@ -158,7 +157,7 @@ public class ContactsTaskFragment extends SherlockFragment {
 		args.putString(ProgressDialogFragment.MESSAGE, message);
 		args.putBoolean(ProgressDialogFragment.CANCELABLE, true);
 		args.putInt(ProgressDialogFragment.MAX, max);
-		final SherlockDialogFragment dialog = ProgressDialogFragment.newInstance();
+		final DialogFragment dialog = ProgressDialogFragment.newInstance();
 		dialog.setArguments(args);
 		if (getActivity() != null) {
 			new Handler(Looper.getMainLooper()).post(new Runnable() {
@@ -188,7 +187,7 @@ public class ContactsTaskFragment extends SherlockFragment {
 	}
 
 	private ProgressDialogFragment getProgressDialogFragment() {
-		Fragment fragment = getSherlockActivity().getSupportFragmentManager()
+		Fragment fragment = getActivity().getSupportFragmentManager()
 				.findFragmentByTag(ProgressDialogFragment.TAG);
 		return (ProgressDialogFragment) fragment;
 	}

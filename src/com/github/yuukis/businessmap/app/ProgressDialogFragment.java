@@ -17,14 +17,13 @@
  */
 package com.github.yuukis.businessmap.app;
 
-import com.actionbarsherlock.app.SherlockDialogFragment;
-
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
 
-public class ProgressDialogFragment extends SherlockDialogFragment {
+public class ProgressDialogFragment extends DialogFragment {
 
     public static final String TITLE = "title";
     public static final String MESSAGE = "message";

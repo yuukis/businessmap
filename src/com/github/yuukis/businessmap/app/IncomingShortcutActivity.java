@@ -17,15 +17,15 @@
  */
 package com.github.yuukis.businessmap.app;
 
-import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.github.yuukis.businessmap.R;
 import com.github.yuukis.businessmap.model.ContactsGroup;
 
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.support.v4.app.FragmentActivity;
 import android.content.Intent;
 
-public class IncomingShortcutActivity extends SherlockFragmentActivity implements
+public class IncomingShortcutActivity extends FragmentActivity implements
 		ContactsGroupDialogFragment.OnSelectListener {
 
 	@Override

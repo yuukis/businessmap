@@ -17,7 +17,6 @@
  */
 package com.github.yuukis.businessmap.app;
 
-import com.actionbarsherlock.app.SherlockDialogFragment;
 import com.github.yuukis.businessmap.R;
 import com.github.yuukis.businessmap.model.ContactsItem;
 import com.github.yuukis.businessmap.util.ActionUtils;
@@ -27,6 +26,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.view.LayoutInflater;
@@ -38,7 +38,7 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-public class ContactsActionFragment extends SherlockDialogFragment implements
+public class ContactsActionFragment extends DialogFragment implements
 AdapterView.OnItemClickListener {
 
 	private static final String TAG = "ContactsActionFragment";

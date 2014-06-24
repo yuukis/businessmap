@@ -20,19 +20,19 @@ package com.github.yuukis.businessmap.app;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
-import com.actionbarsherlock.app.SherlockDialogFragment;
-import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.github.yuukis.businessmap.R;
 import com.github.yuukis.businessmap.util.AssetUtils;
 
 import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
 
-public class LicenseDialogFragment extends SherlockDialogFragment {
+public class LicenseDialogFragment extends DialogFragment {
 
 	private static final String TAG = "LicenseDialogFragment";
 	private static final String FILEPATH = "license.html";
@@ -41,7 +41,7 @@ public class LicenseDialogFragment extends SherlockDialogFragment {
 		return new LicenseDialogFragment();
 	}
 
-	public static void showDialog(SherlockFragmentActivity activity) {
+	public static void showDialog(FragmentActivity activity) {
 		FragmentManager manager = activity.getSupportFragmentManager();
 		newInstance().show(manager, TAG);
 	}

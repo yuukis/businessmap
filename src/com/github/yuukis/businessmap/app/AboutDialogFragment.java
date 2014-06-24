@@ -17,8 +17,6 @@
  */
 package com.github.yuukis.businessmap.app;
 
-import com.actionbarsherlock.app.SherlockDialogFragment;
-import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.github.yuukis.businessmap.R;
 
 import android.app.AlertDialog;
@@ -28,12 +26,14 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v7.app.ActionBarActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
 
-public class AboutDialogFragment extends SherlockDialogFragment implements
+public class AboutDialogFragment extends DialogFragment implements
 		View.OnClickListener {
 
 	private static final String TAG = "AboutDialogFragment";
@@ -42,7 +42,7 @@ public class AboutDialogFragment extends SherlockDialogFragment implements
 		return new AboutDialogFragment();
 	}
 
-	public static void showDialog(SherlockFragmentActivity activity) {
+	public static void showDialog(ActionBarActivity activity) {
 		FragmentManager manager = activity.getSupportFragmentManager();
 		newInstance().show(manager, TAG);
 	}
@@ -63,7 +63,7 @@ public class AboutDialogFragment extends SherlockDialogFragment implements
 	@Override
 	public void onClick(View v) {
 		// オープンソース ライセンス表示
-		LicenseDialogFragment.showDialog(getSherlockActivity());
+		LicenseDialogFragment.showDialog(getActivity());
 	}
 
 	private String getVersion() {

@@ -19,8 +19,6 @@ package com.github.yuukis.businessmap.app;
 
 import java.util.List;
 
-import com.actionbarsherlock.app.SherlockDialogFragment;
-import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.github.yuukis.businessmap.R;
 import com.github.yuukis.businessmap.model.ContactsGroup;
 import com.github.yuukis.businessmap.util.ContactUtils;
@@ -30,9 +28,11 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 
-public class ContactsGroupDialogFragment extends SherlockDialogFragment
+public class ContactsGroupDialogFragment extends DialogFragment
 		implements DialogInterface.OnClickListener {
 
 	public interface OnSelectListener {
@@ -48,7 +48,7 @@ public class ContactsGroupDialogFragment extends SherlockDialogFragment
 		return new ContactsGroupDialogFragment();
 	}
 
-	public static void showDialog(SherlockFragmentActivity activity) {
+	public static void showDialog(FragmentActivity activity) {
 		FragmentManager manager = activity.getSupportFragmentManager();
 		newInstance().show(manager, TAG);
 	}
