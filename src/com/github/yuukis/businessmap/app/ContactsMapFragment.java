@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Locale;
 
 import android.content.Context;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.SparseArray;
@@ -87,13 +88,13 @@ public class ContactsMapFragment extends SupportMapFragment implements
 
 		super.onDestroyView();
 	}
-
+	
 	public void notifyDataSetChanged() {
 		if (mMap == null) {
 			return;
 		}
 		List<ContactsItem> list = getContactsList();
-		SparseArray<Marker> removeMarkerMap = mContactMarkerHashMap.clone();
+		SparseArray<Marker> removeMarkerMap = cloneSparseArray(mContactMarkerHashMap);
 		if (list == null) {
 			return;
 		}
@@ -208,6 +209,22 @@ public class ContactsMapFragment extends SupportMapFragment implements
 		mMap.setIndoorEnabled(false);
 		mMap.setMyLocationEnabled(true);
 		mMap.moveCamera(CameraUpdateFactory.newCameraPosition(position));
+	}
+
+	private SparseArray<Marker> cloneSparseArray(SparseArray<Marker> array) {
+		SparseArray<Marker> clone = null;
+		int sdk = Build.VERSION.SDK_INT;
+		if (sdk < Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+			clone = new SparseArray<Marker>();
+			for (int i = 0; i < array.size(); i++) {
+				int key = array.keyAt(i);
+				Marker marker = array.valueAt(i);
+				clone.put(key, marker);
+			}
+		} else {
+			clone = array.clone();
+		}
+		return clone;
 	}
 
 	private Marker createMarker(ContactsItem contacts) {
