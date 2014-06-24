@@ -101,7 +101,8 @@ public class ContactsListFragment extends SherlockListFragment implements
 		ContactsMapFragment mapFragment = (ContactsMapFragment) getFragmentManager()
 				.findFragmentById(R.id.contacts_map);
 		if (mapFragment != null) {
-			boolean result = mapFragment.showMarkerInfoWindow(contact);
+			boolean animate = true;
+			boolean result = mapFragment.showMarkerInfoWindow(contact, animate);
 			if (result) {
 				setVisibility(false);
 				return;
@@ -281,7 +282,7 @@ public class ContactsListFragment extends SherlockListFragment implements
 									continue;
 								}
 							}
-							
+
 							String companyName = contacts.getCompanyName();
 							if (companyName != null) {
 								companyName = StringJUtils.convertToKatakana(companyName);

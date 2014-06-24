@@ -38,7 +38,8 @@ import android.view.WindowManager;
 
 public class MainActivity extends SherlockFragmentActivity implements
 		ActionBar.OnNavigationListener, ContactsTaskFragment.TaskCallback,
-		ProgressDialogFragment.ProgressDialogFragmentListener {
+		ProgressDialogFragment.ProgressDialogFragmentListener,
+		ContactsItemsDialogFragment.OnSelectListener {
 
 	public static final String KEY_CONTACTS_GROUP_ID = "contacts_group_id";
 	private static final String KEY_NAVIGATION_INDEX = "navigation_index";
@@ -65,6 +66,7 @@ public class MainActivity extends SherlockFragmentActivity implements
 		super.onStart();
 		if (mContactsList == null) {
 			mContactsList = new ArrayList<ContactsItem>();
+
 			if (!mTaskFragment.isRunning()) {
 				mTaskFragment.start();
 			}
@@ -97,27 +99,20 @@ public class MainActivity extends SherlockFragmentActivity implements
 
 	@Override
 	public boolean onNavigationItemSelected(int itemPosition, long itemId) {
-		if (mGroupList.size() <= itemPosition) {
-			return false;
-		}
-		ContactsGroup group = mGroupList.get(itemPosition);
-		long groupId = group.getId();
-		changeCurrentGroup(groupId);
-		mMapFragment.notifyDataSetChanged();
-		mListFragment.notifyDataSetChanged();
-
+		notifyDataSetChanged();
 		return true;
 	}
 
 	@Override
 	public void onContactsLoaded(List<ContactsItem> contactsList) {
 		mContactsList = contactsList;
-		int index = getSupportActionBar().getSelectedNavigationIndex();
-		ContactsGroup group = mGroupList.get(index);
-		long groupId = group.getId();
-		changeCurrentGroup(groupId);
-		mMapFragment.notifyDataSetChanged();
-		mListFragment.notifyDataSetChanged();
+		notifyDataSetChanged();
+	}
+
+	@Override
+	public void onContactsSelected(ContactsItem contacts) {
+		boolean animate = false;
+		mMapFragment.showMarkerInfoWindow(contacts, animate);
 	}
 
 	@Override
@@ -184,6 +179,15 @@ public class MainActivity extends SherlockFragmentActivity implements
 		mCurrentGroupContactsList = new ArrayList<ContactsItem>();
 	}
 
+	private void notifyDataSetChanged() {
+		int index = getSupportActionBar().getSelectedNavigationIndex();
+		ContactsGroup group = mGroupList.get(index);
+		long groupId = group.getId();
+		changeCurrentGroup(groupId);
+		mMapFragment.notifyDataSetChanged();
+		mListFragment.notifyDataSetChanged();
+	}
+
 	private void changeCurrentGroup(long groupId) {
 		mCurrentGroupContactsList.clear();
 		for (ContactsItem contact : mContactsList) {
@@ -192,4 +196,5 @@ public class MainActivity extends SherlockFragmentActivity implements
 			}
 		}
 	}
+
 }

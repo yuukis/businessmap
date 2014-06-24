@@ -1,6 +1,6 @@
 /*
  * ContactsItem.java
- * 
+ *
  * Copyright 2013 Yuuki Shimizu.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,8 +21,8 @@ import java.io.Serializable;
 
 public class ContactsItem implements Serializable {
 
-	private static final long serialVersionUID = -3544608120200322040L;
-	
+	private static final long serialVersionUID = -5022460356265154213L;
+
 	private long cid;
 	private String name;
 	private String phonetic;
@@ -73,7 +73,7 @@ public class ContactsItem implements Serializable {
 	public Double getLng() {
 		return lng;
 	}
-	
+
 	public String getNote() {
 		return note;
 	}
@@ -112,13 +112,78 @@ public class ContactsItem implements Serializable {
 			this.lng = lng;
 		}
 	}
-	
+
 	public void setNote(String note) {
 		this.note = note;
 	}
-	
+
 	public void setCompanyName(String companyName) {
 		this.companyName = companyName;
 	}
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((address == null) ? 0 : address.hashCode());
+		result = prime * result + (int) (cid ^ (cid >>> 32));
+		result = prime * result
+				+ ((companyName == null) ? 0 : companyName.hashCode());
+		result = prime * result + ((lat == null) ? 0 : lat.hashCode());
+		result = prime * result + ((lng == null) ? 0 : lng.hashCode());
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result + ((note == null) ? 0 : note.hashCode());
+		result = prime * result
+				+ ((phonetic == null) ? 0 : phonetic.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ContactsItem other = (ContactsItem) obj;
+		if (address == null) {
+			if (other.address != null)
+				return false;
+		} else if (!address.equals(other.address))
+			return false;
+		if (cid != other.cid)
+			return false;
+		if (companyName == null) {
+			if (other.companyName != null)
+				return false;
+		} else if (!companyName.equals(other.companyName))
+			return false;
+		if (lat == null) {
+			if (other.lat != null)
+				return false;
+		} else if (!lat.equals(other.lat))
+			return false;
+		if (lng == null) {
+			if (other.lng != null)
+				return false;
+		} else if (!lng.equals(other.lng))
+			return false;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
+			return false;
+		if (note == null) {
+			if (other.note != null)
+				return false;
+		} else if (!note.equals(other.note))
+			return false;
+		if (phonetic == null) {
+			if (other.phonetic != null)
+				return false;
+		} else if (!phonetic.equals(other.phonetic))
+			return false;
+		return true;
+	}
 }

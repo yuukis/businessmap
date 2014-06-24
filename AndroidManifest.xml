@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.github.yuukis.businessmap"
-    android:versionCode="213"
-    android:versionName="1.3.0213g" >
+    android:versionCode="216"
+    android:versionName="1.4.0216g" >
 
     <uses-sdk
         android:maxSdkVersion="10"
