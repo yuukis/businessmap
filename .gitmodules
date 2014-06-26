@@ -10,7 +10,6 @@
 	path = smooth-progress-bar-lib
 	url = https://github.com/joaspacce/SmoothProgressBar.git
 
-[submodule "action-bar-sherlock-lib"]
-	path = action-bar-sherlock-lib
-	url = https://github.com/JakeWharton/ActionBarSherlock.git
-
+[submodule "android-support-lib"]
+	path = android-support-lib
+	url = https://github.com/android/platform_frameworks_support.git
