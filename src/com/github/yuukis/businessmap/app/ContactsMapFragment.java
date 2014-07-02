@@ -108,7 +108,9 @@ public class ContactsMapFragment extends SupportMapFragment implements
 					if (contactList == null) {
 						contactList = new ArrayList<ContactsItem>();
 					}
-					contactList.add(contacts);
+					if (!contactList.contains(contacts)) {
+						contactList.add(contacts);
+					}
 
 					mContactMarkerHashMap.put(contacts.hashCode(), marker);
 					mMarkerContactHashMap.put(marker.hashCode(), contacts);
