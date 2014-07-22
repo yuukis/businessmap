@@ -63,7 +63,7 @@ public class GroupAdapter extends BaseAdapter {
 
 		if (convertView == null) {
 			convertView = activity.getLayoutInflater().inflate(
-					LAYOUT_SPINNER_ITEM_RESOURCE_ID, null);
+					LAYOUT_SPINNER_ITEM_RESOURCE_ID, parent, false);
 			holder = new ViewHolder();
 			holder.textView1 = (TextView) convertView
 					.findViewById(android.R.id.text1);
@@ -85,7 +85,7 @@ public class GroupAdapter extends BaseAdapter {
 
 		if (convertView == null) {
 			convertView = activity.getLayoutInflater().inflate(
-					LAYOUT_SPINNER_DROPDOWN_ITEM_RESOURCE_ID, null);
+					LAYOUT_SPINNER_DROPDOWN_ITEM_RESOURCE_ID, parent, false);
 			holder = new ViewHolder();
 			holder.textView1 = (TextView) convertView
 					.findViewById(android.R.id.text1);
