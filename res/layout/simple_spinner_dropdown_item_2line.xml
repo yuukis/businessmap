@@ -37,7 +37,7 @@
         <TextView
             android:id="@android:id/text1"
             style="?android:attr/spinnerDropDownItemStyle"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:singleLine="true"
             android:textColor="#ff000000"
@@ -46,7 +46,7 @@
         <TextView
             android:id="@android:id/text2"
             style="?android:attr/spinnerDropDownItemStyle"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignStart="@android:id/text1"
             android:layout_below="@android:id/text1"
