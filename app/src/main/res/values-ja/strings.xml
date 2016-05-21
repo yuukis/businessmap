@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name" translatable="false">営業マップ</string>
+    <string name="provider" translatable="false">しみず ゆうき</string>
+    <string name="action_list" translatable="false">連絡先一覧</string>
+    <string name="action_about" translatable="false">このアプリについて</string>
+    <string name="label_licenses" translatable="false"><u>オープンソース ライセンス</u></string>
+    <string name="action_contacts_detail" translatable="false">連絡先を表示</string>
+    <string name="action_directions" translatable="false">経路を調べる</string>
+    <string name="action_drive_navigation" translatable="false">ナビを開始</string>
+    <string name="action_select_group" translatable="false">グループを選択</string>
+    <string name="action_select_contacts" translatable="false">連絡先を選択</string>
+    <string name="label_app_name" translatable="false">アプリケーション名</string>
+    <string name="label_provider" translatable="false">提供者</string>
+    <string name="label_version" translatable="false">バージョン</string>
+    <string name="title_geocoding" translatable="false">しばらくお待ちください</string>
+    <string name="title_geocoding_ioerror" translatable="false">ネットワークに接続できません</string>
+    <string name="title_geocoding_jsonerror" translatable="false">サーバ エラー</string>
+    <string name="message_geocoding" translatable="false">新しく登録された住所を座標に変換しています&#8230;</string>
+    <string name="message_geocoding_ioerror" translatable="false">ネットワークへの接続に失敗したため、住所から座標へ変換できませんでした。</string>
+    <string name="message_geocoding_jsonerror" translatable="false">サーバ エラーが発生したため、住所から座標へ変換できませんでした。しばらく経ってから再度実行してください。</string>
+    <string name="message_no_data" translatable="false">(未登録)</string>
+    <string name="message_no_contacts" translatable="false">このグループに連絡先はありません</string>
+    <string name="message_other_items" translatable="false">他 %d 件</string>
+    <string name="hint_searchview" translatable="false">連絡先を検索</string>
+    <string name="group_all_contacts" translatable="false">すべての連絡先</string>
+    <string name="desc_appicon" translatable="false">アイコン</string>
+
+</resources>

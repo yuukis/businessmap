@@ -1,5 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <!-- Default screen margins, per the Android Design guidelines. -->
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
+    <dimen name="slidinglayer_width">-1dp</dimen>
+    <dimen name="dropdown_list_preferred_item_height">48dp</dimen>
+
+    <!-- Text size for action bar titles -->
+    <dimen name="action_bar_title_text_size">18dp</dimen>
+    <!-- Text size for action bar subtitles -->
+    <dimen name="action_bar_subtitle_text_size">14dp</dimen>
+    <!-- Top margin for action bar subtitles -->
+    <dimen name="action_bar_subtitle_top_margin">-3dp</dimen>
+    <!-- Bottom margin for action bar subtitles -->
+    <dimen name="action_bar_subtitle_bottom_margin">5dip</dimen>
+
 </resources>
