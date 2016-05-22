@@ -27,14 +27,20 @@ import com.github.yuukis.businessmap.model.ContactsItem;
 import com.github.yuukis.businessmap.util.ContactUtils;
 import com.github.yuukis.businessmap.widget.GroupAdapter;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AlertDialog;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.WindowManager;
+import android.widget.Toast;
 
 public class MainActivity extends ActionBarActivity implements
 		ActionBar.OnNavigationListener, ContactsTaskFragment.TaskCallback,
@@ -44,8 +50,10 @@ public class MainActivity extends ActionBarActivity implements
 	public static final String KEY_CONTACTS_GROUP_ID = "contacts_group_id";
 	private static final String KEY_NAVIGATION_INDEX = "navigation_index";
 	private static final String KEY_CONTACTS_LIST = "contacts_list";
+	private static final int PERMISSIONS_REQUEST_READ_CONTACTS = 0;
 
 	private List<ContactsGroup> mGroupList;
+	private GroupAdapter mGroupAdapter;
 	private List<ContactsItem> mContactsList;
 	private List<ContactsItem> mCurrentGroupContactsList;
 	private ContactsMapFragment mMapFragment;
@@ -59,6 +67,16 @@ public class MainActivity extends ActionBarActivity implements
 				WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 		setContentView(R.layout.activity_main);
 		initialize(savedInstanceState);
+
+		// Permission check.
+		if (ContextCompat.checkSelfPermission(this,
+				Manifest.permission.READ_CONTACTS)
+				!= PackageManager.PERMISSION_GRANTED) {
+
+			ActivityCompat.requestPermissions(this,
+					new String[]{Manifest.permission.READ_CONTACTS},
+					PERMISSIONS_REQUEST_READ_CONTACTS);
+		}
 	}
 
 	@Override
@@ -138,6 +156,30 @@ public class MainActivity extends ActionBarActivity implements
 		return super.dispatchKeyEvent(event);
 	}
 
+	@Override
+	public void onRequestPermissionsResult(int requestCode,
+										   String permissions[], int[] grantResults) {
+		switch (requestCode) {
+			case PERMISSIONS_REQUEST_READ_CONTACTS: {
+				// If request is cancelled, the result arrays are empty.
+				if (grantResults.length > 0
+						&& grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+					mGroupList = ContactUtils.getContactsGroupList(this);
+					mGroupAdapter.setList(mGroupList);
+					mGroupAdapter.notifyDataSetChanged();
+					if (!mTaskFragment.isRunning()) {
+						mTaskFragment.start();
+					}
+
+				} else {
+					Toast.makeText(this, "denied.", Toast.LENGTH_SHORT).show();
+				}
+				return;
+			}
+		}
+	}
+
 	public List<ContactsItem> getCurrentContactsList() {
 		return mCurrentGroupContactsList;
 	}
@@ -152,11 +194,11 @@ public class MainActivity extends ActionBarActivity implements
 		mTaskFragment = (ContactsTaskFragment) fm.findFragmentById(R.id.contacts_task);
 		mGroupList = ContactUtils.getContactsGroupList(this);
 
-		GroupAdapter adapter = new GroupAdapter(this, mGroupList);
+		mGroupAdapter = new GroupAdapter(this, mGroupList);
 		ActionBar actionBar = getSupportActionBar();
 		actionBar.setDisplayShowTitleEnabled(false);
 		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
-		actionBar.setListNavigationCallbacks(adapter, this);
+		actionBar.setListNavigationCallbacks(mGroupAdapter, this);
 
 		int navigationIndex = 0;
 		if (savedInstanceState != null) {
@@ -181,9 +223,11 @@ public class MainActivity extends ActionBarActivity implements
 
 	private void notifyDataSetChanged() {
 		int index = getSupportActionBar().getSelectedNavigationIndex();
-		ContactsGroup group = mGroupList.get(index);
-		long groupId = group.getId();
-		changeCurrentGroup(groupId);
+		if (index >= 0 && index < mGroupList.size()) {
+			ContactsGroup group = mGroupList.get(index);
+			long groupId = group.getId();
+			changeCurrentGroup(groupId);
+		}
 		mMapFragment.notifyDataSetChanged();
 		mListFragment.notifyDataSetChanged();
 	}

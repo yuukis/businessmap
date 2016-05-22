@@ -17,11 +17,14 @@
  */
 package com.github.yuukis.businessmap.data;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
+import android.support.v4.app.ActivityCompat;
 
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
@@ -92,7 +95,11 @@ public class MapStatePreferences {
 		criteria.setAccuracy(Criteria.ACCURACY_FINE);
 		String provider = manager.getBestProvider(criteria, true);
 		provider = LocationManager.NETWORK_PROVIDER;
-		Location location = manager.getLastKnownLocation(provider);
+		Location location = null;
+		if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+				|| ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+			location = manager.getLastKnownLocation(provider);
+		}
 		// 位置情報取得に失敗した場合の既定値
 		double lat = 139.766084, lng = 35.681382;	// 東京駅
 		if (location != null) {

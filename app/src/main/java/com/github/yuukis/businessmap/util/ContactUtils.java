@@ -3,9 +3,12 @@ package com.github.yuukis.businessmap.util;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.provider.ContactsContract.Groups;
+import android.support.v4.content.ContextCompat;
 
 import com.github.yuukis.businessmap.R;
 import com.github.yuukis.businessmap.model.ContactsGroup;
@@ -13,6 +16,12 @@ import com.github.yuukis.businessmap.model.ContactsGroup;
 public class ContactUtils {
 
 	public static List<ContactsGroup> getContactsGroupList(Context context) {
+		// Permission check
+		if (ContextCompat.checkSelfPermission(context,
+				Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
+			return new ArrayList<>();
+		}
+
 		List<ContactsGroup> list = new ArrayList<ContactsGroup>();
 		ContactsGroup all = new ContactsGroup(
 				ContactsGroup.ID_GROUP_ALL_CONTACTS,

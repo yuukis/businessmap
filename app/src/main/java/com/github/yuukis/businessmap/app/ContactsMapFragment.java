@@ -21,9 +21,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
 import android.text.TextUtils;
 import android.util.SparseArray;
 import android.view.View;
@@ -88,7 +91,7 @@ public class ContactsMapFragment extends SupportMapFragment implements
 
 		super.onDestroyView();
 	}
-	
+
 	public void notifyDataSetChanged() {
 		if (mMap == null) {
 			return;
@@ -157,22 +160,22 @@ public class ContactsMapFragment extends SupportMapFragment implements
 		}
 		if (animate) {
 			mMap.animateCamera(
-				CameraUpdateFactory.newCameraPosition(
-					new CameraPosition.Builder()
-						.target(marker.getPosition())
-						.zoom(15.5f)
-						.build()
-				),
-				new CancelableCallback() {
-					@Override
-					public void onCancel() {
-					}
+					CameraUpdateFactory.newCameraPosition(
+							new CameraPosition.Builder()
+									.target(marker.getPosition())
+									.zoom(15.5f)
+									.build()
+					),
+					new CancelableCallback() {
+						@Override
+						public void onCancel() {
+						}
 
-					@Override
-					public void onFinish() {
-						marker.showInfoWindow();
+						@Override
+						public void onFinish() {
+							marker.showInfoWindow();
+						}
 					}
-				}
 			);
 		} else {
 			marker.showInfoWindow();
@@ -205,11 +208,15 @@ public class ContactsMapFragment extends SupportMapFragment implements
 	}
 
 	private void setUpMap() {
+		Context context = getContext();
 		CameraPosition position = mPreferences.getCameraPosition();
 		mMap.setInfoWindowAdapter(new MyInfoWindowAdapter());
 		mMap.setOnInfoWindowClickListener(this);
 		mMap.setIndoorEnabled(false);
-		mMap.setMyLocationEnabled(true);
+		if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+				|| ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+			mMap.setMyLocationEnabled(true);
+		}
 		mMap.moveCamera(CameraUpdateFactory.newCameraPosition(position));
 	}
 

@@ -113,6 +113,10 @@ public class GroupAdapter extends BaseAdapter {
 		return convertView;
 	}
 
+	public void setList(List<ContactsGroup> groupList) {
+		this.groupList = groupList;
+	}
+
 	private static class ViewHolder {
 		TextView textView1;
 		TextView textView2;

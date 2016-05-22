@@ -42,10 +42,12 @@ import com.github.yuukis.businessmap.util.GeocoderUtils;
 import com.github.yuukis.businessmap.util.SerializationException;
 import com.github.yuukis.businessmap.util.SerializationUtils;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -58,6 +60,7 @@ import android.provider.ContactsContract.CommonDataKinds.Note;
 import android.provider.ContactsContract.CommonDataKinds.StructuredPostal;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -265,6 +268,12 @@ public class ContactsTaskFragment extends Fragment {
 		private void loadAllContacts() {
 			Context context = getActivity();
 			mGeocodingResultCache.clear();
+
+			// Permission check
+			if (ContextCompat.checkSelfPermission(context,
+					Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
+				return;
+			}
 
 			List<ContactsItem> contactsList = new ArrayList<ContactsItem>();
 			Cursor groupCursor = null;
