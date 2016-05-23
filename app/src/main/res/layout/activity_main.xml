@@ -28,8 +28,6 @@
         android:id="@+id/list_container"
         android:layout_width="@dimen/slidinglayer_width"
         android:layout_height="match_parent"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true"
         slidingLayer:shadowDrawable="@drawable/sidebar_shadow"
         slidingLayer:shadowSize="4dp"
         slidingLayer:offsetDistance="4dp"
