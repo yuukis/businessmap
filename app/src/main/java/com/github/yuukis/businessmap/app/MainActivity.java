@@ -35,7 +35,6 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
-import android.support.v7.app.AlertDialog;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -50,7 +49,7 @@ public class MainActivity extends ActionBarActivity implements
 	public static final String KEY_CONTACTS_GROUP_ID = "contacts_group_id";
 	private static final String KEY_NAVIGATION_INDEX = "navigation_index";
 	private static final String KEY_CONTACTS_LIST = "contacts_list";
-	private static final int PERMISSIONS_REQUEST_READ_CONTACTS = 0;
+	private static final int REQUEST_ID_MULTIPLE_PERMISSIONS = 0;
 
 	private List<ContactsGroup> mGroupList;
 	private GroupAdapter mGroupAdapter;
@@ -68,15 +67,7 @@ public class MainActivity extends ActionBarActivity implements
 		setContentView(R.layout.activity_main);
 		initialize(savedInstanceState);
 
-		// Permission check.
-		if (ContextCompat.checkSelfPermission(this,
-				Manifest.permission.READ_CONTACTS)
-				!= PackageManager.PERMISSION_GRANTED) {
-
-			ActivityCompat.requestPermissions(this,
-					new String[]{Manifest.permission.READ_CONTACTS},
-					PERMISSIONS_REQUEST_READ_CONTACTS);
-		}
+		checkAndRequestPermissions();
 	}
 
 	@Override
@@ -160,22 +151,32 @@ public class MainActivity extends ActionBarActivity implements
 	public void onRequestPermissionsResult(int requestCode,
 										   String permissions[], int[] grantResults) {
 		switch (requestCode) {
-			case PERMISSIONS_REQUEST_READ_CONTACTS: {
-				// If request is cancelled, the result arrays are empty.
-				if (grantResults.length > 0
-						&& grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+			case REQUEST_ID_MULTIPLE_PERMISSIONS: {
+				for (int i = 0; i < permissions.length; i++) {
+					String permission = permissions[i];
+					int grantResult = grantResults[i];
+					if (grantResult == PackageManager.PERMISSION_GRANTED) {
+						switch (permission) {
+							case Manifest.permission.READ_CONTACTS:
+								mGroupList = ContactUtils.getContactsGroupList(this);
+								mGroupAdapter.setList(mGroupList);
+								mGroupAdapter.notifyDataSetChanged();
+								if (!mTaskFragment.isRunning()) {
+									mTaskFragment.start();
+								}
+								break;
 
-					mGroupList = ContactUtils.getContactsGroupList(this);
-					mGroupAdapter.setList(mGroupList);
-					mGroupAdapter.notifyDataSetChanged();
-					if (!mTaskFragment.isRunning()) {
-						mTaskFragment.start();
+							case Manifest.permission.ACCESS_FINE_LOCATION:
+								mMapFragment.changeGrantedFineLocation();
+								break;
+						}
+					} else {
+						switch (permission) {
+							case Manifest.permission.READ_CONTACTS:
+								break;
+						}
 					}
-
-				} else {
-					Toast.makeText(this, "denied.", Toast.LENGTH_SHORT).show();
 				}
-				return;
 			}
 		}
 	}
@@ -239,6 +240,29 @@ public class MainActivity extends ActionBarActivity implements
 				mCurrentGroupContactsList.add(contact);
 			}
 		}
+	}
+
+	private boolean checkAndRequestPermissions() {
+		int permissionReadContacts = ContextCompat.checkSelfPermission(this,
+				Manifest.permission.READ_CONTACTS);
+		int permissionFineLocation = ContextCompat.checkSelfPermission(this,
+				Manifest.permission.ACCESS_FINE_LOCATION);
+		List<String> listPermissionsNeeded = new ArrayList<>();
+
+		if (permissionReadContacts != PackageManager.PERMISSION_GRANTED) {
+			listPermissionsNeeded.add(Manifest.permission.READ_CONTACTS);
+		}
+		if (permissionFineLocation != PackageManager.PERMISSION_GRANTED) {
+			listPermissionsNeeded.add(Manifest.permission.ACCESS_FINE_LOCATION);
+		}
+
+		if (!listPermissionsNeeded.isEmpty()) {
+			ActivityCompat.requestPermissions(this,
+					listPermissionsNeeded.toArray(new String[listPermissionsNeeded.size()]),
+					REQUEST_ID_MULTIPLE_PERMISSIONS);
+			return false;
+		}
+		return true;
 	}
 
 }

@@ -192,6 +192,16 @@ public class ContactsMapFragment extends SupportMapFragment implements
 		ContactsActionFragment.showDialog(getActivity(), contact);
 	}
 
+	public void changeGrantedFineLocation() {
+		Context context = getContext();
+		if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+				|| ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+			CameraPosition position = mPreferences.getCameraPosition();
+			mMap.moveCamera(CameraUpdateFactory.newCameraPosition(position));
+			mMap.setMyLocationEnabled(true);
+		}
+	}
+
 	private List<ContactsItem> getContactsList() {
 		MainActivity activity = (MainActivity) getActivity();
 		return activity.getCurrentContactsList();
