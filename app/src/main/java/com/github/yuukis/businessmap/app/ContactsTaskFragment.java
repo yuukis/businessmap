@@ -60,6 +60,7 @@ import android.provider.ContactsContract.CommonDataKinds.Note;
 import android.provider.ContactsContract.CommonDataKinds.StructuredPostal;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -163,13 +164,9 @@ public class ContactsTaskFragment extends Fragment {
 		final DialogFragment dialog = ProgressDialogFragment.newInstance();
 		dialog.setArguments(args);
 		if (getActivity() != null) {
-			new Handler(Looper.getMainLooper()).post(new Runnable() {
-				@Override
-				public void run() {
-					dialog.show(getActivity().getSupportFragmentManager(),
-							ProgressDialogFragment.TAG);
-				}
-			});
+			FragmentTransaction ft = getActivity().getSupportFragmentManager().beginTransaction();
+			ft.add(dialog, ProgressDialogFragment.TAG);
+			ft.commitAllowingStateLoss();
 		}
 	}
 
