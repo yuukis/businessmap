@@ -10,6 +10,7 @@
         android:layout_height="3dp"
         android:indeterminate="true"
         android:visibility="gone"
-        app:spb_stroke_width="3dp" />
+        app:spb_stroke_width="3dp"
+        app:spb_color="@color/accent" />
 
 </FrameLayout>
