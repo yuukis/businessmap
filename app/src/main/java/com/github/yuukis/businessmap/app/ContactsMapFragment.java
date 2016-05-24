@@ -214,6 +214,13 @@ public class ContactsMapFragment extends SupportMapFragment implements
 		}
 	}
 
+	public void changeMarkerColor(ContactsItem contacts, float hue) {
+		Marker marker = mContactMarkerHashMap.get(contacts.hashCode());
+		if (marker != null) {
+			marker.setIcon(BitmapDescriptorFactory.defaultMarker(hue));
+		}
+	}
+
 	private List<ContactsItem> getContactsList() {
 		MainActivity activity = (MainActivity) getActivity();
 		return activity.getCurrentContactsList();

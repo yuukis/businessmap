@@ -27,22 +27,29 @@ import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-public class ColorPickerDialogFragment extends DialogFragment {
+public class ColorPickerDialogFragment extends DialogFragment implements
+        AdapterView.OnItemClickListener {
 
     private static final String TAG = "ColorPickerDialogFragment";
     private static final String KEY_CONTACTS = "contacts";
     private static final int NUMBER_OF_COLUMNS = 3;
+
+    public interface ColorPickerDialogCallback {
+        void onPickMarkerColor(ContactsItem contacts, float hue);
+    }
 
     public static ColorPickerDialogFragment newInstance(ContactsItem contact) {
         ColorPickerDialogFragment fragment = new ColorPickerDialogFragment();
@@ -70,6 +77,7 @@ public class ColorPickerDialogFragment extends DialogFragment {
         GridView gridView = new GridView(getActivity());
         gridView.setNumColumns(columns);
         gridView.setAdapter(adapter);
+        gridView.setOnItemClickListener(this);
         String title = mContact.getName();
 
         return new AlertDialog.Builder(getActivity())
@@ -77,6 +85,18 @@ public class ColorPickerDialogFragment extends DialogFragment {
                 .setView(gridView)
                 .setNegativeButton(android.R.string.cancel, null)
                 .create();
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        TypedArray hueArray = getResources().obtainTypedArray(R.array.marker_hue);
+        float hue = hueArray.getFloat(position, 0f);
+
+        FragmentActivity activity = getActivity();
+        if (activity != null && activity instanceof ColorPickerDialogCallback) {
+            ((ColorPickerDialogCallback) activity).onPickMarkerColor(mContact, hue);
+        }
+        dismiss();
     }
 
     private static class ViewHolder {

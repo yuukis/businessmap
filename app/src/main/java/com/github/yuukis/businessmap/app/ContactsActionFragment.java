@@ -40,7 +40,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 public class ContactsActionFragment extends DialogFragment implements
-AdapterView.OnItemClickListener {
+		AdapterView.OnItemClickListener {
 
 	private static final String TAG = "ContactsActionFragment";
 	private static final String KEY_CONTACTS = "contacts";

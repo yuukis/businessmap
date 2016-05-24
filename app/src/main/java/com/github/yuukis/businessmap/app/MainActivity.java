@@ -44,7 +44,8 @@ import android.widget.Toast;
 public class MainActivity extends ActionBarActivity implements
 		ActionBar.OnNavigationListener, ContactsTaskFragment.TaskCallback,
 		ProgressDialogFragment.ProgressDialogFragmentListener,
-		ContactsItemsDialogFragment.OnSelectListener {
+		ContactsItemsDialogFragment.OnSelectListener,
+		ColorPickerDialogFragment.ColorPickerDialogCallback {
 
 	public static final String KEY_CONTACTS_GROUP_ID = "contacts_group_id";
 	private static final String KEY_NAVIGATION_INDEX = "navigation_index";
@@ -179,6 +180,11 @@ public class MainActivity extends ActionBarActivity implements
 				}
 			}
 		}
+	}
+
+	@Override
+	public void onPickMarkerColor(ContactsItem contacts, float hue) {
+		mMapFragment.changeMarkerColor(contacts, hue);
 	}
 
 	public List<ContactsItem> getCurrentContactsList() {
