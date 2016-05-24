@@ -101,7 +101,7 @@ public class MapStatePreferences {
 			location = manager.getLastKnownLocation(provider);
 		}
 		// 位置情報取得に失敗した場合の既定値
-		double lat = 139.766084, lng = 35.681382;	// 東京駅
+		double lng = 139.766084, lat = 35.681382;	// 東京駅
 		if (location != null) {
 			lat = location.getLatitude();
 			lng = location.getLongitude();
