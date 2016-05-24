@@ -43,6 +43,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.CancelableCallback;
 import com.google.android.gms.maps.GoogleMap.InfoWindowAdapter;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
@@ -50,6 +51,19 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 public class ContactsMapFragment extends SupportMapFragment implements
 		GoogleMap.OnInfoWindowClickListener {
+
+	private final static float[] MARKER_COLOR_LIST = new float[]{
+			BitmapDescriptorFactory.HUE_AZURE,
+			BitmapDescriptorFactory.HUE_BLUE,
+			BitmapDescriptorFactory.HUE_CYAN,
+			BitmapDescriptorFactory.HUE_GREEN,
+			BitmapDescriptorFactory.HUE_MAGENTA,
+			BitmapDescriptorFactory.HUE_ORANGE,
+			BitmapDescriptorFactory.HUE_RED,
+			BitmapDescriptorFactory.HUE_ROSE,
+			BitmapDescriptorFactory.HUE_VIOLET,
+			BitmapDescriptorFactory.HUE_YELLOW,
+	};
 
 	private GoogleMap mMap;
 	private MapWrapperLayout mMapWrapperLayout;
@@ -259,10 +273,13 @@ public class ContactsMapFragment extends SupportMapFragment implements
 			address = getString(R.string.message_no_data);
 		}
 		LatLng latLng = new LatLng(contacts.getLat(), contacts.getLng());
+		int colorIndex = (int) (Math.random() * MARKER_COLOR_LIST.length);
+		float hue = MARKER_COLOR_LIST[colorIndex % MARKER_COLOR_LIST.length];
 		Marker marker = mMap.addMarker(new MarkerOptions()
 				.position(latLng)
 				.title(name)
-				.snippet(address));
+				.snippet(address)
+				.icon(BitmapDescriptorFactory.defaultMarker(hue)));
 		return marker;
 	}
 
