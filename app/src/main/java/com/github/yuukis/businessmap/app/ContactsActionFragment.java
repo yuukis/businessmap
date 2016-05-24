@@ -126,6 +126,8 @@ public class ContactsActionFragment extends DialogFragment implements
 			ColorPickerDialogFragment.showDialog((ActionBarActivity) context, mContact);
 			break;
 		}
+
+		dismiss();
 	}
 
 	private static class BindData {
