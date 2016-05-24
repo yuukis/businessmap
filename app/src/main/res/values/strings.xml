@@ -9,6 +9,7 @@
     <string name="action_contacts_detail">Show contacts</string>
     <string name="action_directions">Directions</string>
     <string name="action_drive_navigation">Drive navigation</string>
+    <string name="action_marker_color">Marker color</string>
     <string name="action_select_group">Select group</string>
     <string name="action_select_contacts">Select contacts</string>
     <string name="label_app_name">Application Name</string>

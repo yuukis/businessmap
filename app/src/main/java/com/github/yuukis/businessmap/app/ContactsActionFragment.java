@@ -29,6 +29,7 @@ import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
+import android.support.v7.app.ActionBarActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -46,6 +47,7 @@ AdapterView.OnItemClickListener {
 	private static final int ID_SHOW_CONTACTS = 1;
 	private static final int ID_DIRECTION = 2;
 	private static final int ID_NAVIGATION = 3;
+	private static final int ID_MARKER_COLOR = 4;
 	private static final BindData[] ACTION_ITEMS = {
 		new BindData(
 				ID_SHOW_CONTACTS,
@@ -59,6 +61,10 @@ AdapterView.OnItemClickListener {
 				ID_NAVIGATION,
 				R.mipmap.ic_action_navigation,
 				R.string.action_drive_navigation),
+		new BindData(
+				ID_MARKER_COLOR,
+				R.mipmap.ic_action_navigation,
+				R.string.action_marker_color),
 	};
 
 	public static ContactsActionFragment newInstance(ContactsItem contact) {
@@ -113,8 +119,12 @@ AdapterView.OnItemClickListener {
 			break;
 
 		case ID_NAVIGATION:
-			ActionUtils
-					.doStartDriveNavigation(context, mContact);
+			ActionUtils.doStartDriveNavigation(context, mContact);
+			break;
+
+		case ID_MARKER_COLOR:
+			ColorPickerDialogFragment.showDialog((ActionBarActivity) context, mContact);
+			break;
 		}
 	}
 

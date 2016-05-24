@@ -9,6 +9,7 @@
     <string name="action_contacts_detail">連絡先を表示</string>
     <string name="action_directions">経路を調べる</string>
     <string name="action_drive_navigation">ナビを開始</string>
+    <string name="action_marker_color">マーカーの色</string>
     <string name="action_select_group">グループを選択</string>
     <string name="action_select_contacts">連絡先を選択</string>
     <string name="label_app_name">アプリケーション名</string>
