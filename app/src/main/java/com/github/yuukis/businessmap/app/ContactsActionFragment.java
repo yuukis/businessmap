@@ -51,19 +51,19 @@ AdapterView.OnItemClickListener {
 	private static final BindData[] ACTION_ITEMS = {
 		new BindData(
 				ID_SHOW_CONTACTS,
-				R.mipmap.ic_action_person,
+				R.drawable.ic_action_person,
 				R.string.action_contacts_detail),
 		new BindData(
 				ID_DIRECTION,
-				R.mipmap.ic_action_directions,
+				R.drawable.ic_action_directions,
 				R.string.action_directions),
 		new BindData(
 				ID_NAVIGATION,
-				R.mipmap.ic_action_navigation,
+				R.drawable.ic_action_navigation,
 				R.string.action_drive_navigation),
 		new BindData(
 				ID_MARKER_COLOR,
-				R.mipmap.ic_action_navigation,
+				R.drawable.ic_action_palette,
 				R.string.action_marker_color),
 	};
 

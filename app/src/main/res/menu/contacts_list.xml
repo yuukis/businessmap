@@ -4,7 +4,7 @@
 
     <item
         android:id="@+id/action_contacts"
-        android:icon="@mipmap/ic_action_list"
+        android:icon="@drawable/ic_action_list"
         android:orderInCategory="200"
         android:title="@string/action_list"
         myapp:showAsAction="always">
