@@ -52,17 +52,6 @@ import com.google.android.gms.maps.model.MarkerOptions;
 public class ContactsMapFragment extends SupportMapFragment implements
 		GoogleMap.OnInfoWindowClickListener {
 
-	private final static float[] MARKER_HUE_LIST = new float[]{
-			0.0f,
-			30.0f,
-			60.0f,
-			90.0f,
-			180.0f,
-			210.0f,
-			270.0f,
-			300.0f,
-	};
-
 	private GoogleMap mMap;
 	private MapWrapperLayout mMapWrapperLayout;
 	private View mInfoWindow;
@@ -278,8 +267,7 @@ public class ContactsMapFragment extends SupportMapFragment implements
 			address = getString(R.string.message_no_data);
 		}
 		LatLng latLng = new LatLng(contacts.getLat(), contacts.getLng());
-		int hueIndex = (int) (Math.random() * MARKER_HUE_LIST.length);
-		float hue = MARKER_HUE_LIST[hueIndex % MARKER_HUE_LIST.length];
+		float hue = 0;
 		Marker marker = mMap.addMarker(new MarkerOptions()
 				.position(latLng)
 				.title(name)
