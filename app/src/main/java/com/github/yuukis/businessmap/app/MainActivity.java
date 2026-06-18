@@ -29,7 +29,6 @@ import com.github.yuukis.businessmap.widget.GroupAdapter;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.util.TypedValue;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.core.content.ContextCompat;
@@ -77,29 +76,20 @@ public class MainActivity extends AppCompatActivity implements
 	}
 
 	/**
-	 * Apps targeting Android 15 (API 35) are forced edge-to-edge, and this
-	 * app's ActionBar ends up floating over our own content instead of
-	 * reserving space above it. Rather than rely on how AppCompat/the
-	 * platform happen to position the ActionBar internally, pad our own
-	 * content root by the status bar inset plus the ActionBar's actual
-	 * height, so our content (the map, contacts list, etc.) is guaranteed to
-	 * start below it regardless.
+	 * Apps targeting Android 15 (API 35) are forced edge-to-edge. The
+	 * ActionBar already reserves its own height correctly above our content
+	 * (confirmed empirically: adding the ActionBar's height on top of the
+	 * status bar inset overshot by about one ActionBar height). All that's
+	 * actually missing is room for the status bar itself, so only pad for
+	 * that.
 	 */
 	private void applyEdgeToEdgeInsets() {
 		View root = findViewById(R.id.activity_main_root);
 		ViewCompat.setOnApplyWindowInsetsListener(root, (v, insets) -> {
 			Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-			v.setPadding(bars.left, bars.top + getActionBarHeight(), bars.right, bars.bottom);
+			v.setPadding(bars.left, bars.top, bars.right, bars.bottom);
 			return WindowInsetsCompat.CONSUMED;
 		});
-	}
-
-	private int getActionBarHeight() {
-		TypedValue value = new TypedValue();
-		if (getTheme().resolveAttribute(android.R.attr.actionBarSize, value, true)) {
-			return TypedValue.complexToDimensionPixelSize(value.data, getResources().getDisplayMetrics());
-		}
-		return 0;
 	}
 
 	@Override
