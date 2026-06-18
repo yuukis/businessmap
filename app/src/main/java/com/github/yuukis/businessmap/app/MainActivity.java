@@ -32,12 +32,16 @@ import android.os.Bundle;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.core.content.ContextCompat;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.FragmentManager;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.WindowManager;
 
 public class MainActivity extends AppCompatActivity implements
@@ -66,8 +70,26 @@ public class MainActivity extends AppCompatActivity implements
 		getWindow().setSoftInputMode(
 				WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 		setContentView(R.layout.activity_main);
+		applyEdgeToEdgeInsets();
 		initialize(savedInstanceState);
 		requestMissingPermissions();
+	}
+
+	/**
+	 * Apps targeting Android 15 (API 35) are forced edge-to-edge. The
+	 * ActionBar already reserves its own height correctly above our content
+	 * (confirmed empirically: adding the ActionBar's height on top of the
+	 * status bar inset overshot by about one ActionBar height). All that's
+	 * actually missing is room for the status bar itself, so only pad for
+	 * that.
+	 */
+	private void applyEdgeToEdgeInsets() {
+		View root = findViewById(R.id.activity_main_root);
+		ViewCompat.setOnApplyWindowInsetsListener(root, (v, insets) -> {
+			Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+			v.setPadding(bars.left, bars.top, bars.right, bars.bottom);
+			return WindowInsetsCompat.CONSUMED;
+		});
 	}
 
 	@Override
