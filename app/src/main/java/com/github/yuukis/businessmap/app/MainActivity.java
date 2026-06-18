@@ -79,12 +79,19 @@ public class MainActivity extends AppCompatActivity implements
 	 * content (including the legacy, non-overlay ActionBar) is laid out
 	 * behind the status/navigation bars unless we account for the system bar
 	 * insets ourselves. Pad the whole decor view so nothing is obscured.
+	 *
+	 * The insets must be consumed (not just read) here: this app's ActionBar
+	 * decor root (AppCompat's abc_screen_simple.xml) has
+	 * android:fitsSystemWindows="true", and the platform's default View
+	 * inset handling for that flag would otherwise apply the same insets a
+	 * second time as it propagates down, pushing the ActionBar to a wrong,
+	 * partially-offset position.
 	 */
 	private void applyEdgeToEdgeInsets() {
 		ViewCompat.setOnApplyWindowInsetsListener(getWindow().getDecorView(), (v, insets) -> {
 			Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
 			v.setPadding(bars.left, bars.top, bars.right, bars.bottom);
-			return insets;
+			return WindowInsetsCompat.CONSUMED;
 		});
 	}
 
