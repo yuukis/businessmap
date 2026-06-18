@@ -3,13 +3,12 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content" >
 
-    <fr.castorflex.android.smoothprogressbar.SmoothProgressBar
-        xmlns:app="http://schemas.android.com/apk/res-auto"
+    <ProgressBar
         android:id="@+id/contacts_progressbar"
+        style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="match_parent"
         android:layout_height="3dp"
         android:indeterminate="true"
-        android:visibility="gone"
-        app:spb_stroke_width="3dp" />
+        android:visibility="gone" />
 
 </FrameLayout>
