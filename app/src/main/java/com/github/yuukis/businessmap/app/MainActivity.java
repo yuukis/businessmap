@@ -74,10 +74,18 @@ public class MainActivity extends AppCompatActivity implements
 	protected void onStart() {
 		super.onStart();
 		if (mContactsList == null) {
-			mContactsList = new ArrayList<ContactsItem>();
-
-			if (hasContactsPermission() && !mTaskFragment.isRunning()) {
-				mTaskFragment.start();
+			List<ContactsItem> retained = mTaskFragment.getContactsList();
+			if (retained != null) {
+				// Activity was recreated (e.g. rotation); the retained task
+				// fragment already has the data in memory, so adopt it
+				// directly instead of re-querying contacts from scratch.
+				mContactsList = retained;
+				notifyDataSetChanged();
+			} else {
+				mContactsList = new ArrayList<ContactsItem>();
+				if (hasContactsPermission() && !mTaskFragment.isRunning()) {
+					mTaskFragment.start();
+				}
 			}
 		}
 	}
