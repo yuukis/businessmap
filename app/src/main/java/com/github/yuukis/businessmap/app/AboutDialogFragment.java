@@ -26,9 +26,9 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v7.app.ActionBarActivity;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.appcompat.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
@@ -42,7 +42,7 @@ public class AboutDialogFragment extends DialogFragment implements
 		return new AboutDialogFragment();
 	}
 
-	public static void showDialog(ActionBarActivity activity) {
+	public static void showDialog(AppCompatActivity activity) {
 		FragmentManager manager = activity.getSupportFragmentManager();
 		newInstance().show(manager, TAG);
 	}

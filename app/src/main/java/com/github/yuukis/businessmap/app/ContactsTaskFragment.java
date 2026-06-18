@@ -27,6 +27,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.json.JSONException;
 
@@ -45,9 +47,7 @@ import com.github.yuukis.businessmap.util.SerializationUtils;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.database.Cursor;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -56,8 +56,8 @@ import android.provider.ContactsContract.Data;
 import android.provider.ContactsContract.CommonDataKinds.GroupMembership;
 import android.provider.ContactsContract.CommonDataKinds.Note;
 import android.provider.ContactsContract.CommonDataKinds.StructuredPostal;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.app.Fragment;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -70,8 +70,11 @@ public class ContactsTaskFragment extends Fragment {
 
 	private static final String FILENAME_CACHE_CONTACTS_LIST = "contacts_list.cache";
 
+	private final ExecutorService mExecutor = Executors.newSingleThreadExecutor();
+	private final Handler mHandler = new Handler(Looper.getMainLooper());
+
 	private TaskCallback mCallback;
-	private ContactsAsyncTask mContactsTask;
+	private ContactsTask mContactsTask;
 	private boolean mRunning = false;
 	private List<ContactsItem> mContactsList;
 	private Map<String, Double[]> mGeocodingResultCache;
@@ -112,15 +115,15 @@ public class ContactsTaskFragment extends Fragment {
 
 	public void start() {
 		if (!mRunning) {
-			mContactsTask = new ContactsAsyncTask();
-			mContactsTask.execute();
+			mContactsTask = new ContactsTask();
+			mContactsTask.start();
 			setRunning(true);
 		}
 	}
 
 	public void cancel() {
 		if (mRunning) {
-			mContactsTask.cancel(false);
+			mContactsTask.cancel();
 			mContactsTask = null;
 			setRunning(false);
 		}
@@ -207,18 +210,30 @@ public class ContactsTaskFragment extends Fragment {
 		}
 	}
 
-	private class ContactsAsyncTask extends AsyncTask<Void, Integer, Void>
-	implements DialogInterface.OnCancelListener {
+	private class ContactsTask {
 
-		@Override
-		public void onCancel(DialogInterface dialog) {
-			cancel(true);
+		private volatile boolean mCancelled;
+
+		void start() {
+			onPreExecute();
+			mExecutor.execute(() -> {
+				loadAllContacts();
+				if (!mGeocodingResultCache.isEmpty()) {
+					geocoding();
+				}
+				mHandler.post(this::onPostExecute);
+			});
 		}
 
-		@Override
-		protected void onPreExecute() {
-			super.onPreExecute();
+		void cancel() {
+			mCancelled = true;
+		}
 
+		boolean isCancelled() {
+			return mCancelled;
+		}
+
+		private void onPreExecute() {
 			mContactsList = readContactsListFromCache();
 			if (mContactsList == null) {
 				mContactsList = new ArrayList<ContactsItem>();
@@ -230,30 +245,15 @@ public class ContactsTaskFragment extends Fragment {
 			setRunning(true);
 		}
 
-		@Override
-		protected Void doInBackground(Void... params) {
-			loadAllContacts();
-			if (!mGeocodingResultCache.isEmpty()) {
-				geocoding();
+		private void onProgressUpdate(int value) {
+			updateProgress(value);
+		}
+
+		private void onPostExecute() {
+			if (mCancelled) {
+				setRunning(false);
+				return;
 			}
-			return null;
-		}
-
-		@Override
-		protected void onProgressUpdate(Integer... values) {
-			super.onProgressUpdate(values);
-			updateProgress(values);
-		}
-
-		@Override
-		protected void onCancelled() {
-			super.onCancelled();
-			setRunning(false);
-		}
-
-		@Override
-		protected void onPostExecute(Void result) {
-			super.onPostExecute(result);
 
 			writeContactsListInCache(mContactsList);
 			if (mCallback != null) {
@@ -485,7 +485,7 @@ public class ContactsTaskFragment extends Fragment {
 
 					count++;
 					final int progress = count;
-					publishProgress(progress);
+					mHandler.post(() -> onProgressUpdate(progress));
 
 					if (isCancelled()) {
 						return;

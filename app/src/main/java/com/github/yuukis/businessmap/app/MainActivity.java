@@ -27,16 +27,21 @@ import com.github.yuukis.businessmap.model.ContactsItem;
 import com.github.yuukis.businessmap.util.ContactUtils;
 import com.github.yuukis.businessmap.widget.GroupAdapter;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.support.v4.app.FragmentManager;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarActivity;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.FragmentManager;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.WindowManager;
 
-public class MainActivity extends ActionBarActivity implements
+public class MainActivity extends AppCompatActivity implements
 		ActionBar.OnNavigationListener, ContactsTaskFragment.TaskCallback,
 		ProgressDialogFragment.ProgressDialogFragmentListener,
 		ContactsItemsDialogFragment.OnSelectListener {
@@ -51,14 +56,20 @@ public class MainActivity extends ActionBarActivity implements
 	private ContactsMapFragment mMapFragment;
 	private ContactsListFragment mListFragment;
 	private ContactsTaskFragment mTaskFragment;
+	private GroupAdapter mGroupAdapter;
+	private ActivityResultLauncher<String[]> mPermissionLauncher;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		mPermissionLauncher = registerForActivityResult(
+				new ActivityResultContracts.RequestMultiplePermissions(),
+				result -> onPermissionsResult());
 		getWindow().setSoftInputMode(
 				WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 		setContentView(R.layout.activity_main);
 		initialize(savedInstanceState);
+		requestMissingPermissions();
 	}
 
 	@Override
@@ -67,9 +78,39 @@ public class MainActivity extends ActionBarActivity implements
 		if (mContactsList == null) {
 			mContactsList = new ArrayList<ContactsItem>();
 
-			if (!mTaskFragment.isRunning()) {
+			if (hasContactsPermission() && !mTaskFragment.isRunning()) {
 				mTaskFragment.start();
 			}
+		}
+	}
+
+	private boolean hasContactsPermission() {
+		return ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS)
+				== PackageManager.PERMISSION_GRANTED;
+	}
+
+	private void requestMissingPermissions() {
+		List<String> missing = new ArrayList<String>();
+		if (!hasContactsPermission()) {
+			missing.add(Manifest.permission.READ_CONTACTS);
+		}
+		if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+				!= PackageManager.PERMISSION_GRANTED) {
+			missing.add(Manifest.permission.ACCESS_FINE_LOCATION);
+			missing.add(Manifest.permission.ACCESS_COARSE_LOCATION);
+		}
+		if (!missing.isEmpty()) {
+			mPermissionLauncher.launch(missing.toArray(new String[0]));
+		}
+	}
+
+	private void onPermissionsResult() {
+		mMapFragment.enableMyLocationIfPermitted();
+		if (hasContactsPermission() && mContactsList != null && !mTaskFragment.isRunning()) {
+			mGroupList.clear();
+			mGroupList.addAll(ContactUtils.getContactsGroupList(this));
+			mGroupAdapter.notifyDataSetChanged();
+			mTaskFragment.start();
 		}
 	}
 
@@ -150,13 +191,15 @@ public class MainActivity extends ActionBarActivity implements
 		mMapFragment = (ContactsMapFragment) fm.findFragmentById(R.id.contacts_map);
 		mListFragment = (ContactsListFragment) fm.findFragmentById(R.id.contacts_list);
 		mTaskFragment = (ContactsTaskFragment) fm.findFragmentById(R.id.contacts_task);
-		mGroupList = ContactUtils.getContactsGroupList(this);
+		mGroupList = hasContactsPermission()
+				? ContactUtils.getContactsGroupList(this)
+				: new ArrayList<ContactsGroup>();
 
-		GroupAdapter adapter = new GroupAdapter(this, mGroupList);
+		mGroupAdapter = new GroupAdapter(this, mGroupList);
 		ActionBar actionBar = getSupportActionBar();
 		actionBar.setDisplayShowTitleEnabled(false);
 		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
-		actionBar.setListNavigationCallbacks(adapter, this);
+		actionBar.setListNavigationCallbacks(mGroupAdapter, this);
 
 		int navigationIndex = 0;
 		if (savedInstanceState != null) {

@@ -2,16 +2,12 @@ package com.github.yuukis.businessmap.util;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.util.List;
 import java.util.Locale;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -45,23 +41,20 @@ public class GeocoderUtils {
 
 	private static Double[] getFromLocationNameToGoogleMaps(String address)
 			throws IOException, JSONException {
-		String url = "http://maps.google.com/maps/api/geocode/json?address=%s&ka&sensor=false";
+		String urlFormat = "https://maps.google.com/maps/api/geocode/json?address=%s&ka&sensor=false";
 		address = URLEncoder.encode(address, "UTF-8");
-		url = String.format(Locale.getDefault(), url, address);
-		HttpGet httpGet = new HttpGet(url);
-		HttpClient client = new DefaultHttpClient();
-		HttpResponse response;
+		String url = String.format(Locale.getDefault(), urlFormat, address);
 		StringBuilder stringBuilder = new StringBuilder();
 
+		HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
 		try {
-			response = client.execute(httpGet);
-			HttpEntity entity = response.getEntity();
-			InputStream stream = entity.getContent();
+			InputStream stream = connection.getInputStream();
 			int b;
 			while ((b = stream.read()) != -1) {
 				stringBuilder.append((char) b);
 			}
-		} catch (ClientProtocolException e) {
+		} finally {
+			connection.disconnect();
 		}
 
 		JSONObject jsonObject = new JSONObject(stringBuilder.toString());
