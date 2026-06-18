@@ -29,6 +29,7 @@ import com.github.yuukis.businessmap.widget.GroupAdapter;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.util.TypedValue;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.core.content.ContextCompat;
@@ -41,6 +42,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.WindowManager;
 
 public class MainActivity extends AppCompatActivity implements
@@ -75,24 +77,29 @@ public class MainActivity extends AppCompatActivity implements
 	}
 
 	/**
-	 * Apps targeting Android 15 (API 35) are forced edge-to-edge: the window
-	 * content (including the legacy, non-overlay ActionBar) is laid out
-	 * behind the status/navigation bars unless we account for the system bar
-	 * insets ourselves. Pad the whole decor view so nothing is obscured.
-	 *
-	 * The insets must be consumed (not just read) here: this app's ActionBar
-	 * decor root (AppCompat's abc_screen_simple.xml) has
-	 * android:fitsSystemWindows="true", and the platform's default View
-	 * inset handling for that flag would otherwise apply the same insets a
-	 * second time as it propagates down, pushing the ActionBar to a wrong,
-	 * partially-offset position.
+	 * Apps targeting Android 15 (API 35) are forced edge-to-edge, and this
+	 * app's ActionBar ends up floating over our own content instead of
+	 * reserving space above it. Rather than rely on how AppCompat/the
+	 * platform happen to position the ActionBar internally, pad our own
+	 * content root by the status bar inset plus the ActionBar's actual
+	 * height, so our content (the map, contacts list, etc.) is guaranteed to
+	 * start below it regardless.
 	 */
 	private void applyEdgeToEdgeInsets() {
-		ViewCompat.setOnApplyWindowInsetsListener(getWindow().getDecorView(), (v, insets) -> {
+		View root = findViewById(R.id.activity_main_root);
+		ViewCompat.setOnApplyWindowInsetsListener(root, (v, insets) -> {
 			Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-			v.setPadding(bars.left, bars.top, bars.right, bars.bottom);
+			v.setPadding(bars.left, bars.top + getActionBarHeight(), bars.right, bars.bottom);
 			return WindowInsetsCompat.CONSUMED;
 		});
+	}
+
+	private int getActionBarHeight() {
+		TypedValue value = new TypedValue();
+		if (getTheme().resolveAttribute(android.R.attr.actionBarSize, value, true)) {
+			return TypedValue.complexToDimensionPixelSize(value.data, getResources().getDisplayMetrics());
+		}
+		return 0;
 	}
 
 	@Override
