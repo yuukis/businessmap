@@ -32,6 +32,9 @@ import android.os.Bundle;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.core.content.ContextCompat;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.FragmentManager;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
@@ -66,8 +69,23 @@ public class MainActivity extends AppCompatActivity implements
 		getWindow().setSoftInputMode(
 				WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 		setContentView(R.layout.activity_main);
+		applyEdgeToEdgeInsets();
 		initialize(savedInstanceState);
 		requestMissingPermissions();
+	}
+
+	/**
+	 * Apps targeting Android 15 (API 35) are forced edge-to-edge: the window
+	 * content (including the legacy, non-overlay ActionBar) is laid out
+	 * behind the status/navigation bars unless we account for the system bar
+	 * insets ourselves. Pad the whole decor view so nothing is obscured.
+	 */
+	private void applyEdgeToEdgeInsets() {
+		ViewCompat.setOnApplyWindowInsetsListener(getWindow().getDecorView(), (v, insets) -> {
+			Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+			v.setPadding(bars.left, bars.top, bars.right, bars.bottom);
+			return insets;
+		});
 	}
 
 	@Override
