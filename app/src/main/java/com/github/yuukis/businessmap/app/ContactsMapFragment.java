@@ -90,6 +90,11 @@ public class ContactsMapFragment extends SupportMapFragment implements
 			mMap = googleMap;
 			setUpMap();
 			setUpMapInfoWindow();
+			// The map becomes ready asynchronously, possibly after the
+			// Activity already tried (and, since mMap was still null,
+			// failed) to draw markers for the current contacts list.
+			// Draw them now that we actually have a map to draw on.
+			notifyDataSetChanged();
 		}
 	}
 

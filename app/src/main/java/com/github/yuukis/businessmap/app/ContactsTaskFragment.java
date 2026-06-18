@@ -133,6 +133,16 @@ public class ContactsTaskFragment extends Fragment {
 		return mRunning;
 	}
 
+	/**
+	 * Returns the contacts list already loaded by this retained fragment, or
+	 * null if {@link #start()} has never completed at least once. Lets a
+	 * recreated Activity adopt the in-memory result directly instead of
+	 * re-querying contacts on every configuration change.
+	 */
+	public List<ContactsItem> getContactsList() {
+		return mContactsList;
+	}
+
 	private void setRunning(boolean running) {
 		mRunning = running;
 		setProgressBarVisibie(mRunning);

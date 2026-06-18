@@ -17,7 +17,6 @@
  */
 package com.github.yuukis.businessmap.app;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,7 +47,6 @@ public class MainActivity extends AppCompatActivity implements
 
 	public static final String KEY_CONTACTS_GROUP_ID = "contacts_group_id";
 	private static final String KEY_NAVIGATION_INDEX = "navigation_index";
-	private static final String KEY_CONTACTS_LIST = "contacts_list";
 
 	private List<ContactsGroup> mGroupList;
 	private List<ContactsItem> mContactsList;
@@ -76,10 +74,18 @@ public class MainActivity extends AppCompatActivity implements
 	protected void onStart() {
 		super.onStart();
 		if (mContactsList == null) {
-			mContactsList = new ArrayList<ContactsItem>();
-
-			if (hasContactsPermission() && !mTaskFragment.isRunning()) {
-				mTaskFragment.start();
+			List<ContactsItem> retained = mTaskFragment.getContactsList();
+			if (retained != null) {
+				// Activity was recreated (e.g. rotation); the retained task
+				// fragment already has the data in memory, so adopt it
+				// directly instead of re-querying contacts from scratch.
+				mContactsList = retained;
+				notifyDataSetChanged();
+			} else {
+				mContactsList = new ArrayList<ContactsItem>();
+				if (hasContactsPermission() && !mTaskFragment.isRunning()) {
+					mTaskFragment.start();
+				}
 			}
 		}
 	}
@@ -136,7 +142,6 @@ public class MainActivity extends AppCompatActivity implements
 	protected void onSaveInstanceState(Bundle outState) {
 		int navigationIndex = getSupportActionBar().getSelectedNavigationIndex();
 		outState.putInt(KEY_NAVIGATION_INDEX, navigationIndex);
-		outState.putSerializable(KEY_CONTACTS_LIST, (Serializable) mContactsList);
 		super.onSaveInstanceState(outState);
 	}
 
@@ -185,7 +190,6 @@ public class MainActivity extends AppCompatActivity implements
 		return mCurrentGroupContactsList;
 	}
 
-	@SuppressWarnings("unchecked")
 	private void initialize(Bundle savedInstanceState) {
 		Bundle args = getIntent().getExtras();
 
@@ -206,8 +210,6 @@ public class MainActivity extends AppCompatActivity implements
 		int navigationIndex = 0;
 		if (savedInstanceState != null) {
 			navigationIndex = savedInstanceState.getInt(KEY_NAVIGATION_INDEX);
-			mContactsList = (List<ContactsItem>) savedInstanceState
-					.getSerializable(KEY_CONTACTS_LIST);
 		} else if (args != null) {
 			if (args.containsKey(KEY_CONTACTS_GROUP_ID)) {
 				long groupId = args.getLong(KEY_CONTACTS_GROUP_ID);
