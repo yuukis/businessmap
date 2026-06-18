@@ -110,6 +110,9 @@ public class MainActivity extends AppCompatActivity implements
 			mGroupList.clear();
 			mGroupList.addAll(ContactUtils.getContactsGroupList(this));
 			mGroupAdapter.notifyDataSetChanged();
+			if (getSupportActionBar().getSelectedNavigationIndex() < 0) {
+				getSupportActionBar().setSelectedNavigationItem(0);
+			}
 			mTaskFragment.start();
 		}
 	}
@@ -223,6 +226,9 @@ public class MainActivity extends AppCompatActivity implements
 
 	private void notifyDataSetChanged() {
 		int index = getSupportActionBar().getSelectedNavigationIndex();
+		if (index < 0 || index >= mGroupList.size()) {
+			return;
+		}
 		ContactsGroup group = mGroupList.get(index);
 		long groupId = group.getId();
 		changeCurrentGroup(groupId);
