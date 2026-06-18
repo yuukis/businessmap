@@ -17,11 +17,15 @@
  */
 package com.github.yuukis.businessmap.data;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
+import androidx.core.content.ContextCompat;
 
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
@@ -85,20 +89,31 @@ public class MapStatePreferences {
 		return mContext.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
 	}
 
+	@SuppressLint("MissingPermission")
 	private LatLng getLastKnownLocation() {
-		LocationManager manager = (LocationManager) mContext
-				.getSystemService(Context.LOCATION_SERVICE);
-		Criteria criteria = new Criteria();
-		criteria.setAccuracy(Criteria.ACCURACY_FINE);
-		String provider = manager.getBestProvider(criteria, true);
-		provider = LocationManager.NETWORK_PROVIDER;
-		Location location = manager.getLastKnownLocation(provider);
 		// 位置情報取得に失敗した場合の既定値
-		double lat = 139.766084, lng = 35.681382;	// 東京駅
-		if (location != null) {
-			lat = location.getLatitude();
-			lng = location.getLongitude();
+		double lat = 35.681382, lng = 139.766084;	// 東京駅
+
+		if (hasLocationPermission()) {
+			LocationManager manager = (LocationManager) mContext
+					.getSystemService(Context.LOCATION_SERVICE);
+			Criteria criteria = new Criteria();
+			criteria.setAccuracy(Criteria.ACCURACY_FINE);
+			String provider = manager.getBestProvider(criteria, true);
+			provider = LocationManager.NETWORK_PROVIDER;
+			Location location = manager.getLastKnownLocation(provider);
+			if (location != null) {
+				lat = location.getLatitude();
+				lng = location.getLongitude();
+			}
 		}
 		return new LatLng(lat, lng);
+	}
+
+	private boolean hasLocationPermission() {
+		return ContextCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION)
+				== PackageManager.PERMISSION_GRANTED
+				|| ContextCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_COARSE_LOCATION)
+				== PackageManager.PERMISSION_GRANTED;
 	}
 }

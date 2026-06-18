@@ -80,8 +80,7 @@ public class ContactsListFragment extends ListFragment implements
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case R.id.action_contacts:
+		if (item.getItemId() == R.id.action_contacts) {
 			if (getVisibility()) {
 				setVisibility(false);
 			} else {

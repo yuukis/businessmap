@@ -49,7 +49,7 @@ public class LicenseDialogFragment extends DialogFragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setStyle(STYLE_NORMAL | STYLE_NO_TITLE, R.style.AppTheme);
+		setStyle(STYLE_NO_TITLE, R.style.AppTheme);
 	}
 
 	@Override

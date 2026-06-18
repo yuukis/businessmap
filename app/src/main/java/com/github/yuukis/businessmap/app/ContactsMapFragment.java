@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Locale;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -42,6 +43,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.CancelableCallback;
 import com.google.android.gms.maps.GoogleMap.InfoWindowAdapter;
+import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
@@ -49,7 +51,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 public class ContactsMapFragment extends SupportMapFragment implements
-		GoogleMap.OnInfoWindowClickListener {
+		GoogleMap.OnInfoWindowClickListener, OnMapReadyCallback {
 
 	private GoogleMap mMap;
 	private MapWrapperLayout mMapWrapperLayout;
@@ -73,13 +75,22 @@ public class ContactsMapFragment extends SupportMapFragment implements
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 		mPreferences = new MapStatePreferences(getActivity());
-		setUpMapIfNeeded();
+		getMapAsync(this);
 	}
 
 	@Override
 	public void onResume() {
 		super.onResume();
-		setUpMapIfNeeded();
+		getMapAsync(this);
+	}
+
+	@Override
+	public void onMapReady(GoogleMap googleMap) {
+		if (mMap == null) {
+			mMap = googleMap;
+			setUpMap();
+			setUpMapInfoWindow();
+		}
 	}
 
 	@Override
@@ -197,16 +208,7 @@ public class ContactsMapFragment extends SupportMapFragment implements
 		return activity.getCurrentContactsList();
 	}
 
-	private void setUpMapIfNeeded() {
-		if (mMap == null) {
-			mMap = getMap();
-			if (mMap != null) {
-				setUpMap();
-				setUpMapInfoWindow();
-			}
-		}
-	}
-
+	@SuppressLint("MissingPermission")
 	private void setUpMap() {
 		CameraPosition position = mPreferences.getCameraPosition();
 		mMap.setInfoWindowAdapter(new MyInfoWindowAdapter());
@@ -218,6 +220,7 @@ public class ContactsMapFragment extends SupportMapFragment implements
 		mMap.moveCamera(CameraUpdateFactory.newCameraPosition(position));
 	}
 
+	@SuppressLint("MissingPermission")
 	public void enableMyLocationIfPermitted() {
 		if (mMap != null && hasLocationPermission()) {
 			mMap.setMyLocationEnabled(true);
@@ -272,7 +275,7 @@ public class ContactsMapFragment extends SupportMapFragment implements
 	private void setUpMapInfoWindow() {
 		mMapWrapperLayout = (MapWrapperLayout) getActivity()
 				.findViewById(R.id.map_relative_layout);
-		mMapWrapperLayout.init(getMap(), getPixelsFromDp(getActivity(), 39 + 20));
+		mMapWrapperLayout.init(mMap, getPixelsFromDp(getActivity(), 39 + 20));
 
 		mInfoWindow = getActivity().getLayoutInflater().inflate(
 				R.layout.marker_info_contents, null);

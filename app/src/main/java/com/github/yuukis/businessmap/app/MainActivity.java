@@ -122,8 +122,7 @@ public class MainActivity extends AppCompatActivity implements
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case R.id.action_about:
+		if (item.getItemId() == R.id.action_about) {
 			AboutDialogFragment.showDialog(this);
 			return true;
 		}
