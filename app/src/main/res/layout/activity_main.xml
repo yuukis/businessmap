@@ -6,10 +6,25 @@
     android:layout_height="match_parent"
     tools:context="com.github.yuukis.businessmap.app.MainActivity" >
 
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:layout_alignParentTop="true"
+        android:background="?attr/colorSurface"
+        android:elevation="4dp" >
+
+        <Spinner
+            android:id="@+id/spinner_group"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </com.google.android.material.appbar.MaterialToolbar>
+
     <com.github.yuukis.businessmap.widget.MapWrapperLayout
         android:id="@+id/map_relative_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" >
+        android:layout_height="match_parent"
+        android:layout_below="@id/toolbar" >
 
         <fragment
             android:id="@+id/contacts_map"
@@ -30,7 +45,7 @@
         android:layout_width="@dimen/slidinglayer_width"
         android:layout_height="match_parent"
         android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true"
+        android:layout_below="@id/toolbar"
         slidingLayer:closeOnTapEnabled="true"
         slidingLayer:shadowDrawable="@drawable/sidebar_shadow"
         slidingLayer:shadowWidth="4dp"
