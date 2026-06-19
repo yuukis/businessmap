@@ -57,5 +57,6 @@ configurations.all {
 dependencies {
     implementation("androidx.appcompat:appcompat:1.7.0")
     implementation("androidx.fragment:fragment:1.8.5")
+    implementation("com.google.android.material:material:1.12.0")
     implementation("com.google.android.gms:play-services-maps:19.0.0")
 }
