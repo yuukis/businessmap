@@ -17,10 +17,12 @@
  */
 package com.github.yuukis.businessmap.app
 
+import android.app.Dialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.webkit.WebView
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
@@ -39,10 +41,17 @@ class LicenseDialogFragment : DialogFragment() {
         setStyle(STYLE_NO_TITLE, R.style.AppTheme)
     }
 
-    override fun onStart() {
-        super.onStart()
-        val window = dialog?.window ?: return
-        WindowCompat.setDecorFitsSystemWindows(window, false)
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        val dialog = super.onCreateDialog(savedInstanceState)
+        // The window must be sized to the full screen and opted out of the
+        // default inset-fitting *before* the WebView is attached, otherwise
+        // the first inset dispatch still reserves system bar space and the
+        // listener below never gets a chance to pad around it.
+        dialog.window?.let { window ->
+            window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT)
+            WindowCompat.setDecorFitsSystemWindows(window, false)
+        }
+        return dialog
     }
 
     override fun onCreateView(
