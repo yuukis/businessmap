@@ -68,14 +68,21 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
     /**
      * Apps targeting Android 15 (API 35) are forced edge-to-edge. The
      * MaterialToolbar now lives inside our own layout rather than being
-     * reserved by the system, so it must absorb the status bar inset itself
-     * via top padding; the root only needs padding for the remaining sides.
+     * reserved by the system, so it must absorb the status bar inset itself.
+     * Padding alone would squeeze its fixed-height content (the group
+     * spinner) into a shorter area and clip it, so the inset is added on top
+     * of the toolbar's original height instead, with padding only offsetting
+     * the content down into that extra space.
      */
     private fun applyEdgeToEdgeInsets() {
         val root = findViewById<View>(R.id.activity_main_root)
         val toolbar = findViewById<View>(R.id.toolbar)
+        val toolbarContentHeight = toolbar.layoutParams.height
         ViewCompat.setOnApplyWindowInsetsListener(root) { v, insets ->
             val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            toolbar.layoutParams = toolbar.layoutParams.apply {
+                height = toolbarContentHeight + bars.top
+            }
             toolbar.setPadding(toolbar.paddingLeft, bars.top, toolbar.paddingRight, toolbar.paddingBottom)
             v.setPadding(bars.left, 0, bars.right, bars.bottom)
             WindowInsetsCompat.CONSUMED
