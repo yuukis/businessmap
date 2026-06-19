@@ -19,7 +19,6 @@ package com.github.yuukis.businessmap.app
 
 import android.app.Dialog
 import android.content.Context
-import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -34,6 +33,8 @@ import androidx.fragment.app.FragmentActivity
 import com.github.yuukis.businessmap.R
 import com.github.yuukis.businessmap.model.ContactsItem
 import com.github.yuukis.businessmap.util.ActionUtils
+import com.google.android.material.R as MaterialR
+import com.google.android.material.color.MaterialColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class ContactsActionFragment : DialogFragment(), AdapterView.OnItemClickListener {
@@ -49,7 +50,7 @@ class ContactsActionFragment : DialogFragment(), AdapterView.OnItemClickListener
         gridView.numColumns = columns
         gridView.adapter = adapter
         gridView.onItemClickListener = this
-        gridView.setBackgroundColor(Color.WHITE)
+        gridView.setBackgroundColor(MaterialColors.getColor(gridView, MaterialR.attr.colorSurface))
         val title = contact?.name
 
         return MaterialAlertDialogBuilder(requireActivity())
