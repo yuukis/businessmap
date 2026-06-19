@@ -18,16 +18,21 @@
 package com.github.yuukis.businessmap.app
 
 import android.app.Dialog
-import android.app.ProgressDialog
 import android.content.DialogInterface
 import android.os.Bundle
+import android.widget.TextView
 import androidx.fragment.app.DialogFragment
+import com.github.yuukis.businessmap.R
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.progressindicator.LinearProgressIndicator
 
 class ProgressDialogFragment : DialogFragment() {
 
     interface ProgressDialogFragmentListener {
         fun onProgressCancelled()
     }
+
+    private var progressIndicator: LinearProgressIndicator? = null
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val args = requireArguments()
@@ -36,21 +41,23 @@ class ProgressDialogFragment : DialogFragment() {
 
         val title = args.getString(TITLE)
         val message = args.getString(MESSAGE)
-        val dialog = ProgressDialog(activity)
-        dialog.setTitle(title)
-        dialog.setMessage(message)
-        dialog.isIndeterminate = false
+        val view = layoutInflater.inflate(R.layout.dialog_progress, null)
+        view.findViewById<TextView>(R.id.textview_progress_message).text = message
+        progressIndicator = view.findViewById<LinearProgressIndicator>(R.id.progress_indicator).apply {
+            isIndeterminate = false
+            max = args.getInt(MAX)
+        }
+
+        val dialog = MaterialAlertDialogBuilder(requireActivity())
+            .setTitle(title)
+            .setView(view)
+            .create()
         dialog.setCanceledOnTouchOutside(false)
-
-        dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL)
-        dialog.max = args.getInt(MAX)
-
         return dialog
     }
 
     fun updateProgress(value: Int) {
-        val dialog = dialog as? ProgressDialog
-        dialog?.progress = value
+        progressIndicator?.setProgressCompat(value, true)
     }
 
     override fun onCancel(dialog: DialogInterface) {
