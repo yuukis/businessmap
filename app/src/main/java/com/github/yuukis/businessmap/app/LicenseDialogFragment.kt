@@ -22,6 +22,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.WebView
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentActivity
 import com.github.yuukis.businessmap.R
@@ -36,6 +39,12 @@ class LicenseDialogFragment : DialogFragment() {
         setStyle(STYLE_NO_TITLE, R.style.AppTheme)
     }
 
+    override fun onStart() {
+        super.onStart()
+        val window = dialog?.window ?: return
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -48,6 +57,11 @@ class LicenseDialogFragment : DialogFragment() {
         }
         val webView = WebView(requireActivity())
         webView.loadData(html, "text/html", "utf-8")
+        ViewCompat.setOnApplyWindowInsetsListener(webView) { v, insets ->
+            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(bars.left, bars.top, bars.right, bars.bottom)
+            WindowInsetsCompat.CONSUMED
+        }
         return webView
     }
 
