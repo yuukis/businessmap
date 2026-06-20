@@ -205,11 +205,6 @@ class MainActivity : AppCompatActivity(),
         viewModel.initializeIfNeeded(hasContactsPermission(), savedNavigationIndex, intentGroupId)
     }
 
-    /**
-     * MainActivityViewModel survives rotation, so this only needs to run
-     * while the Activity is at least STARTED; there is no longer a need to
-     * adopt in-memory state from a retained Fragment on recreation.
-     */
     private fun observeViewModel() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -221,11 +216,6 @@ class MainActivity : AppCompatActivity(),
                     }
                 }
                 launch {
-                    // Combined so the dropdown text refreshes when either
-                    // input changes: relying only on selectedGroupIndex
-                    // would leave it stale if the group list is replaced
-                    // (e.g. after a permission grant) without the index
-                    // itself changing.
                     combine(viewModel.groupList, viewModel.selectedGroupIndex) { groups, index ->
                         groups.getOrNull(index)?.title
                     }.collect { title -> groupDropdown.setText(title, false) }

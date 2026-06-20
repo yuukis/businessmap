@@ -61,12 +61,6 @@ sealed class MainActivityEvent {
     data class ShowError(val title: String, val message: String) : MainActivityEvent()
 }
 
-/**
- * Holds the contact and group data that previously lived as MainActivity
- * fields and in the retained ContactsTaskFragment. Because a ViewModel
- * survives configuration changes, rotation no longer requires re-querying
- * contacts or working around Activity recreation timing.
- */
 class MainActivityViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _groupList = MutableStateFlow<List<ContactsGroup>>(emptyList())
@@ -99,12 +93,6 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     private var pendingNavigationIndex = 0
     private var contactsJob: Job? = null
 
-    /**
-     * Runs once per ViewModel instance, i.e. once per process lifetime
-     * unless the Activity is recreated after process death. Rotation alone
-     * keeps this ViewModel alive, so the existing group list and selection
-     * are left untouched on later calls.
-     */
     fun initializeIfNeeded(hasPermission: Boolean, savedNavigationIndex: Int?, intentGroupId: Long?) {
         if (initialized) {
             return
@@ -123,12 +111,6 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
         _selectedGroupIndex.value = index
     }
 
-    /**
-     * Re-reads the group list (cheap) while keeping the current selection
-     * when possible, falling back to the originally requested group.
-     * Used after contacts permission is granted, since the group list may
-     * have been empty until now.
-     */
     fun refreshGroupListPreservingSelection() {
         val previousGroupId = _groupList.value.getOrNull(_selectedGroupIndex.value)?.id
         val newList = ContactUtils.getContactsGroupList(getApplication())
@@ -166,11 +148,6 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
             runContactsTask()
         }
         contactsJob = job
-        // Reset on every completion path (success, cancellation, or an
-        // uncaught exception) instead of only the happy path, so a failure
-        // can never leave isRunning stuck true and block future runs. Guard
-        // by identity in case a newer job has already replaced this one by
-        // the time this one's cancellation finishes propagating.
         job.invokeOnCompletion {
             if (contactsJob === job) {
                 contactsJob = null
@@ -213,11 +190,6 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
         _contactsList.value = list
     }
 
-    /**
-     * Returns null if the contacts provider failed to return a cursor
-     * (ContentResolver.query() is allowed to return null, e.g. if the
-     * provider crashes) instead of crashing on a non-null assertion.
-     */
     private fun loadAllContacts(geocodingResultCache: MutableMap<String, Array<Double?>?>): MutableList<ContactsItem>? {
         val context = getApplication<Application>()
 
