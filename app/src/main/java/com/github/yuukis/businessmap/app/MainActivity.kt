@@ -41,6 +41,7 @@ import com.github.yuukis.businessmap.widget.GroupAdapter
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.MaterialAutoCompleteTextView
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity(),
@@ -220,10 +221,14 @@ class MainActivity : AppCompatActivity(),
                     }
                 }
                 launch {
-                    viewModel.selectedGroupIndex.collect { index ->
-                        val group = groupListForAdapter.getOrNull(index)
-                        groupDropdown.setText(group?.title, false)
-                    }
+                    // Combined so the dropdown text refreshes when either
+                    // input changes: relying only on selectedGroupIndex
+                    // would leave it stale if the group list is replaced
+                    // (e.g. after a permission grant) without the index
+                    // itself changing.
+                    combine(viewModel.groupList, viewModel.selectedGroupIndex) { groups, index ->
+                        groups.getOrNull(index)?.title
+                    }.collect { title -> groupDropdown.setText(title, false) }
                 }
                 launch {
                     viewModel.currentGroupContactsList.collect {
