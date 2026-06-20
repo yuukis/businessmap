@@ -31,13 +31,13 @@ import android.widget.Filterable
 import android.widget.ListView
 import android.widget.TextView
 import androidx.appcompat.widget.SearchView
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.ListFragment
 import com.github.yuukis.businessmap.R
 import com.github.yuukis.businessmap.model.ContactsItem
 import com.github.yuukis.businessmap.util.ActionUtils
 import com.github.yuukis.businessmap.util.StringJUtils
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.slidinglayer.SlidingLayer
 
 class ContactsListFragment : ListFragment(), SearchView.OnQueryTextListener {
 
@@ -124,18 +124,20 @@ class ContactsListFragment : ListFragment(), SearchView.OnQueryTextListener {
 
     fun getVisibility(): Boolean {
         val activity = activity as MainActivity
-        val listContainer = activity.findViewById<SlidingLayer>(R.id.list_container)
-        return listContainer.isOpened
+        val drawerLayout = activity.findViewById<DrawerLayout>(R.id.drawer_layout)
+        val listContainer = activity.findViewById<View>(R.id.list_container)
+        return drawerLayout.isDrawerOpen(listContainer)
     }
 
     fun setVisibility(visible: Boolean) {
         val activity = activity as MainActivity
-        val listContainer = activity.findViewById<SlidingLayer>(R.id.list_container)
+        val drawerLayout = activity.findViewById<DrawerLayout>(R.id.drawer_layout)
+        val listContainer = activity.findViewById<View>(R.id.list_container)
         if (visible) {
-            listContainer.openLayer(true)
+            drawerLayout.openDrawer(listContainer)
         } else {
             searchView.clearFocus()
-            listContainer.closeLayer(true)
+            drawerLayout.closeDrawer(listContainer)
         }
     }
 
