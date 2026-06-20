@@ -21,24 +21,14 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import androidx.room.migration.Migration
-import androidx.sqlite.db.SupportSQLiteDatabase
 
-@Database(entities = [GeocodingEntity::class], version = GeocodingCacheRoomDatabase.VERSION, exportSchema = false)
+@Database(entities = [GeocodingEntity::class], version = 1, exportSchema = false)
 abstract class GeocodingCacheRoomDatabase : RoomDatabase() {
 
     abstract fun geocodingDao(): GeocodingDao
 
     companion object {
         private const val DATABASE_NAME = "business_map"
-        const val VERSION = 2
-
-        // [v1 -> v2] lat:0, lng:0 で登録されているレコードを一旦削除する
-        private val MIGRATION_1_2 = object : Migration(1, 2) {
-            override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL("DELETE FROM geocoding WHERE latitude = 0 AND longitude = 0")
-            }
-        }
 
         fun create(context: Context): GeocodingCacheRoomDatabase {
             return Room.databaseBuilder(
@@ -46,7 +36,8 @@ abstract class GeocodingCacheRoomDatabase : RoomDatabase() {
                 GeocodingCacheRoomDatabase::class.java,
                 DATABASE_NAME
             )
-                .addMigrations(MIGRATION_1_2)
+                // 旧 SQLiteOpenHelper 版のキャッシュ(住所→緯度経度)は破棄して作り直す
+                .fallbackToDestructiveMigration()
                 .build()
         }
     }

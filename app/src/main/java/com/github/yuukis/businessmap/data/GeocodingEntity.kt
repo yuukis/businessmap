@@ -27,7 +27,7 @@ data class GeocodingEntity(
     @ColumnInfo(name = "_id")
     val id: Long = 0,
     @ColumnInfo(name = "hash")
-    val hash: Int?,
+    val hash: Int,
     @ColumnInfo(name = "latitude")
     val latitude: Double?,
     @ColumnInfo(name = "longitude")
