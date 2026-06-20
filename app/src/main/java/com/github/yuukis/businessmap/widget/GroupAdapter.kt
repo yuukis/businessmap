@@ -22,6 +22,8 @@ import android.text.TextUtils
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
+import android.widget.Filter
+import android.widget.Filterable
 import android.widget.TextView
 import com.github.yuukis.businessmap.R
 import com.github.yuukis.businessmap.model.ContactsGroup
@@ -29,7 +31,7 @@ import com.github.yuukis.businessmap.model.ContactsGroup
 class GroupAdapter(
     private val activity: Activity,
     private val groupList: List<ContactsGroup>
-) : BaseAdapter() {
+) : BaseAdapter(), Filterable {
 
     override fun getCount(): Int = groupList.size
 
@@ -38,25 +40,6 @@ class GroupAdapter(
     override fun getItemId(position: Int): Long = position.toLong()
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-        val view: View
-        val holder: ViewHolder
-
-        if (convertView == null) {
-            view = activity.layoutInflater.inflate(LAYOUT_SPINNER_ITEM_RESOURCE_ID, null)
-            holder = ViewHolder(view.findViewById(android.R.id.text1), null)
-            view.tag = holder
-        } else {
-            view = convertView
-            holder = view.tag as ViewHolder
-        }
-
-        val group = getItem(position)
-        holder.textView1.text = group.title
-
-        return view
-    }
-
-    override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
         val view: View
         val holder: ViewHolder
 
@@ -87,10 +70,32 @@ class GroupAdapter(
         return view
     }
 
+    /**
+     * The dropdown menu's text field is not user-editable (inputType="none"),
+     * so filtering by typed text never applies. This filter always returns
+     * the full group list, which is the standard way to back an
+     * ExposedDropdownMenu's AutoCompleteTextView with a non-filtering list.
+     */
+    override fun getFilter(): Filter = object : Filter() {
+        override fun performFiltering(constraint: CharSequence?): FilterResults {
+            return FilterResults().apply {
+                values = groupList
+                count = groupList.size
+            }
+        }
+
+        override fun publishResults(constraint: CharSequence?, results: FilterResults?) {
+            notifyDataSetChanged()
+        }
+
+        override fun convertResultToString(resultValue: Any?): CharSequence {
+            return (resultValue as? ContactsGroup)?.title ?: ""
+        }
+    }
+
     private class ViewHolder(val textView1: TextView, val textView2: TextView?)
 
     companion object {
-        private val LAYOUT_SPINNER_ITEM_RESOURCE_ID = R.layout.simple_spinner_item
         private val LAYOUT_SPINNER_DROPDOWN_ITEM_RESOURCE_ID = R.layout.simple_spinner_dropdown_item_2line
     }
 }
