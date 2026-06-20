@@ -37,6 +37,7 @@ import com.github.yuukis.businessmap.util.CursorJoinerWithIntKey
 import com.github.yuukis.businessmap.util.GeocoderUtils
 import com.github.yuukis.businessmap.util.SerializationException
 import com.github.yuukis.businessmap.util.SerializationUtils
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
@@ -145,7 +146,18 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
         }
         _isRunning.value = true
         val job = viewModelScope.launch(Dispatchers.IO) {
-            runContactsTask()
+            try {
+                runContactsTask()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                _events.trySend(
+                    MainActivityEvent.ShowError(
+                        getApplication<Application>().getString(R.string.title_contacts_loaderror),
+                        getApplication<Application>().getString(R.string.message_contacts_loaderror)
+                    )
+                )
+            }
         }
         contactsJob = job
         job.invokeOnCompletion {
