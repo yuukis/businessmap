@@ -29,6 +29,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.activityViewModels
 import com.github.yuukis.businessmap.R
 import com.github.yuukis.businessmap.data.MapStatePreferences
 import com.github.yuukis.businessmap.model.ContactsItem
@@ -47,6 +48,8 @@ import com.google.android.gms.maps.model.MarkerOptions
 import java.util.Locale
 
 class ContactsMapFragment : SupportMapFragment(), GoogleMap.OnInfoWindowClickListener, OnMapReadyCallback {
+
+    private val viewModel: MainActivityViewModel by activityViewModels()
 
     private var map: GoogleMap? = null
     private var mapWrapperLayout: MapWrapperLayout? = null
@@ -171,10 +174,7 @@ class ContactsMapFragment : SupportMapFragment(), GoogleMap.OnInfoWindowClickLis
         ContactsActionFragment.showDialog(requireActivity(), contact)
     }
 
-    private fun getContactsList(): List<ContactsItem>? {
-        val activity = activity as MainActivity
-        return activity.currentContactsList
-    }
+    private fun getContactsList(): List<ContactsItem>? = viewModel.currentGroupContactsList.value
 
     @SuppressLint("MissingPermission")
     private fun setUpMap() {
