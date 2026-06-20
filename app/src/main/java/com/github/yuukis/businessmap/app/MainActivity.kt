@@ -25,8 +25,6 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.WindowManager
-import android.widget.AdapterView
-import android.widget.Spinner
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -38,8 +36,9 @@ import com.github.yuukis.businessmap.model.ContactsItem
 import com.github.yuukis.businessmap.util.ContactUtils
 import com.github.yuukis.businessmap.widget.GroupAdapter
 import com.google.android.material.appbar.MaterialToolbar
+import com.google.android.material.textfield.MaterialAutoCompleteTextView
 
-class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
+class MainActivity : AppCompatActivity(),
     ContactsTaskFragment.TaskCallback, ProgressDialogFragment.ProgressDialogFragmentListener,
     ContactsItemsDialogFragment.OnSelectListener {
 
@@ -50,7 +49,8 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
     private lateinit var listFragment: ContactsListFragment
     private lateinit var taskFragment: ContactsTaskFragment
     private lateinit var groupAdapter: GroupAdapter
-    private lateinit var groupSpinner: Spinner
+    private lateinit var groupDropdown: MaterialAutoCompleteTextView
+    private var selectedGroupIndex = -1
     private val permissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
             onPermissionsResult()
@@ -70,7 +70,7 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
      * MaterialToolbar now lives inside our own layout rather than being
      * reserved by the system, so it must absorb the status bar inset itself.
      * Padding alone would squeeze its fixed-height content (the group
-     * spinner) into a shorter area and clip it, so the inset is added on top
+     * dropdown) into a shorter area and clip it, so the inset is added on top
      * of the toolbar's original height instead, with padding only offsetting
      * the content down into that extra space.
      */
@@ -135,8 +135,8 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
             groupList.clear()
             groupList.addAll(ContactUtils.getContactsGroupList(this))
             groupAdapter.notifyDataSetChanged()
-            if (groupSpinner.selectedItemPosition < 0) {
-                groupSpinner.setSelection(0)
+            if (selectedGroupIndex < 0) {
+                selectGroup(0)
             }
             taskFragment.start()
         }
@@ -156,15 +156,8 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        outState.putInt(KEY_NAVIGATION_INDEX, groupSpinner.selectedItemPosition)
+        outState.putInt(KEY_NAVIGATION_INDEX, selectedGroupIndex)
         super.onSaveInstanceState(outState)
-    }
-
-    override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-        notifyDataSetChanged()
-    }
-
-    override fun onNothingSelected(parent: AdapterView<*>?) {
     }
 
     override fun onContactsLoaded(contactsList: List<ContactsItem>?) {
@@ -220,9 +213,9 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
         val toolbar = findViewById<MaterialToolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayShowTitleEnabled(false)
-        groupSpinner = findViewById(R.id.spinner_group)
-        groupSpinner.adapter = groupAdapter
-        groupSpinner.onItemSelectedListener = this
+        groupDropdown = findViewById(R.id.dropdown_group)
+        groupDropdown.setAdapter(groupAdapter)
+        groupDropdown.setOnItemClickListener { _, _, position, _ -> selectGroup(position) }
 
         var navigationIndex = 0
         if (savedInstanceState != null) {
@@ -239,11 +232,20 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
                 }
             }
         }
-        groupSpinner.setSelection(navigationIndex)
+        selectGroup(navigationIndex)
+    }
+
+    private fun selectGroup(index: Int) {
+        if (index < 0 || index >= groupList.size) {
+            return
+        }
+        selectedGroupIndex = index
+        groupDropdown.setText(groupList[index].title, false)
+        notifyDataSetChanged()
     }
 
     private fun notifyDataSetChanged() {
-        val index = groupSpinner.selectedItemPosition
+        val index = selectedGroupIndex
         if (index < 0 || index >= groupList.size) {
             return
         }
