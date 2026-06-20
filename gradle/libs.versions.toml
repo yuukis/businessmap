@@ -1,0 +1,17 @@
+[versions]
+agp = "8.7.2"
+kotlin = "2.0.21"
+appcompat = "1.7.1"
+fragment = "1.8.9"
+material = "1.14.0"
+playServicesMaps = "20.0.0"
+
+[libraries]
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+androidx-fragment = { group = "androidx.fragment", name = "fragment", version.ref = "fragment" }
+material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+play-services-maps = { group = "com.google.android.gms", name = "play-services-maps", version.ref = "playServicesMaps" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
