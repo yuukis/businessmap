@@ -134,12 +134,15 @@ class MainActivity : AppCompatActivity(),
     private fun onPermissionsResult() {
         mapFragment.enableMyLocationIfPermitted()
         if (hasContactsPermission() && contactsList != null && !taskFragment.isRunning()) {
+            val previousGroupId = groupList.getOrNull(selectedGroupIndex)?.id
             groupList.clear()
             groupList.addAll(ContactUtils.getContactsGroupList(this))
             groupAdapter.notifyDataSetChanged()
-            if (selectedGroupIndex < 0) {
-                selectGroup(resolvePendingNavigationIndex())
-            }
+            val index = previousGroupId
+                ?.let { id -> groupList.indexOfFirst { it.id == id } }
+                ?.takeIf { it >= 0 }
+                ?: resolvePendingNavigationIndex()
+            selectGroup(index)
             taskFragment.start()
         }
     }
