@@ -39,14 +39,14 @@ import com.github.yuukis.businessmap.util.SerializationException
 import com.github.yuukis.businessmap.util.SerializationUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.isActive
@@ -85,8 +85,8 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     private val _progress = MutableStateFlow<GeocodingProgress?>(null)
     val progress: StateFlow<GeocodingProgress?> = _progress.asStateFlow()
 
-    private val _events = MutableSharedFlow<MainActivityEvent>(extraBufferCapacity = 1)
-    val events: SharedFlow<MainActivityEvent> = _events.asSharedFlow()
+    private val _events = Channel<MainActivityEvent>(Channel.BUFFERED)
+    val events: Flow<MainActivityEvent> = _events.receiveAsFlow()
 
     private var initialized = false
     private var pendingGroupId: Long? = null
@@ -168,7 +168,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
         val geocodingResultCache = HashMap<String, Array<Double?>?>()
         val list = loadAllContacts(geocodingResultCache)
         if (list == null) {
-            _events.tryEmit(
+            _events.trySend(
                 MainActivityEvent.ShowError(
                     getApplication<Application>().getString(R.string.title_contacts_loaderror),
                     getApplication<Application>().getString(R.string.message_contacts_loaderror)
@@ -422,7 +422,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
                 _progress.value = GeocodingProgress(max = geocodingResultCache.size, current = count)
             }
         } catch (e: IOException) {
-            _events.tryEmit(
+            _events.trySend(
                 MainActivityEvent.ShowError(
                     context.getString(R.string.title_geocoding_ioerror),
                     context.getString(R.string.message_geocoding_ioerror)
@@ -430,7 +430,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
             )
             return
         } catch (e: JSONException) {
-            _events.tryEmit(
+            _events.trySend(
                 MainActivityEvent.ShowError(
                     context.getString(R.string.title_geocoding_jsonerror),
                     context.getString(R.string.message_geocoding_jsonerror)
