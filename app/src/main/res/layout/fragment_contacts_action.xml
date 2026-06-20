@@ -13,7 +13,7 @@
         android:layout_marginTop="24dp"
         android:layout_marginEnd="24dp"
         android:layout_marginBottom="8dp"
-        android:textAppearance="?attr/textAppearanceHeadline6"
+        android:textAppearance="?attr/textAppearanceTitleLarge"
         android:textColor="?attr/colorOnSurface" />
 
     <GridView
