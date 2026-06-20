@@ -51,6 +51,8 @@ class MainActivity : AppCompatActivity(),
     private lateinit var groupAdapter: GroupAdapter
     private lateinit var groupDropdown: MaterialAutoCompleteTextView
     private var selectedGroupIndex = -1
+    private var pendingGroupId: Long? = null
+    private var pendingNavigationIndex = 0
     private val permissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
             onPermissionsResult()
@@ -136,7 +138,7 @@ class MainActivity : AppCompatActivity(),
             groupList.addAll(ContactUtils.getContactsGroupList(this))
             groupAdapter.notifyDataSetChanged()
             if (selectedGroupIndex < 0) {
-                selectGroup(0)
+                selectGroup(resolvePendingNavigationIndex())
             }
             taskFragment.start()
         }
@@ -217,22 +219,29 @@ class MainActivity : AppCompatActivity(),
         groupDropdown.setAdapter(groupAdapter)
         groupDropdown.setOnItemClickListener { _, _, position, _ -> selectGroup(position) }
 
-        var navigationIndex = 0
         if (savedInstanceState != null) {
-            navigationIndex = savedInstanceState.getInt(KEY_NAVIGATION_INDEX)
-        } else if (args != null) {
-            if (args.containsKey(KEY_CONTACTS_GROUP_ID)) {
-                val groupId = args.getLong(KEY_CONTACTS_GROUP_ID)
-                for (i in groupList.indices) {
-                    val contactsGroup = groupList[i]
-                    if (groupId == contactsGroup.id) {
-                        navigationIndex = i
-                        break
-                    }
-                }
+            pendingNavigationIndex = savedInstanceState.getInt(KEY_NAVIGATION_INDEX)
+        } else if (args != null && args.containsKey(KEY_CONTACTS_GROUP_ID)) {
+            pendingGroupId = args.getLong(KEY_CONTACTS_GROUP_ID)
+        }
+        groupDropdown.post { selectGroup(resolvePendingNavigationIndex()) }
+    }
+
+    /**
+     * groupList may still be empty here (e.g. contacts permission not yet
+     * granted), in which case the desired index/group id is kept pending and
+     * re-resolved against the up-to-date groupList once it is populated in
+     * onPermissionsResult.
+     */
+    private fun resolvePendingNavigationIndex(): Int {
+        val groupId = pendingGroupId
+        if (groupId != null) {
+            val index = groupList.indexOfFirst { it.id == groupId }
+            if (index >= 0) {
+                return index
             }
         }
-        groupDropdown.post { selectGroup(navigationIndex) }
+        return pendingNavigationIndex.takeIf { it in groupList.indices } ?: 0
     }
 
     private fun selectGroup(index: Int) {
