@@ -33,19 +33,25 @@ class ProgressDialogFragment : DialogFragment() {
     }
 
     private var progressIndicator: LinearProgressIndicator? = null
+    private var progressCountView: TextView? = null
+    private var max = 0
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val args = requireArguments()
         val cancelable = args.getBoolean(CANCELABLE, false)
         setCancelable(cancelable)
 
+        max = args.getInt(MAX)
         val title = args.getString(TITLE)
         val message = args.getString(MESSAGE)
         val view = layoutInflater.inflate(R.layout.dialog_progress, null)
         view.findViewById<TextView>(R.id.textview_progress_message).text = message
         progressIndicator = view.findViewById<LinearProgressIndicator>(R.id.progress_indicator).apply {
             isIndeterminate = false
-            max = args.getInt(MAX)
+            max = this@ProgressDialogFragment.max
+        }
+        progressCountView = view.findViewById<TextView>(R.id.textview_progress_count).apply {
+            text = getString(R.string.format_progress_count, 0, this@ProgressDialogFragment.max)
         }
 
         val dialog = MaterialAlertDialogBuilder(requireActivity())
@@ -58,6 +64,7 @@ class ProgressDialogFragment : DialogFragment() {
 
     fun updateProgress(value: Int) {
         progressIndicator?.setProgressCompat(value, true)
+        progressCountView?.text = getString(R.string.format_progress_count, value, max)
     }
 
     override fun onCancel(dialog: DialogInterface) {
