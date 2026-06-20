@@ -6,7 +6,7 @@
     android:paddingStart="24dp"
     android:paddingTop="8dp"
     android:paddingEnd="24dp"
-    android:paddingBottom="8dp" >
+    android:paddingBottom="16dp" >
 
     <TextView
         android:id="@+id/textview_progress_message"
@@ -17,6 +17,15 @@
     <com.google.android.material.progressindicator.LinearProgressIndicator
         android:id="@+id/progress_indicator"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp" />
+
+    <TextView
+        android:id="@+id/textview_progress_count"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="end"
+        android:textAppearance="?attr/textAppearanceBodySmall"
+        android:textColor="?attr/colorOnSurfaceVariant" />
 
 </LinearLayout>
