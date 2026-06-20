@@ -215,6 +215,7 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
             ArrayList()
         }
 
+        currentGroupContactsList = ArrayList()
         groupAdapter = GroupAdapter(this, groupList)
         val toolbar = findViewById<MaterialToolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
@@ -239,7 +240,6 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
             }
         }
         groupSpinner.setSelection(navigationIndex)
-        currentGroupContactsList = ArrayList()
     }
 
     private fun notifyDataSetChanged() {
