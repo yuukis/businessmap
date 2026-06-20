@@ -26,33 +26,35 @@ import android.view.MenuItem
 import android.view.View
 import android.view.WindowManager
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.github.yuukis.businessmap.R
 import com.github.yuukis.businessmap.model.ContactsGroup
 import com.github.yuukis.businessmap.model.ContactsItem
-import com.github.yuukis.businessmap.util.ContactUtils
 import com.github.yuukis.businessmap.widget.GroupAdapter
 import com.google.android.material.appbar.MaterialToolbar
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.MaterialAutoCompleteTextView
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity(),
-    ContactsTaskFragment.TaskCallback, ProgressDialogFragment.ProgressDialogFragmentListener,
+    ProgressDialogFragment.ProgressDialogFragmentListener,
     ContactsItemsDialogFragment.OnSelectListener {
 
-    private lateinit var groupList: MutableList<ContactsGroup>
-    private var contactsList: List<ContactsItem>? = null
-    private lateinit var currentGroupContactsList: MutableList<ContactsItem>
+    private val viewModel: MainActivityViewModel by viewModels()
+
     private lateinit var mapFragment: ContactsMapFragment
     private lateinit var listFragment: ContactsListFragment
-    private lateinit var taskFragment: ContactsTaskFragment
     private lateinit var groupAdapter: GroupAdapter
     private lateinit var groupDropdown: MaterialAutoCompleteTextView
-    private var selectedGroupIndex = -1
-    private var pendingGroupId: Long? = null
-    private var pendingNavigationIndex = 0
+    private lateinit var progressBar: View
+    private val groupListForAdapter = mutableListOf<ContactsGroup>()
     private val permissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
             onPermissionsResult()
@@ -64,6 +66,7 @@ class MainActivity : AppCompatActivity(),
         setContentView(R.layout.activity_main)
         applyEdgeToEdgeInsets()
         initialize(savedInstanceState)
+        observeViewModel()
         requestMissingPermissions()
     }
 
@@ -93,19 +96,11 @@ class MainActivity : AppCompatActivity(),
 
     override fun onStart() {
         super.onStart()
-        if (contactsList == null) {
-            val retained = taskFragment.getContactsList()
-            if (retained != null) {
-                // Activity was recreated (e.g. rotation); the retained task
-                // fragment already has the data in memory, so adopt it
-                // directly instead of re-querying contacts from scratch.
-                contactsList = retained
-                notifyDataSetChanged()
+        if (viewModel.contactsList.value == null) {
+            if (hasContactsPermission()) {
+                viewModel.startContactsTask()
             } else {
-                contactsList = ArrayList()
-                if (hasContactsPermission() && !taskFragment.isRunning()) {
-                    taskFragment.start()
-                }
+                viewModel.clearContactsListIfPermissionMissing()
             }
         }
     }
@@ -133,17 +128,9 @@ class MainActivity : AppCompatActivity(),
 
     private fun onPermissionsResult() {
         mapFragment.enableMyLocationIfPermitted()
-        if (hasContactsPermission() && contactsList != null && !taskFragment.isRunning()) {
-            val previousGroupId = groupList.getOrNull(selectedGroupIndex)?.id
-            groupList.clear()
-            groupList.addAll(ContactUtils.getContactsGroupList(this))
-            groupAdapter.notifyDataSetChanged()
-            val index = previousGroupId
-                ?.let { id -> groupList.indexOfFirst { it.id == id } }
-                ?.takeIf { it >= 0 }
-                ?: resolvePendingNavigationIndex()
-            selectGroup(index)
-            taskFragment.start()
+        if (hasContactsPermission() && viewModel.contactsList.value != null && !viewModel.isRunning.value) {
+            viewModel.refreshGroupListPreservingSelection()
+            viewModel.startContactsTask()
         }
     }
 
@@ -161,13 +148,8 @@ class MainActivity : AppCompatActivity(),
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        outState.putInt(KEY_NAVIGATION_INDEX, selectedGroupIndex)
+        outState.putInt(KEY_NAVIGATION_INDEX, viewModel.selectedGroupIndex.value)
         super.onSaveInstanceState(outState)
-    }
-
-    override fun onContactsLoaded(contactsList: List<ContactsItem>?) {
-        this.contactsList = contactsList
-        notifyDataSetChanged()
     }
 
     override fun onContactsSelected(contacts: ContactsItem?) {
@@ -176,7 +158,7 @@ class MainActivity : AppCompatActivity(),
     }
 
     override fun onProgressCancelled() {
-        taskFragment.cancel()
+        viewModel.cancelContactsTask()
     }
 
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
@@ -197,80 +179,110 @@ class MainActivity : AppCompatActivity(),
         return super.dispatchKeyEvent(event)
     }
 
-    val currentContactsList: List<ContactsItem>
-        get() = currentGroupContactsList
-
     private fun initialize(savedInstanceState: Bundle?) {
         val args = intent.extras
 
         val fm = supportFragmentManager
         mapFragment = fm.findFragmentById(R.id.contacts_map) as ContactsMapFragment
         listFragment = fm.findFragmentById(R.id.contacts_list) as ContactsListFragment
-        taskFragment = fm.findFragmentById(R.id.contacts_task) as ContactsTaskFragment
-        groupList = if (hasContactsPermission()) {
-            ContactUtils.getContactsGroupList(this).toMutableList()
-        } else {
-            ArrayList()
-        }
+        progressBar = findViewById(R.id.contacts_progressbar)
 
-        currentGroupContactsList = ArrayList()
-        groupAdapter = GroupAdapter(this, groupList)
+        groupAdapter = GroupAdapter(this, groupListForAdapter)
         val toolbar = findViewById<MaterialToolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayShowTitleEnabled(false)
         groupDropdown = findViewById(R.id.dropdown_group)
         groupDropdown.setAdapter(groupAdapter)
-        groupDropdown.setOnItemClickListener { _, _, position, _ -> selectGroup(position) }
+        groupDropdown.setOnItemClickListener { _, _, position, _ -> viewModel.selectGroup(position) }
 
-        if (savedInstanceState != null) {
-            pendingNavigationIndex = savedInstanceState.getInt(KEY_NAVIGATION_INDEX)
-        } else if (args != null && args.containsKey(KEY_CONTACTS_GROUP_ID)) {
-            pendingGroupId = args.getLong(KEY_CONTACTS_GROUP_ID)
+        val savedNavigationIndex = savedInstanceState?.getInt(KEY_NAVIGATION_INDEX)
+        val intentGroupId = if (savedInstanceState == null) {
+            args?.takeIf { it.containsKey(KEY_CONTACTS_GROUP_ID) }?.getLong(KEY_CONTACTS_GROUP_ID)
+        } else {
+            null
         }
-        groupDropdown.post { selectGroup(resolvePendingNavigationIndex()) }
+        viewModel.initializeIfNeeded(hasContactsPermission(), savedNavigationIndex, intentGroupId)
     }
 
-    private fun resolvePendingNavigationIndex(): Int {
-        val groupId = pendingGroupId
-        if (groupId != null) {
-            val index = groupList.indexOfFirst { it.id == groupId }
-            if (index >= 0) {
-                return index
-            }
-        }
-        return pendingNavigationIndex.takeIf { it in groupList.indices } ?: 0
-    }
-
-    private fun selectGroup(index: Int) {
-        if (index < 0 || index >= groupList.size) {
-            return
-        }
-        selectedGroupIndex = index
-        groupDropdown.setText(groupList[index].title, false)
-        notifyDataSetChanged()
-    }
-
-    private fun notifyDataSetChanged() {
-        val index = selectedGroupIndex
-        if (index < 0 || index >= groupList.size) {
-            return
-        }
-        val group = groupList[index]
-        val groupId = group.id
-        changeCurrentGroup(groupId)
-        mapFragment.notifyDataSetChanged()
-        listFragment.notifyDataSetChanged()
-    }
-
-    private fun changeCurrentGroup(groupId: Long) {
-        currentGroupContactsList.clear()
-        contactsList?.let {
-            for (contact in it) {
-                if (contact.groupId == groupId) {
-                    currentGroupContactsList.add(contact)
+    /**
+     * MainActivityViewModel survives rotation, so this only needs to run
+     * while the Activity is at least STARTED; there is no longer a need to
+     * adopt in-memory state from a retained Fragment on recreation.
+     */
+    private fun observeViewModel() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch {
+                    viewModel.groupList.collect { groups ->
+                        groupListForAdapter.clear()
+                        groupListForAdapter.addAll(groups)
+                        groupAdapter.notifyDataSetChanged()
+                    }
+                }
+                launch {
+                    viewModel.selectedGroupIndex.collect { index ->
+                        val group = groupListForAdapter.getOrNull(index)
+                        groupDropdown.setText(group?.title, false)
+                    }
+                }
+                launch {
+                    viewModel.currentGroupContactsList.collect {
+                        mapFragment.notifyDataSetChanged()
+                        listFragment.notifyDataSetChanged()
+                    }
+                }
+                launch {
+                    viewModel.isRunning.collect { running ->
+                        progressBar.visibility = if (running) View.VISIBLE else View.GONE
+                    }
+                }
+                launch {
+                    viewModel.progress.collect { progress -> updateProgressDialog(progress) }
+                }
+                launch {
+                    viewModel.events.collect { event ->
+                        when (event) {
+                            is MainActivityEvent.ShowError -> showError(event.title, event.message)
+                        }
+                    }
                 }
             }
         }
+    }
+
+    private fun updateProgressDialog(progress: GeocodingProgress?) {
+        val dialog = getProgressDialogFragment()
+        if (progress == null) {
+            dialog?.dismissAllowingStateLoss()
+            return
+        }
+        if (dialog == null) {
+            showProgressDialog(progress.max)
+        }
+        getProgressDialogFragment()?.updateProgress(progress.current)
+    }
+
+    private fun showProgressDialog(max: Int) {
+        val args = Bundle()
+        args.putString(ProgressDialogFragment.TITLE, getString(R.string.title_geocoding))
+        args.putString(ProgressDialogFragment.MESSAGE, getString(R.string.message_geocoding))
+        args.putBoolean(ProgressDialogFragment.CANCELABLE, true)
+        args.putInt(ProgressDialogFragment.MAX, max)
+        val dialog = ProgressDialogFragment.newInstance()
+        dialog.arguments = args
+        dialog.show(supportFragmentManager, ProgressDialogFragment.TAG)
+    }
+
+    private fun getProgressDialogFragment(): ProgressDialogFragment? {
+        return supportFragmentManager.findFragmentByTag(ProgressDialogFragment.TAG) as? ProgressDialogFragment
+    }
+
+    private fun showError(title: String, message: String) {
+        MaterialAlertDialogBuilder(this)
+            .setTitle(title)
+            .setMessage(message)
+            .setPositiveButton(android.R.string.ok, null)
+            .show()
     }
 
     companion object {
