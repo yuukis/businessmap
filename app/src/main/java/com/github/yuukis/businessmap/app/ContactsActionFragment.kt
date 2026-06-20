@@ -17,7 +17,6 @@
  */
 package com.github.yuukis.businessmap.app
 
-import android.app.Dialog
 import android.content.Context
 import android.content.res.ColorStateList
 import android.os.Bundle
@@ -29,35 +28,36 @@ import android.widget.ArrayAdapter
 import android.widget.GridView
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentActivity
 import com.github.yuukis.businessmap.R
 import com.github.yuukis.businessmap.model.ContactsItem
 import com.github.yuukis.businessmap.util.ActionUtils
 import com.google.android.material.R as MaterialR
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.color.MaterialColors
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
-class ContactsActionFragment : DialogFragment(), AdapterView.OnItemClickListener {
+class ContactsActionFragment : BottomSheetDialogFragment(), AdapterView.OnItemClickListener {
 
     private var contact: ContactsItem? = null
 
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         contact = requireArguments().getSerializable(KEY_CONTACTS) as? ContactsItem
 
+        val view = inflater.inflate(R.layout.fragment_contacts_action, container, false)
+
+        val titleView = view.findViewById<TextView>(R.id.title)
+        titleView.text = contact?.name
+
         val adapter = MenuAdapter(requireActivity(), R.layout.gridview_contents, ACTION_ITEMS)
-        val columns = resources.getInteger(R.integer.gridview_columns)
-        val gridView = GridView(activity)
-        gridView.numColumns = columns
+        val gridView = view.findViewById<GridView>(R.id.gridview)
         gridView.adapter = adapter
         gridView.onItemClickListener = this
-        val title = contact?.name
 
-        return MaterialAlertDialogBuilder(requireActivity())
-            .setTitle(title)
-            .setView(gridView)
-            .setNegativeButton(android.R.string.cancel, null)
-            .create()
+        return view
     }
 
     override fun onItemClick(parent: AdapterView<*>?, view: View, position: Int, id: Long) {
