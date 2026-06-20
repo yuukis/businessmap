@@ -65,7 +65,7 @@
         android:background="@drawable/infowindow_button_normal"
         android:backgroundTint="@null"
         android:padding="0dp"
-        android:textColor="?attr/colorOnSecondaryContainer"
+        android:textColor="?attr/colorOnPrimary"
         android:textSize="14dp"
         android:textStyle="bold" />
 
