@@ -162,16 +162,26 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
             return
         }
         _isRunning.value = true
-        contactsJob = viewModelScope.launch(Dispatchers.IO) {
+        val job = viewModelScope.launch(Dispatchers.IO) {
             runContactsTask()
+        }
+        contactsJob = job
+        // Reset on every completion path (success, cancellation, or an
+        // uncaught exception) instead of only the happy path, so a failure
+        // can never leave isRunning stuck true and block future runs. Guard
+        // by identity in case a newer job has already replaced this one by
+        // the time this one's cancellation finishes propagating.
+        job.invokeOnCompletion {
+            if (contactsJob === job) {
+                contactsJob = null
+                _isRunning.value = false
+            }
         }
     }
 
     fun cancelContactsTask() {
-        contactsJob?.cancel()
-        contactsJob = null
         _progress.value = null
-        _isRunning.value = false
+        contactsJob?.cancel()
     }
 
     private suspend fun runContactsTask() {
@@ -192,7 +202,6 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
 
         writeContactsListInCache(list)
         _contactsList.value = list
-        _isRunning.value = false
     }
 
     private fun loadAllContacts(geocodingResultCache: MutableMap<String, Array<Double?>?>): MutableList<ContactsItem> {
