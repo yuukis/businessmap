@@ -14,10 +14,22 @@
         android:background="?attr/colorSurface"
         android:elevation="4dp" >
 
-        <Spinner
-            android:id="@+id/spinner_group"
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/group_dropdown_layout"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox.Dense.ExposedDropdownMenu"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp" >
+
+            <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                android:id="@+id/dropdown_group"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="none" />
+
+        </com.google.android.material.textfield.TextInputLayout>
     </com.google.android.material.appbar.MaterialToolbar>
 
     <androidx.drawerlayout.widget.DrawerLayout
