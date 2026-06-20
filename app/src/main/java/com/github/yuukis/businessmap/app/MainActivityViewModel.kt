@@ -387,6 +387,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
             groupCursor?.close()
             postalCursor?.close()
             noteCursor?.close()
+            companyCursor?.close()
             db?.close()
         }
         newContactsList.sortWith(ContactsItemComparator())
