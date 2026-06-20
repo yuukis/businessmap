@@ -58,7 +58,6 @@
 
     <Button
         android:id="@+id/other_count"
-        style="@android:style/Widget.Button"
         android:layout_width="match_parent"
         android:layout_height="24dp"
         android:layout_marginBottom="4dp"
@@ -66,7 +65,7 @@
         android:background="@drawable/infowindow_button_normal"
         android:backgroundTint="@null"
         android:padding="0dp"
-        android:textColor="#ff000000"
+        android:textColor="?attr/colorOnSecondaryContainer"
         android:textSize="14dp"
         android:textStyle="bold" />
 
