@@ -19,6 +19,7 @@ package com.github.yuukis.businessmap.app
 
 import android.app.Dialog
 import android.content.Context
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -33,6 +34,8 @@ import androidx.fragment.app.FragmentActivity
 import com.github.yuukis.businessmap.R
 import com.github.yuukis.businessmap.model.ContactsItem
 import com.github.yuukis.businessmap.util.ActionUtils
+import com.google.android.material.R as MaterialR
+import com.google.android.material.color.MaterialColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class ContactsActionFragment : DialogFragment(), AdapterView.OnItemClickListener {
@@ -101,6 +104,8 @@ class ContactsActionFragment : DialogFragment(), AdapterView.OnItemClickListener
             if (data != null) {
                 holder.textView.setText(data.titleId)
                 holder.imageView.setImageResource(data.iconId)
+                holder.imageView.imageTintList =
+                    ColorStateList.valueOf(MaterialColors.getColor(holder.imageView, MaterialR.attr.colorOnSurface))
             }
 
             return view

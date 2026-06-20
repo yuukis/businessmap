@@ -64,7 +64,7 @@ class LicenseDialogFragment : DialogFragment() {
 
         val view = inflater.inflate(R.layout.dialog_license, container, false)
         val toolbar = view.findViewById<MaterialToolbar>(R.id.toolbar_license)
-        toolbar.setNavigationIcon(android.R.drawable.ic_menu_close_clear_cancel)
+        toolbar.setNavigationIcon(R.drawable.ic_close)
         toolbar.setNavigationOnClickListener { dismiss() }
 
         val webView = view.findViewById<WebView>(R.id.webview_license)

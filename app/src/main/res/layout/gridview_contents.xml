@@ -18,7 +18,7 @@
         android:layout_height="wrap_content"
         android:ellipsize="end"
         android:gravity="top"
-        android:textColor="#333"
+        android:textColor="?attr/colorOnSurface"
         android:textSize="16dp" />
 
 </LinearLayout>
