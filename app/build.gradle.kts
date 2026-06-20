@@ -57,9 +57,14 @@ configurations.all {
 
 dependencies {
     implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.activity.ktx)
     implementation(libs.androidx.fragment)
+    implementation(libs.androidx.fragment.ktx)
     implementation(libs.material)
     implementation(libs.play.services.maps)
     implementation(libs.androidx.room.runtime)
     ksp(libs.androidx.room.compiler)
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.kotlinx.coroutines.android)
 }

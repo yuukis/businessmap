@@ -55,11 +55,13 @@
                     class="com.github.yuukis.businessmap.app.ContactsMapFragment" />
             </com.github.yuukis.businessmap.widget.MapWrapperLayout>
 
-            <fragment
-                android:id="@+id/contacts_task"
+            <ProgressBar
+                android:id="@+id/contacts_progressbar"
+                style="?android:attr/progressBarStyleHorizontal"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                class="com.github.yuukis.businessmap.app.ContactsTaskFragment" />
+                android:layout_height="3dp"
+                android:indeterminate="true"
+                android:visibility="gone" />
 
         </RelativeLayout>
 

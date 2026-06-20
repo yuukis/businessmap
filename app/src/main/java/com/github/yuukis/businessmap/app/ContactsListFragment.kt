@@ -33,6 +33,7 @@ import android.widget.TextView
 import androidx.appcompat.widget.SearchView
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.ListFragment
+import androidx.fragment.app.activityViewModels
 import com.github.yuukis.businessmap.R
 import com.github.yuukis.businessmap.model.ContactsItem
 import com.github.yuukis.businessmap.util.ActionUtils
@@ -40,6 +41,8 @@ import com.github.yuukis.businessmap.util.StringJUtils
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class ContactsListFragment : ListFragment(), SearchView.OnQueryTextListener {
+
+    private val viewModel: MainActivityViewModel by activityViewModels()
 
     private lateinit var contactsAdapter: ContactsAdapter
     private lateinit var searchView: SearchView
@@ -146,10 +149,7 @@ class ContactsListFragment : ListFragment(), SearchView.OnQueryTextListener {
         tv.text = text
     }
 
-    private fun getContactsList(): List<ContactsItem>? {
-        val activity = activity as MainActivity
-        return activity.currentContactsList
-    }
+    private fun getContactsList(): List<ContactsItem>? = viewModel.currentGroupContactsList.value
 
     private class ViewHolder(val textView1: TextView, val textView2: TextView)
 
