@@ -190,6 +190,15 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
 
         val geocodingResultCache = HashMap<String, Array<Double?>?>()
         val list = loadAllContacts(geocodingResultCache)
+        if (list == null) {
+            _events.tryEmit(
+                MainActivityEvent.ShowError(
+                    getApplication<Application>().getString(R.string.title_contacts_loaderror),
+                    getApplication<Application>().getString(R.string.message_contacts_loaderror)
+                )
+            )
+            return
+        }
         _contactsList.value = list
 
         if (geocodingResultCache.isNotEmpty()) {
@@ -204,7 +213,12 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
         _contactsList.value = list
     }
 
-    private fun loadAllContacts(geocodingResultCache: MutableMap<String, Array<Double?>?>): MutableList<ContactsItem> {
+    /**
+     * Returns null if the contacts provider failed to return a cursor
+     * (ContentResolver.query() is allowed to return null, e.g. if the
+     * provider crashes) instead of crashing on a non-null assertion.
+     */
+    private fun loadAllContacts(geocodingResultCache: MutableMap<String, Array<Double?>?>): MutableList<ContactsItem>? {
         val context = getApplication<Application>()
 
         val newContactsList = ArrayList<ContactsItem>()
@@ -259,6 +273,10 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
                 Data.RAW_CONTACT_ID
             )
 
+            if (groupCursor == null || postalCursor == null) {
+                return null
+            }
+
             val noteMap = HashMap<Long, String>()
             noteCursor?.let {
                 while (it.moveToNext()) {
@@ -278,8 +296,8 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
             }
 
             val joiner = CursorJoinerWithIntKey(
-                groupCursor!!, arrayOf(Data.RAW_CONTACT_ID),
-                postalCursor!!, arrayOf(Data.RAW_CONTACT_ID)
+                groupCursor, arrayOf(Data.RAW_CONTACT_ID),
+                postalCursor, arrayOf(Data.RAW_CONTACT_ID)
             )
 
             val geocodingDb = GeocodingCacheDatabase(context)
