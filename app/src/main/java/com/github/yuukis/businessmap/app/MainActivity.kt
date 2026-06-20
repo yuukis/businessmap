@@ -23,9 +23,11 @@ import android.os.Bundle
 import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.view.WindowManager
+import android.widget.AdapterView
+import android.widget.Spinner
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
@@ -35,8 +37,9 @@ import com.github.yuukis.businessmap.model.ContactsGroup
 import com.github.yuukis.businessmap.model.ContactsItem
 import com.github.yuukis.businessmap.util.ContactUtils
 import com.github.yuukis.businessmap.widget.GroupAdapter
+import com.google.android.material.appbar.MaterialToolbar
 
-class MainActivity : AppCompatActivity(), ActionBar.OnNavigationListener,
+class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
     ContactsTaskFragment.TaskCallback, ProgressDialogFragment.ProgressDialogFragmentListener,
     ContactsItemsDialogFragment.OnSelectListener {
 
@@ -47,6 +50,7 @@ class MainActivity : AppCompatActivity(), ActionBar.OnNavigationListener,
     private lateinit var listFragment: ContactsListFragment
     private lateinit var taskFragment: ContactsTaskFragment
     private lateinit var groupAdapter: GroupAdapter
+    private lateinit var groupSpinner: Spinner
     private val permissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
             onPermissionsResult()
@@ -63,17 +67,24 @@ class MainActivity : AppCompatActivity(), ActionBar.OnNavigationListener,
 
     /**
      * Apps targeting Android 15 (API 35) are forced edge-to-edge. The
-     * ActionBar already reserves its own height correctly above our content
-     * (confirmed empirically: adding the ActionBar's height on top of the
-     * status bar inset overshot by about one ActionBar height). All that's
-     * actually missing is room for the status bar itself, so only pad for
-     * that.
+     * MaterialToolbar now lives inside our own layout rather than being
+     * reserved by the system, so it must absorb the status bar inset itself.
+     * Padding alone would squeeze its fixed-height content (the group
+     * spinner) into a shorter area and clip it, so the inset is added on top
+     * of the toolbar's original height instead, with padding only offsetting
+     * the content down into that extra space.
      */
     private fun applyEdgeToEdgeInsets() {
-        val root = findViewById<android.view.View>(R.id.activity_main_root)
+        val root = findViewById<View>(R.id.activity_main_root)
+        val toolbar = findViewById<View>(R.id.toolbar)
+        val toolbarContentHeight = toolbar.layoutParams.height
         ViewCompat.setOnApplyWindowInsetsListener(root) { v, insets ->
             val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(bars.left, bars.top, bars.right, bars.bottom)
+            toolbar.layoutParams = toolbar.layoutParams.apply {
+                height = toolbarContentHeight + bars.top
+            }
+            toolbar.setPadding(toolbar.paddingLeft, bars.top, toolbar.paddingRight, toolbar.paddingBottom)
+            v.setPadding(bars.left, 0, bars.right, bars.bottom)
             WindowInsetsCompat.CONSUMED
         }
     }
@@ -124,9 +135,8 @@ class MainActivity : AppCompatActivity(), ActionBar.OnNavigationListener,
             groupList.clear()
             groupList.addAll(ContactUtils.getContactsGroupList(this))
             groupAdapter.notifyDataSetChanged()
-            val actionBar = supportActionBar
-            if (actionBar != null && actionBar.selectedNavigationIndex < 0) {
-                actionBar.setSelectedNavigationItem(0)
+            if (groupSpinner.selectedItemPosition < 0) {
+                groupSpinner.setSelection(0)
             }
             taskFragment.start()
         }
@@ -146,14 +156,15 @@ class MainActivity : AppCompatActivity(), ActionBar.OnNavigationListener,
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        val navigationIndex = supportActionBar?.selectedNavigationIndex ?: 0
-        outState.putInt(KEY_NAVIGATION_INDEX, navigationIndex)
+        outState.putInt(KEY_NAVIGATION_INDEX, groupSpinner.selectedItemPosition)
         super.onSaveInstanceState(outState)
     }
 
-    override fun onNavigationItemSelected(itemPosition: Int, itemId: Long): Boolean {
+    override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
         notifyDataSetChanged()
-        return true
+    }
+
+    override fun onNothingSelected(parent: AdapterView<*>?) {
     }
 
     override fun onContactsLoaded(contactsList: List<ContactsItem>?) {
@@ -204,12 +215,14 @@ class MainActivity : AppCompatActivity(), ActionBar.OnNavigationListener,
             ArrayList()
         }
 
+        currentGroupContactsList = ArrayList()
         groupAdapter = GroupAdapter(this, groupList)
-        val actionBar = supportActionBar
-        requireNotNull(actionBar)
-        actionBar.setDisplayShowTitleEnabled(false)
-        actionBar.navigationMode = ActionBar.NAVIGATION_MODE_LIST
-        actionBar.setListNavigationCallbacks(groupAdapter, this)
+        val toolbar = findViewById<MaterialToolbar>(R.id.toolbar)
+        setSupportActionBar(toolbar)
+        supportActionBar?.setDisplayShowTitleEnabled(false)
+        groupSpinner = findViewById(R.id.spinner_group)
+        groupSpinner.adapter = groupAdapter
+        groupSpinner.onItemSelectedListener = this
 
         var navigationIndex = 0
         if (savedInstanceState != null) {
@@ -226,13 +239,11 @@ class MainActivity : AppCompatActivity(), ActionBar.OnNavigationListener,
                 }
             }
         }
-        actionBar.setSelectedNavigationItem(navigationIndex)
-        currentGroupContactsList = ArrayList()
+        groupSpinner.setSelection(navigationIndex)
     }
 
     private fun notifyDataSetChanged() {
-        val actionBar = supportActionBar ?: return
-        val index = actionBar.selectedNavigationIndex
+        val index = groupSpinner.selectedItemPosition
         if (index < 0 || index >= groupList.size) {
             return
         }

@@ -59,12 +59,20 @@
     <Button
         android:id="@+id/other_count"
         android:layout_width="match_parent"
-        android:layout_height="24dp"
+        android:layout_height="32dp"
         android:layout_marginBottom="4dp"
         android:layout_marginTop="4dp"
         android:background="@drawable/infowindow_button_normal"
+        android:backgroundTint="@null"
+        android:gravity="center"
+        android:includeFontPadding="false"
         android:padding="0dp"
-        android:textColor="#ff000000"
+        android:paddingStart="0dp"
+        android:paddingTop="0dp"
+        android:paddingEnd="0dp"
+        android:paddingBottom="0dp"
+        android:minHeight="0dp"
+        android:textColor="?attr/colorOnPrimary"
         android:textSize="14dp"
         android:textStyle="bold" />
 

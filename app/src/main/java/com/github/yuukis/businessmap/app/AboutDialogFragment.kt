@@ -17,7 +17,6 @@
  */
 package com.github.yuukis.businessmap.app
 
-import android.app.AlertDialog
 import android.app.Dialog
 import android.content.pm.PackageManager
 import android.content.pm.PackageManager.NameNotFoundException
@@ -26,6 +25,7 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.DialogFragment
 import com.github.yuukis.businessmap.R
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class AboutDialogFragment : DialogFragment(), View.OnClickListener {
 
@@ -36,7 +36,7 @@ class AboutDialogFragment : DialogFragment(), View.OnClickListener {
         view.findViewById<android.widget.TextView>(R.id.textview_about_version).text = getVersion()
         view.findViewById<View>(R.id.textview_license).setOnClickListener(this)
 
-        return AlertDialog.Builder(activity)
+        return MaterialAlertDialogBuilder(activity)
             .setTitle(R.string.action_about)
             .setView(view)
             .setPositiveButton(android.R.string.ok, null)

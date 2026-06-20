@@ -17,7 +17,6 @@
  */
 package com.github.yuukis.businessmap.app
 
-import android.app.AlertDialog
 import android.content.Context
 import android.database.Cursor
 import android.os.Bundle
@@ -42,6 +41,7 @@ import com.github.yuukis.businessmap.util.CursorJoinerWithIntKey
 import com.github.yuukis.businessmap.util.GeocoderUtils
 import com.github.yuukis.businessmap.util.SerializationException
 import com.github.yuukis.businessmap.util.SerializationUtils
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import org.json.JSONException
 import java.io.FileNotFoundException
 import java.io.IOException
@@ -169,7 +169,7 @@ class ContactsTaskFragment : Fragment() {
     private fun showError(title: String, message: String) {
         val currentActivity = activity ?: return
         Handler(Looper.getMainLooper()).post {
-            AlertDialog.Builder(currentActivity)
+            MaterialAlertDialogBuilder(currentActivity)
                 .setTitle(title)
                 .setMessage(message)
                 .setPositiveButton(android.R.string.ok, null)

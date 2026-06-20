@@ -17,15 +17,21 @@
  */
 package com.github.yuukis.businessmap.app
 
+import android.app.Dialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.webkit.WebView
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentActivity
 import com.github.yuukis.businessmap.R
 import com.github.yuukis.businessmap.util.AssetUtils
+import com.google.android.material.appbar.MaterialToolbar
 import java.io.UnsupportedEncodingException
 import java.net.URLEncoder
 
@@ -34,6 +40,15 @@ class LicenseDialogFragment : DialogFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setStyle(STYLE_NO_TITLE, R.style.AppTheme)
+    }
+
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        val dialog = super.onCreateDialog(savedInstanceState)
+        dialog.window?.let { window ->
+            window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT)
+            WindowCompat.setDecorFitsSystemWindows(window, false)
+        }
+        return dialog
     }
 
     override fun onCreateView(
@@ -46,9 +61,35 @@ class LicenseDialogFragment : DialogFragment() {
             html = URLEncoder.encode(html, "utf-8").replace("\\+".toRegex(), "%20")
         } catch (e: UnsupportedEncodingException) {
         }
-        val webView = WebView(requireActivity())
+
+        val view = inflater.inflate(R.layout.dialog_license, container, false)
+        val toolbar = view.findViewById<MaterialToolbar>(R.id.toolbar_license)
+        toolbar.setNavigationIcon(R.drawable.ic_close)
+        toolbar.setNavigationOnClickListener { dismiss() }
+
+        val webView = view.findViewById<WebView>(R.id.webview_license)
         webView.loadData(html, "text/html", "utf-8")
-        return webView
+
+        applyEdgeToEdgeInsets(view, toolbar)
+        return view
+    }
+
+    /**
+     * Same technique as MainActivity: the toolbar's fixed height must grow
+     * by the status bar inset (not just gain top padding within a fixed
+     * height), otherwise its title gets squeezed and clipped.
+     */
+    private fun applyEdgeToEdgeInsets(root: View, toolbar: View) {
+        val toolbarContentHeight = toolbar.layoutParams.height
+        ViewCompat.setOnApplyWindowInsetsListener(root) { v, insets ->
+            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            toolbar.layoutParams = toolbar.layoutParams.apply {
+                height = toolbarContentHeight + bars.top
+            }
+            toolbar.setPadding(toolbar.paddingLeft, bars.top, toolbar.paddingRight, toolbar.paddingBottom)
+            v.setPadding(bars.left, 0, bars.right, bars.bottom)
+            WindowInsetsCompat.CONSUMED
+        }
     }
 
     companion object {

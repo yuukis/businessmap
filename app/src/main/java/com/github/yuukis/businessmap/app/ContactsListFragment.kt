@@ -17,7 +17,6 @@
  */
 package com.github.yuukis.businessmap.app
 
-import android.app.AlertDialog
 import android.os.Bundle
 import android.text.TextUtils
 import android.view.LayoutInflater
@@ -37,6 +36,7 @@ import com.github.yuukis.businessmap.R
 import com.github.yuukis.businessmap.model.ContactsItem
 import com.github.yuukis.businessmap.util.ActionUtils
 import com.github.yuukis.businessmap.util.StringJUtils
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.slidinglayer.SlidingLayer
 
 class ContactsListFragment : ListFragment(), SearchView.OnQueryTextListener {
@@ -94,7 +94,7 @@ class ContactsListFragment : ListFragment(), SearchView.OnQueryTextListener {
         val context = requireActivity()
         val title = contact.name
         val items = arrayOf(getString(R.string.action_contacts_detail))
-        AlertDialog.Builder(requireActivity()).setTitle(title)
+        MaterialAlertDialogBuilder(requireActivity()).setTitle(title)
             .setItems(items) { _, which ->
                 when (which) {
                     0 -> ActionUtils.doShowContact(context, contact)

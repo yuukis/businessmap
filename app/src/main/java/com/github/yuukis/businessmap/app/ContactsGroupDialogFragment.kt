@@ -17,16 +17,17 @@
  */
 package com.github.yuukis.businessmap.app
 
-import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
 import android.os.Bundle
+import android.widget.ArrayAdapter
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentActivity
 import com.github.yuukis.businessmap.R
 import com.github.yuukis.businessmap.model.ContactsGroup
 import com.github.yuukis.businessmap.util.ContactUtils
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class ContactsGroupDialogFragment : DialogFragment(), DialogInterface.OnClickListener {
 
@@ -47,9 +48,10 @@ class ContactsGroupDialogFragment : DialogFragment(), DialogInterface.OnClickLis
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val items = getContactsGroupTitleArray()
-        return AlertDialog.Builder(activity)
+        val adapter = ArrayAdapter(requireActivity(), R.layout.dialog_list_item, android.R.id.text1, items)
+        return MaterialAlertDialogBuilder(requireActivity())
             .setTitle(R.string.action_select_group)
-            .setItems(items, this)
+            .setAdapter(adapter, this)
             .setNegativeButton(android.R.string.cancel, this)
             .create()
     }

@@ -250,8 +250,8 @@ class ContactsMapFragment : SupportMapFragment(), GoogleMap.OnInfoWindowClickLis
         infoButton = button
         val listener = object : OnInfoWindowElemTouchListener(
             button,
-            resources.getDrawable(R.drawable.infowindow_button_normal),
-            resources.getDrawable(R.drawable.infowindow_button_pressed)
+            requireNotNull(ContextCompat.getDrawable(activity, R.drawable.infowindow_button_normal)),
+            requireNotNull(ContextCompat.getDrawable(activity, R.drawable.infowindow_button_pressed))
         ) {
             override fun onClickConfirmed(v: View, marker: Marker) {
                 val position = marker.position
