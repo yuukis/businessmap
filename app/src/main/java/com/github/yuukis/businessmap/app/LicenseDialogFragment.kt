@@ -24,13 +24,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.webkit.WebView
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentActivity
 import com.github.yuukis.businessmap.R
 import com.github.yuukis.businessmap.util.AssetUtils
+import com.google.android.material.appbar.MaterialToolbar
 import java.io.UnsupportedEncodingException
 import java.net.URLEncoder
 
@@ -43,14 +41,7 @@ class LicenseDialogFragment : DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialog = super.onCreateDialog(savedInstanceState)
-        // The window must be sized to the full screen and opted out of the
-        // default inset-fitting *before* the WebView is attached, otherwise
-        // the first inset dispatch still reserves system bar space and the
-        // listener below never gets a chance to pad around it.
-        dialog.window?.let { window ->
-            window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT)
-            WindowCompat.setDecorFitsSystemWindows(window, false)
-        }
+        dialog.window?.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT)
         return dialog
     }
 
@@ -64,17 +55,15 @@ class LicenseDialogFragment : DialogFragment() {
             html = URLEncoder.encode(html, "utf-8").replace("\\+".toRegex(), "%20")
         } catch (e: UnsupportedEncodingException) {
         }
-        val webView = WebView(requireActivity())
+
+        val view = inflater.inflate(R.layout.dialog_license, container, false)
+        val toolbar = view.findViewById<MaterialToolbar>(R.id.toolbar_license)
+        toolbar.setNavigationIcon(android.R.drawable.ic_menu_close_clear_cancel)
+        toolbar.setNavigationOnClickListener { dismiss() }
+
+        val webView = view.findViewById<WebView>(R.id.webview_license)
         webView.loadData(html, "text/html", "utf-8")
-        // This dialog has its own Window, separate from the host Activity's,
-        // and its insets dispatch is unreliable in practice. The host
-        // Activity's decor view already has correct, up-to-date system bar
-        // insets (edge-to-edge is confirmed working there), so borrow those
-        // directly instead of depending on the dialog window's own dispatch.
-        ViewCompat.getRootWindowInsets(requireActivity().window.decorView)
-            ?.getInsets(WindowInsetsCompat.Type.systemBars())
-            ?.let { bars -> webView.setPadding(bars.left, bars.top, bars.right, bars.bottom) }
-        return webView
+        return view
     }
 
     companion object {
