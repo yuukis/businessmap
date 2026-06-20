@@ -227,12 +227,6 @@ class MainActivity : AppCompatActivity(),
         groupDropdown.post { selectGroup(resolvePendingNavigationIndex()) }
     }
 
-    /**
-     * groupList may still be empty here (e.g. contacts permission not yet
-     * granted), in which case the desired index/group id is kept pending and
-     * re-resolved against the up-to-date groupList once it is populated in
-     * onPermissionsResult.
-     */
     private fun resolvePendingNavigationIndex(): Int {
         val groupId = pendingGroupId
         if (groupId != null) {
