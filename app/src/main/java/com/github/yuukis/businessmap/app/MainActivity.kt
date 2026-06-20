@@ -232,10 +232,6 @@ class MainActivity : AppCompatActivity(),
                 }
             }
         }
-        // Fragments declared via <fragment> tags in activity_main.xml are not
-        // fully created yet at this point (their onCreateView runs after
-        // onCreate returns), so the initial selection notification must be
-        // deferred until the next message loop iteration.
         groupDropdown.post { selectGroup(navigationIndex) }
     }
 
