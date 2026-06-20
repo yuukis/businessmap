@@ -24,6 +24,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.webkit.WebView
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentActivity
 import com.github.yuukis.businessmap.R
@@ -41,7 +44,10 @@ class LicenseDialogFragment : DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialog = super.onCreateDialog(savedInstanceState)
-        dialog.window?.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT)
+        dialog.window?.let { window ->
+            window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT)
+            WindowCompat.setDecorFitsSystemWindows(window, false)
+        }
         return dialog
     }
 
@@ -63,7 +69,27 @@ class LicenseDialogFragment : DialogFragment() {
 
         val webView = view.findViewById<WebView>(R.id.webview_license)
         webView.loadData(html, "text/html", "utf-8")
+
+        applyEdgeToEdgeInsets(view, toolbar)
         return view
+    }
+
+    /**
+     * Same technique as MainActivity: the toolbar's fixed height must grow
+     * by the status bar inset (not just gain top padding within a fixed
+     * height), otherwise its title gets squeezed and clipped.
+     */
+    private fun applyEdgeToEdgeInsets(root: View, toolbar: View) {
+        val toolbarContentHeight = toolbar.layoutParams.height
+        ViewCompat.setOnApplyWindowInsetsListener(root) { v, insets ->
+            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            toolbar.layoutParams = toolbar.layoutParams.apply {
+                height = toolbarContentHeight + bars.top
+            }
+            toolbar.setPadding(toolbar.paddingLeft, bars.top, toolbar.paddingRight, toolbar.paddingBottom)
+            v.setPadding(bars.left, 0, bars.right, bars.bottom)
+            WindowInsetsCompat.CONSUMED
+        }
     }
 
     companion object {
