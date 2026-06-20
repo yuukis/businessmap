@@ -186,8 +186,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
             return
         }
 
-        writeContactsListInCache(list)
-        _contactsList.value = list
+        writeContactsListInCache(_contactsList.value ?: list)
     }
 
     private fun loadAllContacts(geocodingResultCache: MutableMap<String, Array<Double?>?>): MutableList<ContactsItem>? {
@@ -398,7 +397,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     }
 
     private suspend fun geocodeMissingAddresses(
-        list: MutableList<ContactsItem>,
+        list: List<ContactsItem>,
         geocodingResultCache: MutableMap<String, Array<Double?>?>
     ) {
         val context = getApplication<Application>()
@@ -443,19 +442,20 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
             _progress.value = null
         }
 
-        for (j in list.indices) {
-            val contact = list[j]
-            val address = contact.address ?: continue
-            if (contact.lat != null && contact.lng != null) {
-                continue
-            }
-            val latlng = geocodingResultCache[address] ?: continue
-            if (latlng.size == 2) {
-                contact.setLat(latlng[0] ?: Double.NaN)
-                contact.setLng(latlng[1] ?: Double.NaN)
-                list[j] = contact
+        val updatedList = list.map { contact ->
+            val address = contact.address
+            val alreadyResolved = contact.lat != null && contact.lng != null
+            val latlng = if (address != null && !alreadyResolved) geocodingResultCache[address] else null
+            if (latlng != null && latlng.size == 2) {
+                ContactsItem(contact.cid, contact.name, contact.phonetic, contact.groupId, contact.address, contact.note, contact.companyName).apply {
+                    setLat(latlng[0] ?: Double.NaN)
+                    setLng(latlng[1] ?: Double.NaN)
+                }
+            } else {
+                contact
             }
         }
+        _contactsList.value = updatedList
     }
 
     private fun readContactsListFromCache(): MutableList<ContactsItem>? {
