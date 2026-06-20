@@ -36,7 +36,6 @@ abstract class GeocodingCacheRoomDatabase : RoomDatabase() {
                 GeocodingCacheRoomDatabase::class.java,
                 DATABASE_NAME
             )
-                // 旧 SQLiteOpenHelper 版のキャッシュ(住所→緯度経度)は破棄して作り直す
                 .fallbackToDestructiveMigration()
                 .build()
         }
