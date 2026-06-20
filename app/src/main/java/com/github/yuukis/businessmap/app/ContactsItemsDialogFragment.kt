@@ -21,6 +21,7 @@ import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
 import android.os.Bundle
+import android.widget.ArrayAdapter
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentActivity
 import com.github.yuukis.businessmap.R
@@ -51,9 +52,10 @@ class ContactsItemsDialogFragment : DialogFragment(), DialogInterface.OnClickLis
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val items = getContactsItemsTitleArray()
+        val adapter = ArrayAdapter(requireActivity(), R.layout.dialog_list_item, android.R.id.text1, items)
         return MaterialAlertDialogBuilder(requireActivity())
             .setTitle(R.string.action_select_contacts)
-            .setItems(items, this)
+            .setAdapter(adapter, this)
             .create()
     }
 
