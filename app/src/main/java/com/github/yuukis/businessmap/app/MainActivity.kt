@@ -25,8 +25,6 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.WindowManager
-import android.widget.AdapterView
-import android.widget.Spinner
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -38,8 +36,9 @@ import com.github.yuukis.businessmap.model.ContactsItem
 import com.github.yuukis.businessmap.util.ContactUtils
 import com.github.yuukis.businessmap.widget.GroupAdapter
 import com.google.android.material.appbar.MaterialToolbar
+import com.google.android.material.textfield.MaterialAutoCompleteTextView
 
-class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
+class MainActivity : AppCompatActivity(),
     ContactsTaskFragment.TaskCallback, ProgressDialogFragment.ProgressDialogFragmentListener,
     ContactsItemsDialogFragment.OnSelectListener {
 
@@ -50,7 +49,10 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
     private lateinit var listFragment: ContactsListFragment
     private lateinit var taskFragment: ContactsTaskFragment
     private lateinit var groupAdapter: GroupAdapter
-    private lateinit var groupSpinner: Spinner
+    private lateinit var groupDropdown: MaterialAutoCompleteTextView
+    private var selectedGroupIndex = -1
+    private var pendingGroupId: Long? = null
+    private var pendingNavigationIndex = 0
     private val permissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
             onPermissionsResult()
@@ -70,7 +72,7 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
      * MaterialToolbar now lives inside our own layout rather than being
      * reserved by the system, so it must absorb the status bar inset itself.
      * Padding alone would squeeze its fixed-height content (the group
-     * spinner) into a shorter area and clip it, so the inset is added on top
+     * dropdown) into a shorter area and clip it, so the inset is added on top
      * of the toolbar's original height instead, with padding only offsetting
      * the content down into that extra space.
      */
@@ -132,12 +134,15 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
     private fun onPermissionsResult() {
         mapFragment.enableMyLocationIfPermitted()
         if (hasContactsPermission() && contactsList != null && !taskFragment.isRunning()) {
+            val previousGroupId = groupList.getOrNull(selectedGroupIndex)?.id
             groupList.clear()
             groupList.addAll(ContactUtils.getContactsGroupList(this))
             groupAdapter.notifyDataSetChanged()
-            if (groupSpinner.selectedItemPosition < 0) {
-                groupSpinner.setSelection(0)
-            }
+            val index = previousGroupId
+                ?.let { id -> groupList.indexOfFirst { it.id == id } }
+                ?.takeIf { it >= 0 }
+                ?: resolvePendingNavigationIndex()
+            selectGroup(index)
             taskFragment.start()
         }
     }
@@ -156,15 +161,8 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        outState.putInt(KEY_NAVIGATION_INDEX, groupSpinner.selectedItemPosition)
+        outState.putInt(KEY_NAVIGATION_INDEX, selectedGroupIndex)
         super.onSaveInstanceState(outState)
-    }
-
-    override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-        notifyDataSetChanged()
-    }
-
-    override fun onNothingSelected(parent: AdapterView<*>?) {
     }
 
     override fun onContactsLoaded(contactsList: List<ContactsItem>?) {
@@ -220,30 +218,40 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
         val toolbar = findViewById<MaterialToolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayShowTitleEnabled(false)
-        groupSpinner = findViewById(R.id.spinner_group)
-        groupSpinner.adapter = groupAdapter
-        groupSpinner.onItemSelectedListener = this
+        groupDropdown = findViewById(R.id.dropdown_group)
+        groupDropdown.setAdapter(groupAdapter)
+        groupDropdown.setOnItemClickListener { _, _, position, _ -> selectGroup(position) }
 
-        var navigationIndex = 0
         if (savedInstanceState != null) {
-            navigationIndex = savedInstanceState.getInt(KEY_NAVIGATION_INDEX)
-        } else if (args != null) {
-            if (args.containsKey(KEY_CONTACTS_GROUP_ID)) {
-                val groupId = args.getLong(KEY_CONTACTS_GROUP_ID)
-                for (i in groupList.indices) {
-                    val contactsGroup = groupList[i]
-                    if (groupId == contactsGroup.id) {
-                        navigationIndex = i
-                        break
-                    }
-                }
+            pendingNavigationIndex = savedInstanceState.getInt(KEY_NAVIGATION_INDEX)
+        } else if (args != null && args.containsKey(KEY_CONTACTS_GROUP_ID)) {
+            pendingGroupId = args.getLong(KEY_CONTACTS_GROUP_ID)
+        }
+        groupDropdown.post { selectGroup(resolvePendingNavigationIndex()) }
+    }
+
+    private fun resolvePendingNavigationIndex(): Int {
+        val groupId = pendingGroupId
+        if (groupId != null) {
+            val index = groupList.indexOfFirst { it.id == groupId }
+            if (index >= 0) {
+                return index
             }
         }
-        groupSpinner.setSelection(navigationIndex)
+        return pendingNavigationIndex.takeIf { it in groupList.indices } ?: 0
+    }
+
+    private fun selectGroup(index: Int) {
+        if (index < 0 || index >= groupList.size) {
+            return
+        }
+        selectedGroupIndex = index
+        groupDropdown.setText(groupList[index].title, false)
+        notifyDataSetChanged()
     }
 
     private fun notifyDataSetChanged() {
-        val index = groupSpinner.selectedItemPosition
+        val index = selectedGroupIndex
         if (index < 0 || index >= groupList.size) {
             return
         }
