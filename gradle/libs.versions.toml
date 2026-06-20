@@ -1,17 +1,22 @@
 [versions]
 agp = "8.7.2"
 kotlin = "2.0.21"
+ksp = "2.0.21-1.0.28"
 appcompat = "1.7.1"
 fragment = "1.8.9"
 material = "1.14.0"
 playServicesMaps = "20.0.0"
+room = "2.6.1"
 
 [libraries]
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 androidx-fragment = { group = "androidx.fragment", name = "fragment", version.ref = "fragment" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 play-services-maps = { group = "com.google.android.gms", name = "play-services-maps", version.ref = "playServicesMaps" }
+androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
+androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

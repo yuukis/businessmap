@@ -10,6 +10,7 @@ val localProperties = Properties().apply {
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -59,4 +60,6 @@ dependencies {
     implementation(libs.androidx.fragment)
     implementation(libs.material)
     implementation(libs.play.services.maps)
+    implementation(libs.androidx.room.runtime)
+    ksp(libs.androidx.room.compiler)
 }
