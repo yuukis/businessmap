@@ -66,11 +66,14 @@ class LicenseDialogFragment : DialogFragment() {
         }
         val webView = WebView(requireActivity())
         webView.loadData(html, "text/html", "utf-8")
-        ViewCompat.setOnApplyWindowInsetsListener(webView) { v, insets ->
-            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(bars.left, bars.top, bars.right, bars.bottom)
-            WindowInsetsCompat.CONSUMED
-        }
+        // This dialog has its own Window, separate from the host Activity's,
+        // and its insets dispatch is unreliable in practice. The host
+        // Activity's decor view already has correct, up-to-date system bar
+        // insets (edge-to-edge is confirmed working there), so borrow those
+        // directly instead of depending on the dialog window's own dispatch.
+        ViewCompat.getRootWindowInsets(requireActivity().window.decorView)
+            ?.getInsets(WindowInsetsCompat.Type.systemBars())
+            ?.let { bars -> webView.setPadding(bars.left, bars.top, bars.right, bars.bottom) }
         return webView
     }
 
