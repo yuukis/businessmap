@@ -17,26 +17,47 @@
  */
 package com.github.yuukis.businessmap.app
 
-import android.content.Context
-import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
-import android.widget.GridView
-import android.widget.ImageView
-import android.widget.TextView
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.res.integerResource
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.fragment.app.FragmentActivity
 import com.github.yuukis.businessmap.R
 import com.github.yuukis.businessmap.model.ContactsItem
 import com.github.yuukis.businessmap.util.ActionUtils
-import com.google.android.material.R as MaterialR
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.google.android.material.color.MaterialColors
 
-class ContactsActionFragment : BottomSheetDialogFragment(), AdapterView.OnItemClickListener {
+private data class ContactsActionItem(val itemId: Int, val iconId: Int, val titleId: Int)
+
+private val ACTION_ITEMS = listOf(
+    ContactsActionItem(ContactsActionFragment.ID_SHOW_CONTACTS, R.drawable.ic_action_person, R.string.action_contacts_detail),
+    ContactsActionItem(ContactsActionFragment.ID_DIRECTION, R.drawable.ic_action_directions, R.string.action_directions),
+    ContactsActionItem(ContactsActionFragment.ID_NAVIGATION, R.drawable.ic_action_navigation, R.string.action_drive_navigation)
+)
+
+class ContactsActionFragment : BottomSheetDialogFragment() {
 
     private var contact: ContactsItem? = null
 
@@ -47,82 +68,37 @@ class ContactsActionFragment : BottomSheetDialogFragment(), AdapterView.OnItemCl
     ): View {
         contact = requireArguments().getSerializable(KEY_CONTACTS) as? ContactsItem
 
-        val view = inflater.inflate(R.layout.fragment_contacts_action, container, false)
-
-        val titleView = view.findViewById<TextView>(R.id.title)
-        titleView.text = contact?.name
-
-        val adapter = MenuAdapter(requireActivity(), R.layout.gridview_contents, ACTION_ITEMS)
-        val gridView = view.findViewById<GridView>(R.id.gridview)
-        gridView.adapter = adapter
-        gridView.onItemClickListener = this
-
-        return view
+        return ComposeView(requireContext()).apply {
+            setContent {
+                MaterialTheme {
+                    Surface {
+                        ContactsActionContent(
+                            contactName = contact?.name.orEmpty(),
+                            onActionClick = ::onActionClick
+                        )
+                    }
+                }
+            }
+        }
     }
 
-    override fun onItemClick(parent: AdapterView<*>?, view: View, position: Int, id: Long) {
+    private fun onActionClick(itemId: Int) {
         val context = requireActivity()
-        val data = ACTION_ITEMS[position % ACTION_ITEMS.size]
         val item = contact ?: return
 
-        when (data.itemId) {
+        when (itemId) {
             ID_SHOW_CONTACTS -> ActionUtils.doShowContact(context, item)
             ID_DIRECTION -> ActionUtils.doShowDirections(context, item)
             ID_NAVIGATION -> ActionUtils.doStartDriveNavigation(context, item)
         }
     }
 
-    private class BindData(val itemId: Int, val iconId: Int, val titleId: Int)
-
-    private class ViewHolder(val imageView: ImageView, val textView: TextView)
-
-    private class MenuAdapter(
-        context: Context,
-        private val layoutId: Int,
-        objects: Array<BindData>
-    ) : ArrayAdapter<BindData>(context, layoutId, objects) {
-
-        private val inflater =
-            context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
-
-        override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-            val view: View
-            val holder: ViewHolder
-
-            if (convertView == null) {
-                view = inflater.inflate(layoutId, parent, false)
-                holder = ViewHolder(
-                    view.findViewById(android.R.id.icon),
-                    view.findViewById(android.R.id.title)
-                )
-                view.tag = holder
-            } else {
-                view = convertView
-                holder = view.tag as ViewHolder
-            }
-            val data = getItem(position)
-            if (data != null) {
-                holder.textView.setText(data.titleId)
-                holder.imageView.setImageResource(data.iconId)
-                holder.imageView.imageTintList =
-                    ColorStateList.valueOf(MaterialColors.getColor(holder.imageView, MaterialR.attr.colorOnSurface))
-            }
-
-            return view
-        }
-    }
-
     companion object {
         private const val TAG = "ContactsActionFragment"
         private const val KEY_CONTACTS = "contacts"
-        private const val ID_SHOW_CONTACTS = 1
-        private const val ID_DIRECTION = 2
-        private const val ID_NAVIGATION = 3
-        private val ACTION_ITEMS = arrayOf(
-            BindData(ID_SHOW_CONTACTS, R.drawable.ic_action_person, R.string.action_contacts_detail),
-            BindData(ID_DIRECTION, R.drawable.ic_action_directions, R.string.action_directions),
-            BindData(ID_NAVIGATION, R.drawable.ic_action_navigation, R.string.action_drive_navigation)
-        )
+        const val ID_SHOW_CONTACTS = 1
+        const val ID_DIRECTION = 2
+        const val ID_NAVIGATION = 3
 
         @JvmStatic
         fun newInstance(contact: ContactsItem): ContactsActionFragment {
@@ -138,5 +114,58 @@ class ContactsActionFragment : BottomSheetDialogFragment(), AdapterView.OnItemCl
             val manager = activity.supportFragmentManager
             newInstance(contact).show(manager, TAG)
         }
+    }
+}
+
+@Composable
+private fun ContactsActionContent(
+    contactName: String,
+    onActionClick: (itemId: Int) -> Unit
+) {
+    Column(modifier = Modifier.padding(bottom = 16.dp)) {
+        Text(
+            text = contactName,
+            style = MaterialTheme.typography.titleLarge,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(start = 24.dp, top = 24.dp, end = 24.dp, bottom = 8.dp)
+        )
+
+        val columns = integerResource(R.integer.gridview_columns)
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(columns),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            items(ACTION_ITEMS) { data ->
+                ContactsActionGridItem(data = data, onClick = { onActionClick(data.itemId) })
+            }
+        }
+    }
+}
+
+@Composable
+private fun ContactsActionGridItem(
+    data: ContactsActionItem,
+    onClick: () -> Unit
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(112.dp)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 8.dp)
+    ) {
+        Icon(
+            painter = painterResource(data.iconId),
+            contentDescription = stringResource(data.titleId),
+            tint = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.size(64.dp)
+        )
+        Text(
+            text = stringResource(data.titleId),
+            color = MaterialTheme.colorScheme.onSurface,
+            style = MaterialTheme.typography.bodyLarge
+        )
     }
 }
