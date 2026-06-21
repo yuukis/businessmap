@@ -42,7 +42,7 @@ object StringJUtils {
     @JvmStatic
     fun mergeChar(c1: Char, c2: Char): Char {
         if (c2 == 'ﾞ') {
-            if ("ｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾊﾋﾌﾍﾎ".indexOf(c1) > 0) {
+            if ("ｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾊﾋﾌﾍﾎ".indexOf(c1) >= 0) {
                 return when (c1) {
                     'ｶ' -> 'ガ'
                     'ｷ' -> 'ギ'
@@ -68,7 +68,7 @@ object StringJUtils {
                 }
             }
         } else if (c2 == 'ﾟ') {
-            if ("ﾊﾋﾌﾍﾎ".indexOf(c1) > 0) {
+            if ("ﾊﾋﾌﾍﾎ".indexOf(c1) >= 0) {
                 return when (c1) {
                     'ﾊ' -> 'パ'
                     'ﾋ' -> 'ピ'
