@@ -52,13 +52,14 @@ class AboutDialogFragment : DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val activity = requireActivity()
+        val version = getVersion()
 
         val view = ComposeView(activity).apply {
             setContent {
                 MaterialTheme {
                     Surface(color = Color.Transparent) {
                         AboutContent(
-                            version = getVersion(),
+                            version = version,
                             onLicensesClick = { LicenseDialogFragment.showDialog(activity) }
                         )
                     }
