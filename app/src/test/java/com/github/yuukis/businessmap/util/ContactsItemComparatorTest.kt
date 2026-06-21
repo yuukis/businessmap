@@ -14,8 +14,6 @@ class ContactsItemComparatorTest {
 
     @Before
     fun setLocale() {
-        // Collator depends on the default locale, so pin it to keep
-        // the kana ordering assertions deterministic across environments.
         originalLocale = Locale.getDefault()
         Locale.setDefault(Locale.JAPAN)
     }

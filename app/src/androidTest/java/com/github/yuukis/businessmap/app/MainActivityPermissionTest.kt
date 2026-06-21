@@ -10,12 +10,6 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 
-/**
- * Verifies MainActivity launches without crashing when the contacts and
- * location permissions have not been granted yet. The runtime permission
- * dialog this triggers takes the foreground, so the activity itself only
- * reaches STARTED rather than RESUMED.
- */
 @RunWith(AndroidJUnit4::class)
 class MainActivityPermissionTest {
 
