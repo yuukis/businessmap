@@ -30,6 +30,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -39,13 +40,18 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -61,6 +67,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -70,6 +77,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -85,6 +93,8 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.github.yuukis.businessmap.R
 import com.github.yuukis.businessmap.model.ContactsGroup
 import com.github.yuukis.businessmap.model.ContactsItem
+import com.github.yuukis.businessmap.util.ActionUtils
+import com.github.yuukis.businessmap.util.StringJUtils
 import com.github.yuukis.businessmap.widget.MapWrapperLayout
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.launch
@@ -109,6 +119,7 @@ class MainActivity : AppCompatActivity(),
                     viewModel = viewModel,
                     fragmentManager = supportFragmentManager,
                     onAboutClick = { AboutDialogFragment.showDialog(this) },
+                    onContactClick = ::handleContactClick,
                 )
             }
         }
@@ -174,8 +185,23 @@ class MainActivity : AppCompatActivity(),
     private fun mapFragment(): ContactsMapFragment? =
         supportFragmentManager.findFragmentById(R.id.contacts_map) as? ContactsMapFragment
 
-    private fun listFragment(): ContactsListFragment? =
-        supportFragmentManager.findFragmentById(R.id.contacts_list) as? ContactsListFragment
+    private fun handleContactClick(contact: ContactsItem) {
+        val animate = true
+        val handled = mapFragment()?.showMarkerInfoWindow(contact, animate) == true
+        if (handled) {
+            viewModel.setContactsListVisible(false)
+            return
+        }
+
+        val title = contact.name
+        val items = arrayOf(getString(R.string.action_contacts_detail))
+        MaterialAlertDialogBuilder(this).setTitle(title)
+            .setItems(items) { _, which ->
+                when (which) {
+                    0 -> ActionUtils.doShowContact(this, contact)
+                }
+            }.show()
+    }
 
     private fun initialize(savedInstanceState: Bundle?) {
         val args = intent.extras
@@ -195,7 +221,6 @@ class MainActivity : AppCompatActivity(),
                 launch {
                     viewModel.currentGroupContactsList.collect {
                         mapFragment()?.notifyDataSetChanged()
-                        listFragment()?.notifyDataSetChanged()
                     }
                 }
                 launch {
@@ -258,11 +283,13 @@ private fun MainScreen(
     viewModel: MainActivityViewModel,
     fragmentManager: FragmentManager,
     onAboutClick: () -> Unit,
+    onContactClick: (ContactsItem) -> Unit,
 ) {
     val groupList by viewModel.groupList.collectAsState()
     val selectedGroupIndex by viewModel.selectedGroupIndex.collectAsState()
     val isRunning by viewModel.isRunning.collectAsState()
     val isListVisible by viewModel.isContactsListVisible.collectAsState()
+    val contactsList by viewModel.currentGroupContactsList.collectAsState()
 
     BackHandler(enabled = isListVisible) {
         viewModel.setContactsListVisible(false)
@@ -316,8 +343,9 @@ private fun MainScreen(
 
             ContactsListPanel(
                 visible = isListVisible,
+                contactsList = contactsList,
                 onDismiss = { viewModel.setContactsListVisible(false) },
-                fragmentManager = fragmentManager,
+                onContactClick = onContactClick,
             )
         }
     }
@@ -430,22 +458,17 @@ private fun GroupDropdown(
 }
 
 /**
- * The contacts list panel's [FragmentContainerView] stays in composition at
- * all times - open/close is purely a translateX animation - rather than
- * being added/removed via e.g. AnimatedVisibility. Removing it from
- * composition would dispose the AndroidView without FragmentManager ever
- * being told the Fragment lost its container, which both leaves a Fragment
- * registered with no live view (later operations on it, like
- * notifyDataSetChanged, would be touching a detached view) and can crash
- * with "No view found for id ..." if FragmentManager tries to restore that
- * Fragment after an Activity recreation while the panel happens to be
- * closed.
+ * The contacts list panel stays in composition at all times - open/close is
+ * purely a translateX animation - rather than being added/removed via e.g.
+ * AnimatedVisibility, so the search field's focus/IME state isn't torn down
+ * every time the panel closes.
  */
 @Composable
 private fun BoxScope.ContactsListPanel(
     visible: Boolean,
+    contactsList: List<ContactsItem>,
     onDismiss: () -> Unit,
-    fragmentManager: FragmentManager,
+    onContactClick: (ContactsItem) -> Unit,
 ) {
     if (visible) {
         Box(
@@ -459,21 +482,118 @@ private fun BoxScope.ContactsListPanel(
     val panelWidth = contactsListPanelWidth()
     val offFraction by animateFloatAsState(targetValue = if (visible) 0f else 1f)
 
-    AndroidView(
+    var query by rememberSaveable { mutableStateOf("") }
+    val focusManager = LocalFocusManager.current
+    if (!visible) {
+        focusManager.clearFocus(force = true)
+    }
+
+    Column(
         modifier = (if (panelWidth != null) Modifier.width(panelWidth) else Modifier.fillMaxWidth())
             .fillMaxHeight()
             .align(Alignment.CenterEnd)
             .graphicsLayer { translationX = size.width * offFraction }
-            .background(MaterialTheme.colorScheme.surface),
-        factory = { context ->
-            FragmentContainerView(context).apply {
-                id = R.id.contacts_list
+            .background(MaterialTheme.colorScheme.surface)
+    ) {
+        ContactsSearchField(
+            query = query,
+            onQueryChange = { query = it },
+        )
+
+        val filteredList = remember(contactsList, query) {
+            filterContactsList(contactsList, query)
+        }
+        if (filteredList.isEmpty()) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = stringResource(R.string.message_no_contacts),
+                    color = Color(0xFF999999),
+                )
+            }
+        } else {
+            LazyColumn(modifier = Modifier.fillMaxSize()) {
+                items(filteredList, key = { it.cid }) { contact ->
+                    ContactsListRow(
+                        contact = contact,
+                        onClick = {
+                            focusManager.clearFocus(force = true)
+                            onContactClick(contact)
+                        },
+                    )
+                    HorizontalDivider()
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ContactsSearchField(
+    query: String,
+    onQueryChange: (String) -> Unit,
+) {
+    TextField(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp),
+        value = query,
+        onValueChange = onQueryChange,
+        singleLine = true,
+        placeholder = { Text(stringResource(R.string.hint_searchview)) },
+        leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+        trailingIcon = {
+            if (query.isNotEmpty()) {
+                IconButton(onClick = { onQueryChange("") }) {
+                    Icon(Icons.Default.Clear, contentDescription = null)
+                }
             }
         },
-        update = { container ->
-            attachFragmentIfNeeded(fragmentManager, R.id.contacts_list, container) { ContactsListFragment() }
-        }
     )
+}
+
+@Composable
+private fun ContactsListRow(
+    contact: ContactsItem,
+    onClick: () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 12.dp)
+    ) {
+        Text(
+            text = contact.name.orEmpty(),
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+        Text(
+            text = contact.address ?: stringResource(R.string.message_no_data),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+/**
+ * Mirrors the kana/katakana-tolerant substring match that
+ * `ContactsListFragment`'s `BaseAdapter.Filter` used to perform across the
+ * contact's name, phonetic reading, and company name.
+ */
+private fun filterContactsList(contactsList: List<ContactsItem>, query: String): List<ContactsItem> {
+    if (query.isEmpty()) {
+        return contactsList
+    }
+    val needle = StringJUtils.convertToKatakana(query)
+    return contactsList.filter { contact ->
+        listOfNotNull(contact.name, contact.phonetic, contact.companyName).any {
+            StringJUtils.convertToKatakana(it).contains(needle)
+        }
+    }
 }
 
 /**
@@ -488,9 +608,9 @@ private fun BoxScope.ContactsListPanel(
  * attach to it. `fragment.view` can be non-null while still pointing at a
  * view that is no longer attached anywhere, so checking for null alone
  * isn't enough - we have to check it's still parented by *this* container.
- * Recreating the Fragment is safe here because both ContactsMapFragment
- * and ContactsListFragment read all of their state from
- * MainActivityViewModel rather than their own instance state.
+ * Recreating the Fragment is safe here because ContactsMapFragment reads
+ * all of its state from MainActivityViewModel rather than its own instance
+ * state.
  *
  * Uses `commitNow` rather than `commit` deliberately: `commit` only
  * enqueues the transaction for the next main-thread message, so a second
