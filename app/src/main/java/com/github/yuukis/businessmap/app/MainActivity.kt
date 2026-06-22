@@ -54,6 +54,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -62,6 +63,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
@@ -69,6 +71,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -360,7 +363,15 @@ private fun MainTopAppBar(
                     contentDescription = stringResource(R.string.action_about),
                 )
             }
-        }
+        },
+        // The original MaterialToolbar had android:elevation="4dp", which
+        // Material Components renders as a slightly tinted surface (tonal
+        // elevation overlay). TopAppBar has no elevation by default, so
+        // without this it looks flatter/whiter than before.
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+        ),
+        modifier = Modifier.shadow(4.dp),
     )
 }
 
@@ -378,6 +389,11 @@ private fun GroupDropdown(
         expanded = expanded,
         onExpandedChange = { expanded = it },
     ) {
+        // menuAnchor(PrimaryNotEditable) already wires up click-to-expand on
+        // its own; a TextField is what implements that wiring (and the
+        // accessibility/focus handling around it), so we keep it and only
+        // override its colors/text style to blend into the TopAppBar
+        // instead of showing its own filled background.
         TextField(
             modifier = Modifier
                 .menuAnchor(MenuAnchorType.PrimaryNotEditable)
@@ -386,8 +402,14 @@ private fun GroupDropdown(
             onValueChange = {},
             readOnly = true,
             singleLine = true,
+            textStyle = MaterialTheme.typography.titleMedium,
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-            colors = ExposedDropdownMenuDefaults.textFieldColors(),
+            colors = ExposedDropdownMenuDefaults.textFieldColors(
+                focusedContainerColor = Color.Transparent,
+                unfocusedContainerColor = Color.Transparent,
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
+            ),
         )
         ExposedDropdownMenu(
             expanded = expanded,
