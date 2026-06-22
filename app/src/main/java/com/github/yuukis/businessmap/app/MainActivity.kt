@@ -39,6 +39,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -351,7 +353,7 @@ private fun MainTopAppBar(
         actions = {
             IconButton(onClick = onToggleContactsList) {
                 Icon(
-                    painter = painterResource(R.drawable.ic_action_list),
+                    imageVector = Icons.AutoMirrored.Filled.List,
                     contentDescription = stringResource(R.string.action_list),
                 )
             }
