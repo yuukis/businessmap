@@ -30,6 +30,9 @@ class ContactsGroupDialogFragmentTest {
     @Test
     fun showsAllContactsGroupAndSelectingItFinishesTheActivity() {
         ActivityScenario.launch(IncomingShortcutActivity::class.java).use { scenario ->
+            scenario.onActivity { activity ->
+                activity.supportFragmentManager.executePendingTransactions()
+            }
             composeTestRule.waitForIdle()
 
             val allContactsLabel = targetContext.getString(R.string.group_all_contacts)
