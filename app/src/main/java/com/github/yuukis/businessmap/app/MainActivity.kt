@@ -28,9 +28,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
@@ -65,6 +63,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -438,6 +437,18 @@ private fun GroupDropdown(
     }
 }
 
+/**
+ * The contacts list panel's [FragmentContainerView] stays in composition at
+ * all times - open/close is purely a translateX animation - rather than
+ * being added/removed via e.g. AnimatedVisibility. Removing it from
+ * composition would dispose the AndroidView without FragmentManager ever
+ * being told the Fragment lost its container, which both leaves a Fragment
+ * registered with no live view (later operations on it, like
+ * notifyDataSetChanged, would be touching a detached view) and can crash
+ * with "No view found for id ..." if FragmentManager tries to restore that
+ * Fragment after an Activity recreation while the panel happens to be
+ * closed.
+ */
 @Composable
 private fun BoxScope.ContactsListPanel(
     visible: Boolean,
@@ -452,27 +463,25 @@ private fun BoxScope.ContactsListPanel(
                 .pointerInput(onDismiss) { detectTapGestures { onDismiss() } }
         )
     }
-    AnimatedVisibility(
-        visible = visible,
-        enter = slideInHorizontally(initialOffsetX = { it }),
-        exit = slideOutHorizontally(targetOffsetX = { it }),
-        modifier = Modifier.align(Alignment.CenterEnd),
-    ) {
-        val panelWidth = contactsListPanelWidth()
-        AndroidView(
-            modifier = (if (panelWidth != null) Modifier.width(panelWidth) else Modifier.fillMaxWidth())
-                .fillMaxHeight()
-                .background(MaterialTheme.colorScheme.surface),
-            factory = { context ->
-                FragmentContainerView(context).apply {
-                    id = R.id.contacts_list
-                }
-            },
-            update = { container ->
-                attachFragmentIfNeeded(fragmentManager, R.id.contacts_list, container) { ContactsListFragment() }
+
+    val panelWidth = contactsListPanelWidth()
+    val offFraction by animateFloatAsState(targetValue = if (visible) 0f else 1f)
+
+    AndroidView(
+        modifier = (if (panelWidth != null) Modifier.width(panelWidth) else Modifier.fillMaxWidth())
+            .fillMaxHeight()
+            .align(Alignment.CenterEnd)
+            .graphicsLayer { translationX = size.width * offFraction }
+            .background(MaterialTheme.colorScheme.surface),
+        factory = { context ->
+            FragmentContainerView(context).apply {
+                id = R.id.contacts_list
             }
-        )
-    }
+        },
+        update = { container ->
+            attachFragmentIfNeeded(fragmentManager, R.id.contacts_list, container) { ContactsListFragment() }
+        }
+    )
 }
 
 /**
