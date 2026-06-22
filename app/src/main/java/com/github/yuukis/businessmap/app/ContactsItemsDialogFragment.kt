@@ -19,9 +19,23 @@ package com.github.yuukis.businessmap.app
 
 import android.app.Dialog
 import android.content.Context
-import android.content.DialogInterface
 import android.os.Bundle
-import android.widget.ArrayAdapter
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.unit.dp
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentActivity
 import com.github.yuukis.businessmap.R
@@ -29,7 +43,7 @@ import com.github.yuukis.businessmap.model.ContactsItem
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.io.Serializable
 
-class ContactsItemsDialogFragment : DialogFragment(), DialogInterface.OnClickListener {
+class ContactsItemsDialogFragment : DialogFragment() {
 
     interface OnSelectListener {
         fun onContactsSelected(contacts: ContactsItem?)
@@ -51,28 +65,34 @@ class ContactsItemsDialogFragment : DialogFragment(), DialogInterface.OnClickLis
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val items = getContactsItemsTitleArray()
-        val adapter = ArrayAdapter(requireActivity(), R.layout.dialog_list_item, android.R.id.text1, items)
-        return MaterialAlertDialogBuilder(requireActivity())
+        val activity = requireActivity()
+        val items = contactsItems.orEmpty()
+
+        val view = ComposeView(activity).apply {
+            setContent {
+                MaterialTheme {
+                    Surface(color = Color.Transparent) {
+                        ContactsItemsList(
+                            items = items,
+                            onItemClick = { contact ->
+                                listener?.onContactsSelected(contact)
+                                dismiss()
+                            }
+                        )
+                    }
+                }
+            }
+        }
+
+        return MaterialAlertDialogBuilder(activity)
             .setTitle(R.string.action_select_contacts)
-            .setAdapter(adapter, this)
+            .setView(view)
             .create()
-    }
-
-    override fun onClick(dialog: DialogInterface, which: Int) {
-        val currentListener = listener ?: return
-        val contacts = if (which != DialogInterface.BUTTON_NEGATIVE) contactsItems?.get(which) else null
-        currentListener.onContactsSelected(contacts)
-    }
-
-    private fun getContactsItemsTitleArray(): Array<CharSequence?> {
-        val list = contactsItems ?: return arrayOf()
-        return Array(list.size) { i -> list[i].name }
     }
 
     companion object {
         private const val KEY_CONTACTS_ITEMS = "contacts_items"
-        private const val TAG = "ContactsGroupDialogFragment"
+        private const val TAG = "ContactsItemsDialogFragment"
 
         @JvmStatic
         fun newInstance(contactsList: List<ContactsItem>): ContactsItemsDialogFragment {
@@ -87,6 +107,31 @@ class ContactsItemsDialogFragment : DialogFragment(), DialogInterface.OnClickLis
         fun showDialog(activity: FragmentActivity, contactsList: List<ContactsItem>) {
             val manager = activity.supportFragmentManager
             newInstance(contactsList).show(manager, TAG)
+        }
+    }
+}
+
+@Composable
+private fun ContactsItemsList(
+    items: List<ContactsItem>,
+    onItemClick: (ContactsItem) -> Unit
+) {
+    LazyColumn {
+        items(items) { contact ->
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onItemClick(contact) }
+                    .heightIn(min = 48.dp)
+                    .padding(horizontal = 24.dp),
+                contentAlignment = Alignment.CenterStart
+            ) {
+                Text(
+                    text = contact.name.orEmpty(),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
         }
     }
 }
