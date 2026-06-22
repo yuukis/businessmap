@@ -544,13 +544,14 @@ private fun ContactsSearchField(
     // shape, tokens for colors) used inside SearchBar/DockedSearchBar. We
     // only want that standard look, not the expand-into-suggestions
     // behavior, so expanded/onExpandedChange are wired to no-ops.
+    val focusManager = LocalFocusManager.current
     SearchBarDefaults.InputField(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp),
         query = query,
         onQueryChange = onQueryChange,
-        onSearch = {},
+        onSearch = { focusManager.clearFocus(force = true) },
         expanded = false,
         onExpandedChange = {},
         placeholder = { Text(stringResource(R.string.hint_searchview)) },
@@ -558,7 +559,10 @@ private fun ContactsSearchField(
         trailingIcon = {
             if (query.isNotEmpty()) {
                 IconButton(onClick = { onQueryChange("") }) {
-                    Icon(Icons.Default.Clear, contentDescription = null)
+                    Icon(
+                        Icons.Default.Clear,
+                        contentDescription = stringResource(R.string.action_clear_search),
+                    )
                 }
             }
         },
