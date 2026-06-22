@@ -78,7 +78,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentContainerView
 import androidx.fragment.app.FragmentManager
-import androidx.fragment.app.commit
+import androidx.fragment.app.commitNow
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -492,19 +492,23 @@ private fun BoxScope.ContactsListPanel(
  * [container] right now.
  *
  * Compose can hand us a brand-new [container] instance without ever
- * destroying the previous Fragment through FragmentManager - this happens
- * both after an Activity recreation (e.g. screen rotation, where a new
- * AndroidView container is created before FragmentManager's restored
- * Fragment gets a chance to attach to it) and when this composable is
- * removed and re-added within the same Activity (e.g. the contacts list
- * panel's AnimatedVisibility disposing the AndroidView on close, which
- * detaches the Fragment's old view without telling FragmentManager). In
- * both cases `fragment.view` can be non-null while still pointing at a
+ * destroying the previous Fragment through FragmentManager - e.g. after an
+ * Activity recreation (screen rotation), where a new AndroidView container
+ * is created before FragmentManager's restored Fragment gets a chance to
+ * attach to it. `fragment.view` can be non-null while still pointing at a
  * view that is no longer attached anywhere, so checking for null alone
  * isn't enough - we have to check it's still parented by *this* container.
  * Recreating the Fragment is safe here because both ContactsMapFragment
  * and ContactsListFragment read all of their state from
  * MainActivityViewModel rather than their own instance state.
+ *
+ * Uses `commitNow` rather than `commit` deliberately: `commit` only
+ * enqueues the transaction for the next main-thread message, so a second
+ * call to this function (e.g. from a rapid follow-up recomposition) could
+ * run before that transaction has actually attached anything, see
+ * `existing == null` again, and enqueue a duplicate replace - thrashing
+ * the Fragment. Committing synchronously means the Fragment is fully
+ * attached by the time this function returns, so there's no such window.
  */
 private fun attachFragmentIfNeeded(
     fragmentManager: FragmentManager,
@@ -514,7 +518,7 @@ private fun attachFragmentIfNeeded(
 ) {
     val existing = fragmentManager.findFragmentById(containerId)
     if (existing == null || existing.view?.parent !== container) {
-        fragmentManager.commit {
+        fragmentManager.commitNow {
             replace(containerId, createFragment())
         }
     }
