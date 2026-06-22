@@ -6,7 +6,7 @@ import androidx.compose.ui.test.performClick
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.github.yuukis.businessmap.model.ContactsItem
-import org.junit.Before
+import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -16,11 +16,6 @@ class ContactsItemsDialogFragmentTest {
 
     @get:Rule
     val composeTestRule = createEmptyComposeRule()
-
-    @Before
-    fun grantRuntimePermissions() {
-        TestPermissions.grantContactsAndLocation()
-    }
 
     private fun newContactsList() = listOf(
         ContactsItem(
@@ -44,10 +39,12 @@ class ContactsItemsDialogFragmentTest {
     )
 
     @Test
-    fun showsAllContactsAndSelectingOneDismissesTheDialog() {
-        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+    fun showsAllContactsAndSelectingOneNotifiesListenerAndDismissesTheDialog() {
+        val contactsList = newContactsList()
+
+        ActivityScenario.launch(FakeContactsSelectListenerActivity::class.java).use { scenario ->
             scenario.onActivity { activity ->
-                ContactsItemsDialogFragment.showDialog(activity, newContactsList())
+                ContactsItemsDialogFragment.showDialog(activity, contactsList)
                 activity.supportFragmentManager.executePendingTransactions()
             }
             composeTestRule.waitForIdle()
@@ -59,6 +56,11 @@ class ContactsItemsDialogFragmentTest {
             composeTestRule.waitForIdle()
 
             composeTestRule.onNodeWithText("Taro Yamada").assertDoesNotExist()
+
+            scenario.onActivity { activity ->
+                assertEquals(1, activity.selectionCallbackCount)
+                assertEquals(contactsList[0], activity.selectedContacts)
+            }
         }
     }
 }
