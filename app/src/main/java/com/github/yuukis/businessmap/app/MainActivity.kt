@@ -20,10 +20,10 @@ package com.github.yuukis.businessmap.app
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.view.KeyEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -171,20 +171,6 @@ class MainActivity : AppCompatActivity(),
         viewModel.cancelContactsTask()
     }
 
-    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
-        if (event.action == KeyEvent.ACTION_DOWN) {
-            when (event.keyCode) {
-                KeyEvent.KEYCODE_BACK -> {
-                    if (viewModel.isContactsListVisible.value) {
-                        viewModel.setContactsListVisible(false)
-                        return true
-                    }
-                }
-            }
-        }
-        return super.dispatchKeyEvent(event)
-    }
-
     private fun mapFragment(): ContactsMapFragment? =
         supportFragmentManager.findFragmentById(R.id.contacts_map) as? ContactsMapFragment
 
@@ -277,6 +263,10 @@ private fun MainScreen(
     val selectedGroupIndex by viewModel.selectedGroupIndex.collectAsState()
     val isRunning by viewModel.isRunning.collectAsState()
     val isListVisible by viewModel.isContactsListVisible.collectAsState()
+
+    BackHandler(enabled = isListVisible) {
+        viewModel.setContactsListVisible(false)
+    }
 
     Scaffold(
         topBar = {
