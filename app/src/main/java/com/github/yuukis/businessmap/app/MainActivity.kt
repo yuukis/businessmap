@@ -586,11 +586,6 @@ private fun ContactsListRow(
     }
 }
 
-/**
- * Mirrors the kana/katakana-tolerant substring match that
- * `ContactsListFragment`'s `BaseAdapter.Filter` used to perform across the
- * contact's name, phonetic reading, and company name.
- */
 private fun filterContactsList(contactsList: List<ContactsItem>, query: String): List<ContactsItem> {
     if (query.isEmpty()) {
         return contactsList
