@@ -264,11 +264,6 @@ private fun MainScreen(
     val isRunning by viewModel.isRunning.collectAsState()
     val isListVisible by viewModel.isContactsListVisible.collectAsState()
 
-    // Handles the hardware back button, the 3-button nav back action, and
-    // the back gesture (including predictive back) uniformly - unlike
-    // overriding Activity.dispatchKeyEvent(KEYCODE_BACK), which only ever
-    // sees a real KeyEvent and would silently stop working if this app
-    // later opts into predictive back (android:enableOnBackInvokedCallback).
     BackHandler(enabled = isListVisible) {
         viewModel.setContactsListVisible(false)
     }
