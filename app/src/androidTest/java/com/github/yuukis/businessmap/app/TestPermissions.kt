@@ -13,14 +13,39 @@ internal object TestPermissions {
      * focused.
      */
     fun grantContactsAndLocation() {
-        val packageName = InstrumentationRegistry.getInstrumentation().targetContext.packageName
-        val automation = InstrumentationRegistry.getInstrumentation().uiAutomation
+        forEachPermission { permission ->
+            uiAutomation().executeShellCommand("pm grant ${packageName()} $permission").close()
+        }
+    }
+
+    /**
+     * Revoking a dangerous permission from a process that is still holding
+     * resources backed by it (an open ContentProvider connection, a location
+     * callback, etc.) can make the platform kill that process to enforce the
+     * revoke. Since androidTest classes share one app process for the whole
+     * instrumentation run, leaving these granted after a test that actually
+     * exercised them (e.g. ContactsGroupDialogFragmentTest querying
+     * contacts) can crash a later, unrelated test (e.g.
+     * MainActivityPermissionTest) when IT revokes the same permissions.
+     * Call this from @After so each test leaves the process in a clean
+     * state for whichever test runs next.
+     */
+    fun revokeContactsAndLocation() {
+        forEachPermission { permission ->
+            uiAutomation().executeShellCommand("pm revoke ${packageName()} $permission").close()
+        }
+    }
+
+    private fun forEachPermission(action: (String) -> Unit) {
         for (permission in listOf(
             Manifest.permission.READ_CONTACTS,
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION
         )) {
-            automation.executeShellCommand("pm grant $packageName $permission").close()
+            action(permission)
         }
     }
+
+    private fun packageName() = InstrumentationRegistry.getInstrumentation().targetContext.packageName
+    private fun uiAutomation() = InstrumentationRegistry.getInstrumentation().uiAutomation
 }

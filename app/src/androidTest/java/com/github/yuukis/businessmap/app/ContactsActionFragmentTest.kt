@@ -8,6 +8,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.github.yuukis.businessmap.R
 import com.github.yuukis.businessmap.model.ContactsItem
+import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -24,6 +25,11 @@ class ContactsActionFragmentTest {
     @Before
     fun grantRuntimePermissions() {
         TestPermissions.grantContactsAndLocation()
+    }
+
+    @After
+    fun revokeRuntimePermissions() {
+        TestPermissions.revokeContactsAndLocation()
     }
 
     private fun newContact() = ContactsItem(

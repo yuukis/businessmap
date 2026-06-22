@@ -11,6 +11,7 @@ import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.github.yuukis.businessmap.R
+import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -27,6 +28,11 @@ class AboutDialogFragmentTest {
     @Before
     fun grantRuntimePermissions() {
         TestPermissions.grantContactsAndLocation()
+    }
+
+    @After
+    fun revokeRuntimePermissions() {
+        TestPermissions.revokeContactsAndLocation()
     }
 
     @Test

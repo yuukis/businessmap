@@ -8,6 +8,7 @@ import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.github.yuukis.businessmap.R
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
@@ -25,6 +26,11 @@ class ContactsGroupDialogFragmentTest {
     @Before
     fun grantRuntimePermissions() {
         TestPermissions.grantContactsAndLocation()
+    }
+
+    @After
+    fun revokeRuntimePermissions() {
+        TestPermissions.revokeContactsAndLocation()
     }
 
     @Test
