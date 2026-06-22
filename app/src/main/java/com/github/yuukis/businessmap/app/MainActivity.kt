@@ -42,7 +42,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Clear
@@ -59,9 +58,9 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -538,13 +537,19 @@ private fun ContactsSearchField(
     query: String,
     onQueryChange: (String) -> Unit,
 ) {
-    TextField(
+    // SearchBarDefaults.InputField is the standard M3 search field row (pill
+    // shape, tokens for colors) used inside SearchBar/DockedSearchBar. We
+    // only want that standard look, not the expand-into-suggestions
+    // behavior, so expanded/onExpandedChange are wired to no-ops.
+    SearchBarDefaults.InputField(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp),
-        value = query,
-        onValueChange = onQueryChange,
-        singleLine = true,
+        query = query,
+        onQueryChange = onQueryChange,
+        onSearch = {},
+        expanded = false,
+        onExpandedChange = {},
         placeholder = { Text(stringResource(R.string.hint_searchview)) },
         leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
         trailingIcon = {
@@ -554,18 +559,6 @@ private fun ContactsSearchField(
                 }
             }
         },
-        // M3 SearchBar's pill shape, by hand: TextField defaults to a
-        // square, underlined input, which doesn't read as a "search box"
-        // the way the original SearchView's rounded searchbar_background
-        // did.
-        shape = RoundedCornerShape(28.dp),
-        colors = TextFieldDefaults.colors(
-            focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent,
-            disabledIndicatorColor = Color.Transparent,
-            focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-        ),
     )
 }
 
