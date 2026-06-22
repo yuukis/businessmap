@@ -175,7 +175,6 @@ class MainActivity : AppCompatActivity(),
             when (event.keyCode) {
                 KeyEvent.KEYCODE_BACK -> {
                     if (viewModel.isContactsListVisible.value) {
-                        // バックキーを押下、連絡先一覧が表示されている場合は閉じる
                         viewModel.setContactsListVisible(false)
                         return true
                     }
