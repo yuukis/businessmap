@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--
+        Test-only Activities used as lightweight hosts by androidTest (see
+        FakeContactsSelectListenerActivity, FakeProgressDialogListenerActivity).
+        These must live in the app's own manifest (debug-only, so they never
+        ship in release) rather than androidTest/AndroidManifest.xml: a
+        component declared in the test APK's manifest belongs to the
+        "<applicationId>.test" package, but ActivityScenario.launch() resolves
+        against the app-under-test's own package, causing
+        "Intent ... resolved to different process" at runtime.
+    -->
+    <application>
+        <activity
+            android:name="com.github.yuukis.businessmap.app.FakeContactsSelectListenerActivity"
+            android:exported="false" />
+        <activity
+            android:name="com.github.yuukis.businessmap.app.FakeProgressDialogListenerActivity"
+            android:exported="false" />
+    </application>
+
+</manifest>
