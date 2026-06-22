@@ -20,11 +20,24 @@ package com.github.yuukis.businessmap.app
 import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle
-import android.widget.TextView
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import androidx.fragment.app.DialogFragment
 import com.github.yuukis.businessmap.R
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.progressindicator.LinearProgressIndicator
 
 class ProgressDialogFragment : DialogFragment() {
 
@@ -32,9 +45,8 @@ class ProgressDialogFragment : DialogFragment() {
         fun onProgressCancelled()
     }
 
-    private var progressIndicator: LinearProgressIndicator? = null
-    private var progressCountView: TextView? = null
     private var max = 0
+    private val progressState = mutableIntStateOf(0)
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val args = requireArguments()
@@ -43,15 +55,20 @@ class ProgressDialogFragment : DialogFragment() {
 
         max = args.getInt(MAX)
         val title = args.getString(TITLE)
-        val message = args.getString(MESSAGE)
-        val view = layoutInflater.inflate(R.layout.dialog_progress, null)
-        view.findViewById<TextView>(R.id.textview_progress_message).text = message
-        progressIndicator = view.findViewById<LinearProgressIndicator>(R.id.progress_indicator).apply {
-            isIndeterminate = false
-            max = this@ProgressDialogFragment.max
-        }
-        progressCountView = view.findViewById<TextView>(R.id.textview_progress_count).apply {
-            text = getString(R.string.format_progress_count, 0, this@ProgressDialogFragment.max)
+        val message = args.getString(MESSAGE).orEmpty()
+
+        val view = ComposeView(requireContext()).apply {
+            setContent {
+                MaterialTheme {
+                    Surface(color = Color.Transparent) {
+                        ProgressContent(
+                            message = message,
+                            progress = progressState.intValue,
+                            max = max
+                        )
+                    }
+                }
+            }
         }
 
         val dialog = MaterialAlertDialogBuilder(requireActivity())
@@ -63,8 +80,7 @@ class ProgressDialogFragment : DialogFragment() {
     }
 
     fun updateProgress(value: Int) {
-        progressIndicator?.setProgressCompat(value, true)
-        progressCountView?.text = getString(R.string.format_progress_count, value, max)
+        progressState.intValue = value
     }
 
     override fun onCancel(dialog: DialogInterface) {
@@ -88,5 +104,32 @@ class ProgressDialogFragment : DialogFragment() {
         fun newInstance(): ProgressDialogFragment {
             return ProgressDialogFragment()
         }
+    }
+}
+
+@Composable
+private fun ProgressContent(message: String, progress: Int, max: Int) {
+    Column(
+        modifier = Modifier.padding(start = 24.dp, top = 8.dp, end = 24.dp, bottom = 16.dp)
+    ) {
+        Text(
+            text = message,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp)
+        )
+        LinearProgressIndicator(
+            progress = { if (max > 0) progress.toFloat() / max else 0f },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 8.dp)
+        )
+        Text(
+            text = stringResource(R.string.format_progress_count, progress, max),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.End,
+            modifier = Modifier.fillMaxWidth()
+        )
     }
 }
