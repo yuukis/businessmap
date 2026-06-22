@@ -515,7 +515,7 @@ private fun BoxScope.ContactsListPanel(
             }
         } else {
             LazyColumn(modifier = Modifier.fillMaxSize()) {
-                items(filteredList, key = { it.cid }) { contact ->
+                items(filteredList) { contact ->
                     ContactsListRow(
                         contact = contact,
                         onClick = {
