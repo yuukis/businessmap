@@ -38,8 +38,12 @@ class ContactsGroupDialogFragmentTest {
             val allContactsLabel = targetContext.getString(R.string.group_all_contacts)
             composeTestRule.onNodeWithText(allContactsLabel).assertExists()
             composeTestRule.onNodeWithText(allContactsLabel).performClick()
-            composeTestRule.waitForIdle()
 
+            // finish() drives the activity to DESTROYED asynchronously via the system process;
+            // waitForIdle() only settles Compose, so poll instead of asserting immediately.
+            composeTestRule.waitUntil(timeoutMillis = 5_000) {
+                scenario.state == Lifecycle.State.DESTROYED
+            }
             assertEquals(Lifecycle.State.DESTROYED, scenario.state)
         }
     }
