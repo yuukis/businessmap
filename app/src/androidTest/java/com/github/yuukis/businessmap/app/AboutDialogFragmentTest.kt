@@ -5,6 +5,9 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
+import com.github.yuukis.businessmap.R
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -15,6 +18,13 @@ class AboutDialogFragmentTest {
     @get:Rule
     val composeTestRule = createEmptyComposeRule()
 
+    private val targetContext get() = InstrumentationRegistry.getInstrumentation().targetContext
+
+    @Before
+    fun grantRuntimePermissions() {
+        TestPermissions.grantContactsAndLocation()
+    }
+
     @Test
     fun showsAppNameAndProvider() {
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
@@ -24,9 +34,9 @@ class AboutDialogFragmentTest {
             }
             composeTestRule.waitForIdle()
 
-            composeTestRule.onNodeWithText("Business Map").assertExists()
-            composeTestRule.onNodeWithText("Yuuki Shimizu").assertExists()
-            composeTestRule.onNodeWithText("Open source licenses").assertExists()
+            composeTestRule.onNodeWithText(targetContext.getString(R.string.app_name)).assertExists()
+            composeTestRule.onNodeWithText(targetContext.getString(R.string.provider)).assertExists()
+            composeTestRule.onNodeWithText(targetContext.getString(R.string.label_licenses)).assertExists()
         }
     }
 
@@ -39,10 +49,10 @@ class AboutDialogFragmentTest {
             }
             composeTestRule.waitForIdle()
 
-            composeTestRule.onNodeWithText("Open source licenses").performClick()
+            composeTestRule.onNodeWithText(targetContext.getString(R.string.label_licenses)).performClick()
             composeTestRule.waitForIdle()
 
-            composeTestRule.onNodeWithText("Business Map").assertDoesNotExist()
+            composeTestRule.onNodeWithText(targetContext.getString(R.string.app_name)).assertDoesNotExist()
         }
     }
 }
