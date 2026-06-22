@@ -83,6 +83,9 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     private val _isRunning = MutableStateFlow(false)
     val isRunning: StateFlow<Boolean> = _isRunning.asStateFlow()
 
+    private val _isContactsListVisible = MutableStateFlow(false)
+    val isContactsListVisible: StateFlow<Boolean> = _isContactsListVisible.asStateFlow()
+
     private val _progress = MutableStateFlow<GeocodingProgress?>(null)
     val progress: StateFlow<GeocodingProgress?> = _progress.asStateFlow()
 
@@ -132,6 +135,14 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
             }
         }
         return pendingNavigationIndex.takeIf { it in _groupList.value.indices } ?: 0
+    }
+
+    fun setContactsListVisible(visible: Boolean) {
+        _isContactsListVisible.value = visible
+    }
+
+    fun toggleContactsListVisible() {
+        _isContactsListVisible.value = !_isContactsListVisible.value
     }
 
     fun clearContactsListIfPermissionMissing() {
