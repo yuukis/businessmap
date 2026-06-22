@@ -20,6 +20,7 @@ class AboutDialogFragmentTest {
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             scenario.onActivity { activity ->
                 AboutDialogFragment.showDialog(activity)
+                activity.supportFragmentManager.executePendingTransactions()
             }
             composeTestRule.waitForIdle()
 
@@ -34,6 +35,7 @@ class AboutDialogFragmentTest {
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             scenario.onActivity { activity ->
                 AboutDialogFragment.showDialog(activity)
+                activity.supportFragmentManager.executePendingTransactions()
             }
             composeTestRule.waitForIdle()
 

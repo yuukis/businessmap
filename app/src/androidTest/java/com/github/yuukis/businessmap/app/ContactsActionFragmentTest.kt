@@ -31,6 +31,7 @@ class ContactsActionFragmentTest {
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             scenario.onActivity { activity ->
                 ContactsActionFragment.showDialog(activity, newContact())
+                activity.supportFragmentManager.executePendingTransactions()
             }
             composeTestRule.waitForIdle()
 
@@ -46,6 +47,7 @@ class ContactsActionFragmentTest {
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             scenario.onActivity { activity ->
                 ContactsActionFragment.showDialog(activity, newContact())
+                activity.supportFragmentManager.executePendingTransactions()
             }
             composeTestRule.waitForIdle()
 
