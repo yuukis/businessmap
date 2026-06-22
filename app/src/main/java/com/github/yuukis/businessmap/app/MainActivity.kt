@@ -64,6 +64,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -485,8 +486,10 @@ private fun BoxScope.ContactsListPanel(
 
     var query by rememberSaveable { mutableStateOf("") }
     val focusManager = LocalFocusManager.current
-    if (!visible) {
-        focusManager.clearFocus(force = true)
+    LaunchedEffect(visible) {
+        if (!visible) {
+            focusManager.clearFocus(force = true)
+        }
     }
 
     Column(
