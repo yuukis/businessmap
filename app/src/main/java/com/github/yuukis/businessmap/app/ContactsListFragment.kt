@@ -20,9 +20,6 @@ package com.github.yuukis.businessmap.app
 import android.os.Bundle
 import android.text.TextUtils
 import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
@@ -31,7 +28,6 @@ import android.widget.Filterable
 import android.widget.ListView
 import android.widget.TextView
 import androidx.appcompat.widget.SearchView
-import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.ListFragment
 import androidx.fragment.app.activityViewModels
 import com.github.yuukis.businessmap.R
@@ -52,7 +48,6 @@ class ContactsListFragment : ListFragment(), SearchView.OnQueryTextListener {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        setHasOptionsMenu(true)
         return inflater.inflate(R.layout.fragment_contacts_list, null)
     }
 
@@ -67,18 +62,6 @@ class ContactsListFragment : ListFragment(), SearchView.OnQueryTextListener {
         listAdapter = contactsAdapter
         applyEmptyText(getString(R.string.message_no_contacts))
         listView.isTextFilterEnabled = true
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.contacts_list, menu)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == R.id.action_contacts) {
-            setVisibility(!getVisibility())
-            return true
-        }
-        return false
     }
 
     override fun onListItemClick(l: ListView, v: View, position: Int, id: Long) {
@@ -125,23 +108,13 @@ class ContactsListFragment : ListFragment(), SearchView.OnQueryTextListener {
         contactsAdapter.notifyDataSetChanged()
     }
 
-    fun getVisibility(): Boolean {
-        val activity = activity as MainActivity
-        val drawerLayout = activity.findViewById<DrawerLayout>(R.id.drawer_layout)
-        val listContainer = activity.findViewById<View>(R.id.list_container)
-        return drawerLayout.isDrawerOpen(listContainer)
-    }
+    fun getVisibility(): Boolean = viewModel.isContactsListVisible.value
 
     fun setVisibility(visible: Boolean) {
-        val activity = activity as MainActivity
-        val drawerLayout = activity.findViewById<DrawerLayout>(R.id.drawer_layout)
-        val listContainer = activity.findViewById<View>(R.id.list_container)
-        if (visible) {
-            drawerLayout.openDrawer(listContainer)
-        } else {
+        if (!visible) {
             searchView.clearFocus()
-            drawerLayout.closeDrawer(listContainer)
         }
+        viewModel.setContactsListVisible(visible)
     }
 
     private fun applyEmptyText(text: CharSequence) {

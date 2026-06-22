@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!--
+        Stable container ids for Fragments hosted from Compose (MainActivity).
+        FragmentManager keys its saved state by container id across process
+        restarts, so these must stay as fixed resource ids rather than ids
+        generated at runtime.
+    -->
+    <item type="id" name="contacts_map" />
+    <item type="id" name="contacts_list" />
+    <item type="id" name="map_relative_layout" />
+
+</resources>
