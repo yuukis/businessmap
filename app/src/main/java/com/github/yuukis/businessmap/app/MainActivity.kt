@@ -401,7 +401,7 @@ private fun GroupDropdown(
             onValueChange = {},
             readOnly = true,
             singleLine = true,
-            textStyle = MaterialTheme.typography.titleMedium,
+            textStyle = MaterialTheme.typography.titleLarge,
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
             colors = ExposedDropdownMenuDefaults.textFieldColors(
                 focusedContainerColor = Color.Transparent,
