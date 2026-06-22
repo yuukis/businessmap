@@ -19,9 +19,23 @@ package com.github.yuukis.businessmap.app
 
 import android.app.Dialog
 import android.content.Context
-import android.content.DialogInterface
 import android.os.Bundle
-import android.widget.ArrayAdapter
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.unit.dp
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentActivity
 import com.github.yuukis.businessmap.R
@@ -29,7 +43,7 @@ import com.github.yuukis.businessmap.model.ContactsGroup
 import com.github.yuukis.businessmap.util.ContactUtils
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
-class ContactsGroupDialogFragment : DialogFragment(), DialogInterface.OnClickListener {
+class ContactsGroupDialogFragment : DialogFragment() {
 
     interface OnSelectListener {
         fun onContactsGroupSelected(group: ContactsGroup?)
@@ -47,23 +61,32 @@ class ContactsGroupDialogFragment : DialogFragment(), DialogInterface.OnClickLis
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val items = getContactsGroupTitleArray()
-        val adapter = ArrayAdapter(requireActivity(), R.layout.dialog_list_item, android.R.id.text1, items)
-        return MaterialAlertDialogBuilder(requireActivity())
+        val activity = requireActivity()
+        val groups = groupList
+
+        val view = ComposeView(activity).apply {
+            setContent {
+                MaterialTheme {
+                    Surface(color = Color.Transparent) {
+                        ContactsGroupList(
+                            groups = groups,
+                            onItemClick = { group ->
+                                listener?.onContactsGroupSelected(group)
+                                dismiss()
+                            }
+                        )
+                    }
+                }
+            }
+        }
+
+        return MaterialAlertDialogBuilder(activity)
             .setTitle(R.string.action_select_group)
-            .setAdapter(adapter, this)
-            .setNegativeButton(android.R.string.cancel, this)
+            .setView(view)
+            .setNegativeButton(android.R.string.cancel) { _, _ ->
+                listener?.onContactsGroupSelected(null)
+            }
             .create()
-    }
-
-    override fun onClick(dialog: DialogInterface, which: Int) {
-        val currentListener = listener ?: return
-        val group = if (which != DialogInterface.BUTTON_NEGATIVE) groupList[which] else null
-        currentListener.onContactsGroupSelected(group)
-    }
-
-    private fun getContactsGroupTitleArray(): Array<CharSequence?> {
-        return Array(groupList.size) { i -> groupList[i].title }
     }
 
     companion object {
@@ -78,6 +101,31 @@ class ContactsGroupDialogFragment : DialogFragment(), DialogInterface.OnClickLis
         fun showDialog(activity: FragmentActivity) {
             val manager = activity.supportFragmentManager
             newInstance().show(manager, TAG)
+        }
+    }
+}
+
+@Composable
+private fun ContactsGroupList(
+    groups: List<ContactsGroup>,
+    onItemClick: (ContactsGroup) -> Unit
+) {
+    LazyColumn {
+        items(groups) { group ->
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onItemClick(group) }
+                    .heightIn(min = 48.dp)
+                    .padding(horizontal = 24.dp),
+                contentAlignment = Alignment.CenterStart
+            ) {
+                Text(
+                    text = group.title.orEmpty(),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
         }
     }
 }
