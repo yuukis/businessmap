@@ -11,28 +11,26 @@ internal object TestPermissions {
      * and makes any ComposeView shown on top of it undiscoverable by
      * Compose Test. Granting them up front keeps MainActivity resumed and
      * focused.
+     *
+     * Uses UiAutomation.grantRuntimePermission()/revokeRuntimePermission()
+     * rather than shelling out to `pm grant`/`pm revoke`: those shell
+     * commands operate on the live, currently-instrumented app process from
+     * the outside and can crash it (the platform itself warns "is more
+     * robust and should be used instead of 'pm revoke'" when you do this).
      */
     fun grantContactsAndLocation() {
         forEachPermission { permission ->
-            uiAutomation().executeShellCommand("pm grant ${packageName()} $permission").close()
+            uiAutomation().grantRuntimePermission(packageName(), permission)
         }
     }
 
     /**
-     * Revoking a dangerous permission from a process that is still holding
-     * resources backed by it (an open ContentProvider connection, a location
-     * callback, etc.) can make the platform kill that process to enforce the
-     * revoke. Since androidTest classes share one app process for the whole
-     * instrumentation run, leaving these granted after a test that actually
-     * exercised them (e.g. ContactsGroupDialogFragmentTest querying
-     * contacts) can crash a later, unrelated test (e.g.
-     * MainActivityPermissionTest) when IT revokes the same permissions.
-     * Call this from @After so each test leaves the process in a clean
-     * state for whichever test runs next.
+     * See grantContactsAndLocation(). Call this from @After so each test
+     * leaves the process in a clean state for whichever test runs next.
      */
     fun revokeContactsAndLocation() {
         forEachPermission { permission ->
-            uiAutomation().executeShellCommand("pm revoke ${packageName()} $permission").close()
+            uiAutomation().revokeRuntimePermission(packageName(), permission)
         }
     }
 
