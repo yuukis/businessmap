@@ -35,6 +35,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Directions
 import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Streetview
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -58,7 +59,8 @@ private data class ContactsActionItem(val itemId: Int, val icon: ImageVector, va
 private val ACTION_ITEMS = listOf(
     ContactsActionItem(ContactsActionFragment.ID_SHOW_CONTACTS, Icons.Default.Person, R.string.action_contacts_detail),
     ContactsActionItem(ContactsActionFragment.ID_DIRECTION, Icons.Default.Directions, R.string.action_directions),
-    ContactsActionItem(ContactsActionFragment.ID_NAVIGATION, Icons.Default.Navigation, R.string.action_drive_navigation)
+    ContactsActionItem(ContactsActionFragment.ID_NAVIGATION, Icons.Default.Navigation, R.string.action_drive_navigation),
+    ContactsActionItem(ContactsActionFragment.ID_STREETVIEW, Icons.Default.Streetview, R.string.action_street_view)
 )
 
 class ContactsActionFragment : BottomSheetDialogFragment() {
@@ -94,6 +96,7 @@ class ContactsActionFragment : BottomSheetDialogFragment() {
             ID_SHOW_CONTACTS -> ActionUtils.doShowContact(context, item)
             ID_DIRECTION -> ActionUtils.doShowDirections(context, item)
             ID_NAVIGATION -> ActionUtils.doStartDriveNavigation(context, item)
+            ID_STREETVIEW -> ActionUtils.doShowStreetView(context, item)
         }
     }
 
@@ -103,6 +106,7 @@ class ContactsActionFragment : BottomSheetDialogFragment() {
         const val ID_SHOW_CONTACTS = 1
         const val ID_DIRECTION = 2
         const val ID_NAVIGATION = 3
+        const val ID_STREETVIEW = 4
 
         @JvmStatic
         fun newInstance(contact: ContactsItem): ContactsActionFragment {
