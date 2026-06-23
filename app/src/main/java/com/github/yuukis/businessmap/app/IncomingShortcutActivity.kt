@@ -25,6 +25,7 @@ import android.os.Bundle
 import androidx.fragment.app.FragmentActivity
 import com.github.yuukis.businessmap.R
 import com.github.yuukis.businessmap.model.ContactsGroup
+import com.github.yuukis.businessmap.util.IconUtils
 
 class IncomingShortcutActivity : FragmentActivity(), ContactsGroupDialogFragment.OnSelectListener {
 
@@ -54,9 +55,10 @@ class IncomingShortcutActivity : FragmentActivity(), ContactsGroupDialogFragment
         shortcutIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         shortcutIntent.putExtra(MainActivity.KEY_CONTACTS_GROUP_ID, groupId)
 
+        val iconBitmap = IconUtils.createInitialIconBitmap(shortcutTitle)
         val shortcutInfo = ShortcutInfo.Builder(this, "contacts_group_$groupId")
             .setShortLabel(shortcutTitle)
-            .setIcon(Icon.createWithResource(applicationContext, R.drawable.ic_launcher))
+            .setIcon(Icon.createWithBitmap(iconBitmap))
             .setIntent(shortcutIntent)
             .build()
         val shortcutManager = getSystemService(ShortcutManager::class.java)
