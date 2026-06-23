@@ -22,7 +22,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
-import android.location.Criteria
 import android.location.LocationManager
 import androidx.core.content.ContextCompat
 import com.google.android.gms.maps.model.CameraPosition
@@ -77,11 +76,7 @@ class MapStatePreferences(private val context: Context) {
 
         if (hasLocationPermission()) {
             val manager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-            val criteria = Criteria()
-            criteria.accuracy = Criteria.ACCURACY_FINE
-            manager.getBestProvider(criteria, true)
-            val provider = LocationManager.NETWORK_PROVIDER
-            val location = manager.getLastKnownLocation(provider)
+            val location = manager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
             if (location != null) {
                 lat = location.latitude
                 lng = location.longitude
