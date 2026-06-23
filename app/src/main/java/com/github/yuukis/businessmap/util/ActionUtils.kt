@@ -17,6 +17,7 @@
  */
 package com.github.yuukis.businessmap.util
 
+import android.content.ActivityNotFoundException
 import android.content.ContentUris
 import android.content.Context
 import android.content.Intent
@@ -38,7 +39,7 @@ object ActionUtils {
     fun doShowDirections(context: Context, contact: ContactsItem) {
         val uri = Uri.parse(
             String.format(
-                Locale.getDefault(),
+                Locale.US,
                 "http://maps.google.com/maps?saddr=&daddr=%f,%f",
                 contact.lat, contact.lng
             )
@@ -51,7 +52,7 @@ object ActionUtils {
     fun doStartDriveNavigation(context: Context, contact: ContactsItem) {
         val uri = Uri.parse(
             String.format(
-                Locale.getDefault(),
+                Locale.US,
                 "google.navigation:///?ll=%f,%f&q=%s",
                 contact.lat, contact.lng, contact.name
             )
@@ -61,20 +62,28 @@ object ActionUtils {
             "com.google.android.apps.maps",
             "com.google.android.maps.driveabout.app.NavigationActivity"
         )
-        context.startActivity(intent)
+        try {
+            context.startActivity(intent)
+        } catch (e: ActivityNotFoundException) {
+            // Google Maps is not installed; nothing we can do.
+        }
     }
 
     @JvmStatic
     fun doShowStreetView(context: Context, contact: ContactsItem) {
         val uri = Uri.parse(
             String.format(
-                Locale.getDefault(),
+                Locale.US,
                 "google.streetview:cbll=%f,%f",
                 contact.lat, contact.lng
             )
         )
         val intent = Intent(Intent.ACTION_VIEW, uri)
         intent.setPackage("com.google.android.apps.maps")
-        context.startActivity(intent)
+        try {
+            context.startActivity(intent)
+        } catch (e: ActivityNotFoundException) {
+            // Google Maps is not installed; nothing we can do.
+        }
     }
 }
