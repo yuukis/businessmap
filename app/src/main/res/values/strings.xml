@@ -32,5 +32,9 @@
     <string name="action_clear_search" translatable="false">Clear search</string>
     <string name="group_all_contacts" translatable="false">All contacts</string>
     <string name="desc_appicon" translatable="false">icon</string>
+    <string name="desc_close" translatable="false">Close</string>
+    <string name="desc_back" translatable="false">Back</string>
+    <string name="action_view_license_text" translatable="false">View full license text</string>
+    <string name="message_no_licenses" translatable="false">No third-party licenses.</string>
 
 </resources>
