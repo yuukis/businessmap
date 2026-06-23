@@ -8,7 +8,6 @@
         generated at runtime.
     -->
     <item type="id" name="contacts_map" />
-    <item type="id" name="contacts_list" />
     <item type="id" name="map_relative_layout" />
 
 </resources>
