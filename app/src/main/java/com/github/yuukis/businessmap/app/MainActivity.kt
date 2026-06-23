@@ -116,7 +116,7 @@ class MainActivity : AppCompatActivity(),
         super.onCreate(savedInstanceState)
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN)
         setContent {
-            MaterialTheme {
+            AppTheme {
                 MainScreen(
                     viewModel = viewModel,
                     fragmentManager = supportFragmentManager,
@@ -514,7 +514,7 @@ private fun BoxScope.ContactsListPanel(
             ) {
                 Text(
                     text = stringResource(R.string.message_no_contacts),
-                    color = Color(0xFF999999),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         } else {

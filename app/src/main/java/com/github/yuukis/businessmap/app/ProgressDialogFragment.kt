@@ -59,7 +59,7 @@ class ProgressDialogFragment : DialogFragment() {
 
         val view = ComposeView(requireContext()).apply {
             setContent {
-                MaterialTheme {
+                AppTheme {
                     Surface(color = Color.Transparent) {
                         ProgressContent(
                             message = message,

@@ -70,7 +70,7 @@ class ContactsItemsDialogFragment : DialogFragment() {
 
         val view = ComposeView(activity).apply {
             setContent {
-                MaterialTheme {
+                AppTheme {
                     Surface(color = Color.Transparent) {
                         ContactsItemsList(
                             items = items,

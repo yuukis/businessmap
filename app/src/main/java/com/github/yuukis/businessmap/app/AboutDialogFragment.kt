@@ -56,7 +56,7 @@ class AboutDialogFragment : DialogFragment() {
 
         val view = ComposeView(activity).apply {
             setContent {
-                MaterialTheme {
+                AppTheme {
                     Surface(color = Color.Transparent) {
                         AboutContent(
                             version = version,
