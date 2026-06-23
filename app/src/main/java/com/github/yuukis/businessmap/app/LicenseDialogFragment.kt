@@ -24,6 +24,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -118,6 +119,10 @@ class LicenseDialogFragment : DialogFragment() {
 private fun LicenseScreen(licenses: List<OssLicense>, onClose: () -> Unit) {
     var selectedIndex by rememberSaveable { mutableIntStateOf(-1) }
     val selected = licenses.getOrNull(selectedIndex)
+
+    BackHandler(enabled = selected != null) {
+        selectedIndex = -1
+    }
 
     Scaffold(
         topBar = {
