@@ -5,7 +5,7 @@
     <string name="provider" translatable="false">しみず ゆうき</string>
     <string name="action_list" translatable="false">連絡先一覧</string>
     <string name="action_about" translatable="false">このアプリについて</string>
-    <string name="label_licenses" translatable="false"><u>オープンソース ライセンス</u></string>
+    <string name="label_licenses" translatable="false">オープンソース ライセンス</string>
     <string name="title_licenses" translatable="false">オープンソース ライセンス</string>
     <string name="action_contacts_detail" translatable="false">連絡先を表示</string>
     <string name="action_directions" translatable="false">経路を調べる</string>
@@ -32,5 +32,6 @@
     <string name="action_clear_search" translatable="false">検索文字をクリア</string>
     <string name="group_all_contacts" translatable="false">すべての連絡先</string>
     <string name="desc_appicon" translatable="false">アイコン</string>
+    <string name="label_privacy_policy" translatable="false">プライバシーポリシー</string>
 
 </resources>

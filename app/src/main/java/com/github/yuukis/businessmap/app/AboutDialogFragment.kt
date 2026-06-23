@@ -18,8 +18,10 @@
 package com.github.yuukis.businessmap.app
 
 import android.app.Dialog
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.PackageManager.NameNotFoundException
+import android.net.Uri
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.Image
@@ -45,6 +47,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.FragmentActivity
 import com.github.yuukis.businessmap.R
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
@@ -60,7 +63,8 @@ class AboutDialogFragment : DialogFragment() {
                     Surface(color = Color.Transparent) {
                         AboutContent(
                             version = version,
-                            onLicensesClick = { LicenseDialogFragment.showDialog(activity) }
+                            onLicensesClick = { LicenseDialogFragment.showDialog(activity) },
+                            onPrivacyPolicyClick = { openPrivacyPolicy(activity) }
                         )
                     }
                 }
@@ -72,6 +76,11 @@ class AboutDialogFragment : DialogFragment() {
             .setView(view)
             .setPositiveButton(android.R.string.ok, null)
             .create()
+    }
+
+    private fun openPrivacyPolicy(activity: FragmentActivity) {
+        val url = activity.getString(R.string.url_privacy_policy)
+        activity.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
     }
 
     private fun getVersion(): String {
@@ -105,7 +114,8 @@ class AboutDialogFragment : DialogFragment() {
 @Composable
 private fun AboutContent(
     version: String,
-    onLicensesClick: () -> Unit
+    onLicensesClick: () -> Unit,
+    onPrivacyPolicyClick: () -> Unit
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -131,6 +141,16 @@ private fun AboutContent(
             modifier = Modifier
                 .padding(top = 20.dp)
                 .clickable(onClick = onLicensesClick)
+        )
+        Text(
+            text = stringResource(R.string.label_privacy_policy),
+            color = MaterialTheme.colorScheme.primary,
+            textDecoration = TextDecoration.Underline,
+            fontSize = 14.sp,
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .padding(top = 12.dp)
+                .clickable(onClick = onPrivacyPolicyClick)
         )
     }
 }
