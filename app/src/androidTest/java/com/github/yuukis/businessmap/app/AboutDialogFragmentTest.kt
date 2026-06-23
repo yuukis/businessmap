@@ -1,6 +1,7 @@
 package com.github.yuukis.businessmap.app
 
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.core.app.ActivityScenario
@@ -57,7 +58,9 @@ class AboutDialogFragmentTest {
 
             // LicenseDialogFragment is a separate Compose dialog stacked on top of
             // AboutDialogFragment; AboutDialogFragment is not dismissed underneath it.
-            composeTestRule.onNodeWithText(targetContext.getString(R.string.title_licenses)).assertExists()
+            // Both dialogs' titles share the same text ("Open source licenses"), so the
+            // list's testTag is used instead of text to identify the new dialog uniquely.
+            composeTestRule.onNodeWithTag("license_list").assertExists()
         }
     }
 }
