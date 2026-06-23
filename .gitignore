@@ -12,6 +12,9 @@
 bin/
 gen/
 
+# regenerated from current dependencies by the gradle-license-plugin on every build
+app/src/main/assets/open_source_licenses.json
+
 # Local configuration file (sdk path, etc)
 local.properties
 

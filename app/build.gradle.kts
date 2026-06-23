@@ -12,6 +12,7 @@ plugins {
     id("org.jetbrains.kotlin.android")
     alias(libs.plugins.ksp)
     alias(libs.plugins.kotlin.compose.compiler)
+    alias(libs.plugins.license)
 }
 
 android {
@@ -58,6 +59,20 @@ android {
     buildFeatures {
         compose = true
     }
+}
+
+licenseReport {
+    generateHtmlReport = false
+    generateJsonReport = true
+    generateCsvReport = false
+    copyJsonReportToAssets = true
+}
+
+// open_source_licenses.json (read by LicenseDialogFragment) must exist before the
+// app or its tests are assembled, since it is regenerated from current dependencies
+// on every build rather than committed to the repo.
+tasks.matching { it.name == "preBuild" }.configureEach {
+    dependsOn("licenseDebugReport", "licenseReleaseReport")
 }
 
 configurations.all {
