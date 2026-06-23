@@ -5,7 +5,7 @@
     <string name="provider" translatable="false">Yuuki Shimizu</string>
     <string name="action_list" translatable="false">List</string>
     <string name="action_about" translatable="false">About</string>
-    <string name="label_licenses" translatable="false"><u>Open source licenses</u></string>
+    <string name="label_licenses" translatable="false">Open source licenses</string>
     <string name="title_licenses" translatable="false">Open source licenses</string>
     <string name="action_contacts_detail" translatable="false">Show contacts</string>
     <string name="action_directions" translatable="false">Directions</string>
@@ -36,7 +36,7 @@
     <string name="desc_back" translatable="false">Back</string>
     <string name="action_view_license_text" translatable="false">View full license text</string>
     <string name="message_no_licenses" translatable="false">No third-party licenses.</string>
-    <string name="label_privacy_policy" translatable="false"><u>Privacy Policy</u></string>
+    <string name="label_privacy_policy" translatable="false">Privacy Policy</string>
     <string name="url_privacy_policy" translatable="false">https://yuukis.github.io/businessmap/privacy-policy.html</string>
 
 </resources>
