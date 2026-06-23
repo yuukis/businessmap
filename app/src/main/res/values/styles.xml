@@ -11,6 +11,7 @@
             res/values-vXX/styles.xml, while customizations related to
             backward-compatibility can go here.
         -->
+        <item name="android:windowLightStatusBar">true</item>
     </style>
 
     <!-- Application theme. -->
