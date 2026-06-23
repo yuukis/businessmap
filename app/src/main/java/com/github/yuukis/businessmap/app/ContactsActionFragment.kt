@@ -70,7 +70,7 @@ class ContactsActionFragment : BottomSheetDialogFragment() {
 
         return ComposeView(requireContext()).apply {
             setContent {
-                MaterialTheme {
+                AppTheme {
                     Surface {
                         ContactsActionContent(
                             contactName = contact?.name.orEmpty(),
