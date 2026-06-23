@@ -31,6 +31,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Directions
+import androidx.compose.material.icons.filled.Navigation
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -38,9 +42,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.integerResource
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.FragmentActivity
@@ -49,12 +53,12 @@ import com.github.yuukis.businessmap.model.ContactsItem
 import com.github.yuukis.businessmap.util.ActionUtils
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
-private data class ContactsActionItem(val itemId: Int, val iconId: Int, val titleId: Int)
+private data class ContactsActionItem(val itemId: Int, val icon: ImageVector, val titleId: Int)
 
 private val ACTION_ITEMS = listOf(
-    ContactsActionItem(ContactsActionFragment.ID_SHOW_CONTACTS, R.drawable.ic_action_person, R.string.action_contacts_detail),
-    ContactsActionItem(ContactsActionFragment.ID_DIRECTION, R.drawable.ic_action_directions, R.string.action_directions),
-    ContactsActionItem(ContactsActionFragment.ID_NAVIGATION, R.drawable.ic_action_navigation, R.string.action_drive_navigation)
+    ContactsActionItem(ContactsActionFragment.ID_SHOW_CONTACTS, Icons.Default.Person, R.string.action_contacts_detail),
+    ContactsActionItem(ContactsActionFragment.ID_DIRECTION, Icons.Default.Directions, R.string.action_directions),
+    ContactsActionItem(ContactsActionFragment.ID_NAVIGATION, Icons.Default.Navigation, R.string.action_drive_navigation)
 )
 
 class ContactsActionFragment : BottomSheetDialogFragment() {
@@ -157,7 +161,7 @@ private fun ContactsActionGridItem(
             .padding(horizontal = 8.dp)
     ) {
         Icon(
-            painter = painterResource(data.iconId),
+            imageVector = data.icon,
             contentDescription = stringResource(data.titleId),
             tint = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.size(64.dp)
