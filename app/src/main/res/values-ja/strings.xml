@@ -32,5 +32,6 @@
     <string name="action_clear_search" translatable="false">検索文字をクリア</string>
     <string name="group_all_contacts" translatable="false">すべての連絡先</string>
     <string name="desc_appicon" translatable="false">アイコン</string>
+    <string name="label_privacy_policy" translatable="false"><u>プライバシーポリシー</u></string>
 
 </resources>

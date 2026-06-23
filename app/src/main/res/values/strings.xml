@@ -36,5 +36,7 @@
     <string name="desc_back" translatable="false">Back</string>
     <string name="action_view_license_text" translatable="false">View full license text</string>
     <string name="message_no_licenses" translatable="false">No third-party licenses.</string>
+    <string name="label_privacy_policy" translatable="false"><u>Privacy Policy</u></string>
+    <string name="url_privacy_policy" translatable="false">https://yuukis.github.io/businessmap/privacy-policy.html</string>
 
 </resources>
