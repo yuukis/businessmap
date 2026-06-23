@@ -52,11 +52,15 @@ object GeocoderUtils {
                 1,
                 object : Geocoder.GeocodeListener {
                     override fun onGeocode(addresses: MutableList<Address>) {
-                        cont.resume(addresses)
+                        if (cont.isActive) {
+                            cont.resume(addresses)
+                        }
                     }
 
                     override fun onError(errorMessage: String?) {
-                        cont.resumeWithException(IOException(errorMessage))
+                        if (cont.isActive) {
+                            cont.resumeWithException(IOException(errorMessage ?: "Geocoding failed"))
+                        }
                     }
                 }
             )
