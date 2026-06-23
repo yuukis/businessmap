@@ -18,6 +18,9 @@
 package com.github.yuukis.businessmap.app
 
 import android.content.Intent
+import android.content.pm.ShortcutInfo
+import android.content.pm.ShortcutManager
+import android.graphics.drawable.Icon
 import android.os.Bundle
 import androidx.fragment.app.FragmentActivity
 import com.github.yuukis.businessmap.R
@@ -47,19 +50,21 @@ class IncomingShortcutActivity : FragmentActivity(), ContactsGroupDialogFragment
         }
 
         val shortcutIntent = Intent(applicationContext, MainActivity::class.java)
+        shortcutIntent.action = Intent.ACTION_VIEW
         shortcutIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         shortcutIntent.putExtra(MainActivity.KEY_CONTACTS_GROUP_ID, groupId)
 
-        val intent = Intent()
-        intent.putExtra(Intent.EXTRA_SHORTCUT_INTENT, shortcutIntent)
-        val iconResource = Intent.ShortcutIconResource.fromContext(
-            applicationContext, R.drawable.ic_launcher
-        )
-        // ホーム画面に設置した場合に表示されるアイコンの設定
-        intent.putExtra(Intent.EXTRA_SHORTCUT_ICON_RESOURCE, iconResource)
-        // ホーム画面に設置した場合に表示されるラベル名の設定
-        intent.putExtra(Intent.EXTRA_SHORTCUT_NAME, shortcutTitle)
+        val shortcutInfo = ShortcutInfo.Builder(this, "contacts_group_$groupId")
+            .setShortLabel(shortcutTitle)
+            .setIcon(Icon.createWithResource(applicationContext, R.drawable.ic_launcher))
+            .setIntent(shortcutIntent)
+            .build()
+        val shortcutManager = getSystemService(ShortcutManager::class.java)
+        if (shortcutManager == null) {
+            setResult(RESULT_CANCELED, null)
+            return
+        }
 
-        setResult(RESULT_OK, intent)
+        setResult(RESULT_OK, shortcutManager.createShortcutResultIntent(shortcutInfo))
     }
 }

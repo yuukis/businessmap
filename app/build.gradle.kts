@@ -21,7 +21,7 @@ android {
 
     defaultConfig {
         applicationId = "com.github.yuukis.businessmap"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 35
         versionCode = 224
         versionName = "1.4.0224"
