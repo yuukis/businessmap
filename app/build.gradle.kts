@@ -70,9 +70,13 @@ licenseReport {
 
 // open_source_licenses.json (read by LicenseDialogFragment) must exist before the
 // app or its tests are assembled, since it is regenerated from current dependencies
-// on every build rather than committed to the repo.
-tasks.matching { it.name == "preBuild" }.configureEach {
-    dependsOn("licenseDebugReport", "licenseReleaseReport")
+// on every build rather than committed to the repo. Wire each variant to only its
+// own report task: both debug and release report tasks copy to the same assets path,
+// so depending on both from a shared preBuild would race them against each other.
+listOf("Debug", "Release").forEach { variantName ->
+    tasks.matching { it.name == "pre${variantName}Build" }.configureEach {
+        dependsOn("license${variantName}Report")
+    }
 }
 
 configurations.all {
