@@ -49,6 +49,7 @@ class ContactsActionFragmentTest {
             composeTestRule.onNodeWithText(targetContext.getString(R.string.action_contacts_detail)).assertExists()
             composeTestRule.onNodeWithText(targetContext.getString(R.string.action_directions)).assertExists()
             composeTestRule.onNodeWithText(targetContext.getString(R.string.action_drive_navigation)).assertExists()
+            composeTestRule.onNodeWithText(targetContext.getString(R.string.action_street_view)).assertExists()
         }
     }
 
