@@ -48,6 +48,7 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.integerResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.core.os.BundleCompat
 import androidx.fragment.app.FragmentActivity
 import com.github.yuukis.businessmap.R
 import com.github.yuukis.businessmap.model.ContactsItem
@@ -72,7 +73,7 @@ class ContactsActionFragment : BottomSheetDialogFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        contact = requireArguments().getSerializable(KEY_CONTACTS) as? ContactsItem
+        contact = BundleCompat.getSerializable(requireArguments(), KEY_CONTACTS, ContactsItem::class.java)
 
         return ComposeView(requireContext()).apply {
             setContent {

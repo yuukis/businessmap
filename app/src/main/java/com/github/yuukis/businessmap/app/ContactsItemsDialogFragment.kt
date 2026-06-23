@@ -36,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.unit.dp
+import androidx.core.os.BundleCompat
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentActivity
 import com.github.yuukis.businessmap.R
@@ -60,7 +61,9 @@ class ContactsItemsDialogFragment : DialogFragment() {
         val args = arguments
         if (args != null && args.containsKey(KEY_CONTACTS_ITEMS)) {
             @Suppress("UNCHECKED_CAST")
-            contactsItems = args.get(KEY_CONTACTS_ITEMS) as? List<ContactsItem>
+            contactsItems = BundleCompat.getSerializable(
+                args, KEY_CONTACTS_ITEMS, Serializable::class.java
+            ) as? List<ContactsItem>
         }
     }
 
