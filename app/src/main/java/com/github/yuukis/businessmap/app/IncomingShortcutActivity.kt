@@ -60,6 +60,10 @@ class IncomingShortcutActivity : FragmentActivity(), ContactsGroupDialogFragment
             .setIntent(shortcutIntent)
             .build()
         val shortcutManager = getSystemService(ShortcutManager::class.java)
+        if (shortcutManager == null) {
+            setResult(RESULT_CANCELED, null)
+            return
+        }
 
         setResult(RESULT_OK, shortcutManager.createShortcutResultIntent(shortcutInfo))
     }
