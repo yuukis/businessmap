@@ -22,10 +22,6 @@ import com.github.yuukis.businessmap.model.OssLicense
 import org.json.JSONArray
 import org.json.JSONException
 
-/**
- * Reads `open_source_licenses.json`, which the gradle-license-plugin regenerates
- * from the app's current dependencies on every build (see app/build.gradle.kts).
- */
 object OssLicensesUtils {
 
     private const val FILEPATH = "open_source_licenses.json"
