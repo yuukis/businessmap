@@ -1,6 +1,7 @@
 package com.github.yuukis.businessmap.app
 
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.core.app.ActivityScenario
@@ -13,7 +14,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
-class AboutDialogFragmentTest {
+class LicenseDialogFragmentTest {
 
     @get:Rule
     val composeTestRule = createEmptyComposeRule()
@@ -26,38 +27,35 @@ class AboutDialogFragmentTest {
     }
 
     @Test
-    fun showsAppNameAndProvider() {
+    fun showsTitleAndAtLeastOneLicense() {
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             scenario.onActivity { activity ->
-                AboutDialogFragment.showDialog(activity)
+                LicenseDialogFragment.showDialog(activity)
                 activity.supportFragmentManager.executePendingTransactions()
             }
             composeTestRule.waitForIdle()
 
-            composeTestRule.onNodeWithText(targetContext.getString(R.string.app_name)).assertExists()
-            composeTestRule.onNodeWithText(targetContext.getString(R.string.provider)).assertExists()
-            composeTestRule.onNodeWithText(targetContext.getString(R.string.label_licenses)).assertExists()
+            composeTestRule.onNodeWithText(targetContext.getString(R.string.title_licenses)).assertExists()
+            composeTestRule.onNodeWithTag("license_item_0").assertExists()
         }
     }
 
     @Test
-    fun clickingLicensesOpensLicenseDialog() {
+    fun clickingItemShowsDetailAndBackReturnsToList() {
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             scenario.onActivity { activity ->
-                AboutDialogFragment.showDialog(activity)
+                LicenseDialogFragment.showDialog(activity)
                 activity.supportFragmentManager.executePendingTransactions()
             }
             composeTestRule.waitForIdle()
 
-            composeTestRule.onNodeWithText(targetContext.getString(R.string.label_licenses)).performClick()
-            scenario.onActivity { activity ->
-                activity.supportFragmentManager.executePendingTransactions()
-            }
+            composeTestRule.onNodeWithTag("license_item_0").performClick()
             composeTestRule.waitForIdle()
+            composeTestRule.onNodeWithTag("license_detail").assertExists()
 
-            // LicenseDialogFragment is a separate Compose dialog stacked on top of
-            // AboutDialogFragment; AboutDialogFragment is not dismissed underneath it.
-            composeTestRule.onNodeWithText(targetContext.getString(R.string.title_licenses)).assertExists()
+            composeTestRule.onNodeWithTag("license_nav_icon").performClick()
+            composeTestRule.waitForIdle()
+            composeTestRule.onNodeWithTag("license_item_0").assertExists()
         }
     }
 }
