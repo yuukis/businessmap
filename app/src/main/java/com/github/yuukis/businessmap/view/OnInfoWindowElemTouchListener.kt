@@ -6,8 +6,8 @@
 package com.github.yuukis.businessmap.view
 
 import android.graphics.drawable.Drawable
-import android.os.Build
 import android.os.Handler
+import android.os.Looper
 import android.view.MotionEvent
 import android.view.View
 import com.google.android.gms.maps.model.Marker
@@ -18,7 +18,7 @@ abstract class OnInfoWindowElemTouchListener(
     private val bgDrawablePressed: Drawable
 ) : View.OnTouchListener {
 
-    private val handler = Handler()
+    private val handler = Handler(Looper.getMainLooper())
 
     private var marker: Marker? = null
     private var pressed = false
@@ -66,14 +66,8 @@ abstract class OnInfoWindowElemTouchListener(
         }
     }
 
-    @Suppress("DEPRECATION")
     private fun setBackground(drawable: Drawable) {
-        val sdk = Build.VERSION.SDK_INT
-        if (sdk < Build.VERSION_CODES.JELLY_BEAN) {
-            view.setBackgroundDrawable(drawable)
-        } else {
-            view.background = drawable
-        }
+        view.background = drawable
     }
 
     private val confirmClickRunnable = Runnable {
