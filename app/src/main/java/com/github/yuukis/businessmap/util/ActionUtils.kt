@@ -63,4 +63,18 @@ object ActionUtils {
         )
         context.startActivity(intent)
     }
+
+    @JvmStatic
+    fun doShowStreetView(context: Context, contact: ContactsItem) {
+        val uri = Uri.parse(
+            String.format(
+                Locale.getDefault(),
+                "google.streetview:cbll=%f,%f",
+                contact.lat, contact.lng
+            )
+        )
+        val intent = Intent(Intent.ACTION_VIEW, uri)
+        intent.setPackage("com.google.android.apps.maps")
+        context.startActivity(intent)
+    }
 }
