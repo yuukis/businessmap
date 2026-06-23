@@ -12,6 +12,7 @@ plugins {
     id("org.jetbrains.kotlin.android")
     alias(libs.plugins.ksp)
     alias(libs.plugins.kotlin.compose.compiler)
+    alias(libs.plugins.license)
 }
 
 android {
@@ -57,6 +58,24 @@ android {
 
     buildFeatures {
         compose = true
+    }
+}
+
+licenseReport {
+    generateHtmlReport = false
+    generateJsonReport = true
+    generateCsvReport = false
+    copyJsonReportToAssets = true
+}
+
+// open_source_licenses.json (read by LicenseDialogFragment) must exist before the
+// app or its tests are assembled, since it is regenerated from current dependencies
+// on every build rather than committed to the repo. Wire each variant to only its
+// own report task: both debug and release report tasks copy to the same assets path,
+// so depending on both from a shared preBuild would race them against each other.
+listOf("Debug", "Release").forEach { variantName ->
+    tasks.matching { it.name == "pre${variantName}Build" }.configureEach {
+        dependsOn("license${variantName}Report")
     }
 }
 
