@@ -11,6 +11,7 @@
     <string name="action_directions" translatable="false">Directions</string>
     <string name="action_drive_navigation" translatable="false">Drive navigation</string>
     <string name="action_street_view" translatable="false">Street View</string>
+    <string name="action_register_contact" translatable="false">Register contact</string>
     <string name="action_select_group" translatable="false">Select group</string>
     <string name="action_select_contacts" translatable="false">Select contacts</string>
     <string name="label_app_name" translatable="false">Application Name</string>
@@ -25,6 +26,7 @@
     <string name="title_contacts_loaderror" translatable="false">Failed to load contacts</string>
     <string name="message_contacts_loaderror" translatable="false">Could not read your contacts. Please try again.</string>
     <string name="message_no_data" translatable="false">No data.</string>
+    <string name="message_geocoding_address" translatable="false">Getting address&#8230;</string>
     <string name="message_no_contacts" translatable="false">No contacts in this group.</string>
     <string name="message_other_items" translatable="false">%d other</string>
     <string name="format_progress_count" translatable="false">%1$d/%2$d</string>
