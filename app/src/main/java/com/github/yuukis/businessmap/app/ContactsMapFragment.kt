@@ -56,6 +56,7 @@ class ContactsMapFragment :
     GoogleMap.OnInfoWindowClickListener,
     GoogleMap.OnMapLongClickListener,
     GoogleMap.OnMapClickListener,
+    GoogleMap.OnMarkerClickListener,
     OnMapReadyCallback {
 
     private val viewModel: MainActivityViewModel by activityViewModels()
@@ -217,6 +218,17 @@ class ContactsMapFragment :
     }
 
     override fun onMapClick(latLng: LatLng) {
+        removeLongPressMarker()
+    }
+
+    override fun onMarkerClick(marker: Marker): Boolean {
+        if (marker != longPressMarker) {
+            removeLongPressMarker()
+        }
+        return false
+    }
+
+    private fun removeLongPressMarker() {
         longPressMarker?.remove()
         longPressMarker = null
         longPressAddress = null
@@ -232,6 +244,7 @@ class ContactsMapFragment :
         currentMap.setOnInfoWindowClickListener(this)
         currentMap.setOnMapLongClickListener(this)
         currentMap.setOnMapClickListener(this)
+        currentMap.setOnMarkerClickListener(this)
         currentMap.isIndoorEnabled = false
         if (hasLocationPermission()) {
             currentMap.isMyLocationEnabled = true
