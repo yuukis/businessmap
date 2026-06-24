@@ -52,7 +52,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import org.json.JSONException
 import java.io.FileNotFoundException
 import java.io.IOException
 
@@ -449,14 +448,6 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
                 MainActivityEvent.ShowError(
                     context.getString(R.string.title_geocoding_ioerror),
                     context.getString(R.string.message_geocoding_ioerror)
-                )
-            )
-            return
-        } catch (e: JSONException) {
-            _events.trySend(
-                MainActivityEvent.ShowError(
-                    context.getString(R.string.title_geocoding_jsonerror),
-                    context.getString(R.string.message_geocoding_jsonerror)
                 )
             )
             return

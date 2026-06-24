@@ -18,10 +18,10 @@ import androidx.test.espresso.intent.matcher.IntentMatchers.anyIntent
 import androidx.test.espresso.intent.matcher.IntentMatchers.hasAction
 import androidx.test.espresso.intent.matcher.IntentMatchers.hasComponent
 import androidx.test.espresso.intent.matcher.IntentMatchers.hasData
+import androidx.test.espresso.intent.matcher.IntentMatchers.hasExtra
 import androidx.test.espresso.intent.matcher.IntentMatchers.hasPackage
 import androidx.test.platform.app.InstrumentationRegistry
 import com.github.yuukis.businessmap.R
-import com.github.yuukis.businessmap.model.ContactsItem
 import org.hamcrest.Matcher
 import org.hamcrest.Matchers.allOf
 import org.junit.Before
@@ -30,42 +30,33 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
-class ContactsActionFragmentTest {
+class LocationActionFragmentTest {
 
     @get:Rule
     val composeTestRule = createEmptyComposeRule()
 
     private val targetContext get() = InstrumentationRegistry.getInstrumentation().targetContext
 
+    private val lat = 35.681236
+    private val lng = 139.767125
+    private val address = "Tokyo"
+
     @Before
     fun grantRuntimePermissions() {
         TestPermissions.grantContactsAndLocation()
     }
 
-    private fun newContact() = ContactsItem(
-        cid = 1L,
-        name = "Taro Yamada",
-        phonetic = null,
-        groupId = 0L,
-        address = "Tokyo",
-        note = null,
-        companyName = "ACME"
-    ).apply {
-        setLat(35.681236)
-        setLng(139.767125)
-    }
-
     @Test
-    fun showsContactNameAndActionItems() {
+    fun showsAddressAndActionItems() {
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             scenario.onActivity { activity ->
-                ContactsActionFragment.showDialog(activity, newContact())
+                LocationActionFragment.showDialog(activity, lat, lng, address)
                 activity.supportFragmentManager.executePendingTransactions()
             }
             composeTestRule.waitForIdle()
 
-            composeTestRule.onNodeWithText("Taro Yamada").assertExists()
-            composeTestRule.onNodeWithText(targetContext.getString(R.string.action_contacts_detail)).assertExists()
+            composeTestRule.onNodeWithText(address).assertExists()
+            composeTestRule.onNodeWithText(targetContext.getString(R.string.action_register_contact)).assertExists()
             composeTestRule.onNodeWithText(targetContext.getString(R.string.action_directions)).assertExists()
             composeTestRule.onNodeWithText(targetContext.getString(R.string.action_drive_navigation)).assertExists()
             composeTestRule.onNodeWithText(targetContext.getString(R.string.action_street_view)).assertExists()
@@ -73,12 +64,13 @@ class ContactsActionFragmentTest {
     }
 
     @Test
-    fun clickingShowContactsStartsContactViewIntent() {
+    fun clickingRegisterContactStartsContactInsertIntent() {
         verifyActionIntent(
-            R.string.action_contacts_detail,
+            R.string.action_register_contact,
             allOf(
-                hasAction(Intent.ACTION_VIEW),
-                hasData(Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_URI, "1"))
+                hasAction(Intent.ACTION_INSERT),
+                hasData(ContactsContract.Contacts.CONTENT_URI),
+                hasExtra(ContactsContract.Intents.Insert.POSTAL, address)
             )
         )
     }
@@ -100,7 +92,7 @@ class ContactsActionFragmentTest {
             R.string.action_drive_navigation,
             allOf(
                 hasAction(Intent.ACTION_VIEW),
-                hasData(Uri.parse("google.navigation:///?ll=35.681236,139.767125&q=Taro%20Yamada")),
+                hasData(Uri.parse("google.navigation:///?ll=35.681236,139.767125&q=Tokyo")),
                 hasComponent(
                     ComponentName(
                         "com.google.android.apps.maps",
@@ -130,7 +122,7 @@ class ContactsActionFragmentTest {
                 intending(anyIntent()).respondWith(ActivityResult(Activity.RESULT_OK, null))
 
                 scenario.onActivity { activity ->
-                    ContactsActionFragment.showDialog(activity, newContact())
+                    LocationActionFragment.showDialog(activity, lat, lng, address)
                     activity.supportFragmentManager.executePendingTransactions()
                 }
                 composeTestRule.waitForIdle()

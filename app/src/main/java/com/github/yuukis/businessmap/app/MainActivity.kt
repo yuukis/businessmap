@@ -101,7 +101,7 @@ import com.github.yuukis.businessmap.widget.MapWrapperLayout
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.launch
 
-class MainActivity : AppCompatActivity(),
+open class MainActivity : AppCompatActivity(),
     ProgressDialogFragment.ProgressDialogFragmentListener,
     ContactsItemsDialogFragment.OnSelectListener {
 
@@ -142,8 +142,11 @@ class MainActivity : AppCompatActivity(),
     }
 
     private fun hasContactsPermission(): Boolean {
-        return ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) ==
-            PackageManager.PERMISSION_GRANTED
+        return isPermissionGranted(Manifest.permission.READ_CONTACTS)
+    }
+
+    protected open fun isPermissionGranted(permission: String): Boolean {
+        return ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
     }
 
     private fun requestMissingPermissions() {
@@ -151,9 +154,7 @@ class MainActivity : AppCompatActivity(),
         if (!hasContactsPermission()) {
             missing.add(Manifest.permission.READ_CONTACTS)
         }
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) !=
-            PackageManager.PERMISSION_GRANTED
-        ) {
+        if (!isPermissionGranted(Manifest.permission.ACCESS_FINE_LOCATION)) {
             missing.add(Manifest.permission.ACCESS_FINE_LOCATION)
             missing.add(Manifest.permission.ACCESS_COARSE_LOCATION)
         }

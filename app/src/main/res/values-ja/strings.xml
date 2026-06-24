@@ -11,6 +11,7 @@
     <string name="action_directions" translatable="false">経路を調べる</string>
     <string name="action_drive_navigation" translatable="false">ナビを開始</string>
     <string name="action_street_view" translatable="false">ストリートビュー</string>
+    <string name="action_register_contact" translatable="false">連絡先に登録</string>
     <string name="action_select_group" translatable="false">グループを選択</string>
     <string name="action_select_contacts" translatable="false">連絡先を選択</string>
     <string name="label_app_name" translatable="false">アプリケーション名</string>
@@ -18,13 +19,14 @@
     <string name="label_version" translatable="false">バージョン</string>
     <string name="title_geocoding" translatable="false">しばらくお待ちください</string>
     <string name="title_geocoding_ioerror" translatable="false">ネットワークに接続できません</string>
-    <string name="title_geocoding_jsonerror" translatable="false">サーバ エラー</string>
     <string name="message_geocoding" translatable="false">新しく登録された住所を座標に変換しています&#8230;</string>
     <string name="message_geocoding_ioerror" translatable="false">ネットワークへの接続に失敗したため、住所から座標へ変換できませんでした。</string>
-    <string name="message_geocoding_jsonerror" translatable="false">サーバ エラーが発生したため、住所から座標へ変換できませんでした。しばらく経ってから再度実行してください。</string>
     <string name="title_contacts_loaderror" translatable="false">連絡先の取得に失敗しました</string>
     <string name="message_contacts_loaderror" translatable="false">連絡先を読み込めませんでした。もう一度お試しください。</string>
     <string name="message_no_data" translatable="false">(未登録)</string>
+    <string name="message_geocoding_address" translatable="false">住所を取得しています&#8230;</string>
+    <string name="message_geocoding_failed" translatable="false">住所の取得に失敗しました</string>
+    <string name="label_selected_location" translatable="false">選択した地点</string>
     <string name="message_no_contacts" translatable="false">このグループに連絡先はありません</string>
     <string name="message_other_items" translatable="false">他 %d 件</string>
     <string name="format_progress_count" translatable="false">%1$d/%2$d</string>

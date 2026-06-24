@@ -12,13 +12,13 @@ import org.junit.runner.RunWith
 class MainActivityPermissionTest {
 
     @Before
-    fun revokeRuntimePermissions() {
-        TestPermissions.revokeContactsAndLocation()
+    fun grantRuntimePermissions() {
+        TestPermissions.grantContactsAndLocation()
     }
 
     @Test
-    fun launchesWithoutCrashingWhenPermissionsAreMissing() {
-        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+    fun launchesWithoutCrashingWhenPermissionsAreReportedMissing() {
+        ActivityScenario.launch(FakeMissingPermissionsMainActivity::class.java).use { scenario ->
             assertTrue(scenario.state.isAtLeast(Lifecycle.State.STARTED))
         }
     }

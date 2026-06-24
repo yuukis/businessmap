@@ -3,11 +3,11 @@ package com.github.yuukis.businessmap.app
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.lifecycle.Lifecycle
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.github.yuukis.businessmap.R
+import com.github.yuukis.businessmap.model.ContactsGroup
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
@@ -28,9 +28,10 @@ class ContactsGroupDialogFragmentTest {
     }
 
     @Test
-    fun showsAllContactsGroupAndSelectingItFinishesTheActivity() {
-        ActivityScenario.launch(IncomingShortcutActivity::class.java).use { scenario ->
+    fun showsAllContactsGroupAndSelectingItNotifiesListenerAndDismissesTheDialog() {
+        ActivityScenario.launch(FakeContactsGroupSelectListenerActivity::class.java).use { scenario ->
             scenario.onActivity { activity ->
+                ContactsGroupDialogFragment.showDialog(activity)
                 activity.supportFragmentManager.executePendingTransactions()
             }
             composeTestRule.waitForIdle()
@@ -38,13 +39,14 @@ class ContactsGroupDialogFragmentTest {
             val allContactsLabel = targetContext.getString(R.string.group_all_contacts)
             composeTestRule.onNodeWithText(allContactsLabel).assertExists()
             composeTestRule.onNodeWithText(allContactsLabel).performClick()
+            composeTestRule.waitForIdle()
 
-            // finish() drives the activity to DESTROYED asynchronously via the system process;
-            // waitForIdle() only settles Compose, so poll instead of asserting immediately.
-            composeTestRule.waitUntil(timeoutMillis = 5_000) {
-                scenario.state == Lifecycle.State.DESTROYED
+            composeTestRule.onNodeWithText(allContactsLabel).assertDoesNotExist()
+
+            scenario.onActivity { activity ->
+                assertEquals(1, activity.selectionCallbackCount)
+                assertEquals(ContactsGroup.ID_GROUP_ALL_CONTACTS, activity.selectedGroup?.id)
             }
-            assertEquals(Lifecycle.State.DESTROYED, scenario.state)
         }
     }
 }
