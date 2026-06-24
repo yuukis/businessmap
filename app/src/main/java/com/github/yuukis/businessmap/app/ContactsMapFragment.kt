@@ -193,8 +193,7 @@ class ContactsMapFragment :
 
     override fun onMapLongClick(latLng: LatLng) {
         val currentMap = map ?: return
-        longPressMarker?.remove()
-        longPressAddress = null
+        removeLongPressMarker()
 
         val marker = currentMap.addMarker(
             MarkerOptions()
@@ -345,7 +344,7 @@ class ContactsMapFragment :
             if (marker == longPressMarker) {
                 tvTitle.text = marker.title
                 tvCompanyName.visibility = View.GONE
-                tvSnippet.text = null
+                tvSnippet.visibility = View.GONE
                 separator.visibility = View.GONE
                 tvNote.visibility = View.GONE
                 btnOtherCount?.visibility = View.GONE
@@ -368,6 +367,7 @@ class ContactsMapFragment :
 
                 val snippet = marker.snippet?.replace("[ 　]".toRegex(), "\n")
                 tvSnippet.text = snippet
+                tvSnippet.visibility = View.VISIBLE
 
                 val note = contacts.note
                 if (TextUtils.isEmpty(note)) {
