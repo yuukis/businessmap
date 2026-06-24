@@ -57,6 +57,8 @@ object GeocoderUtils {
             list?.firstOrNull()?.getAddressLine(0).orEmpty()
         } catch (e: IOException) {
             ""
+        } catch (e: IllegalArgumentException) {
+            ""
         }
     }
 
