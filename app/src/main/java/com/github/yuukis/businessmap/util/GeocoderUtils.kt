@@ -44,6 +44,72 @@ object GeocoderUtils {
     private fun getFromLocationNameSync(context: Context, address: String): List<Address>? =
         Geocoder(context, Locale.getDefault()).getFromLocationName(address, 1)
 
+    @JvmStatic
+    suspend fun getFromLocation(context: Context, lat: Double, lng: Double): String {
+        return try {
+            val list = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                getFromLocationAsync(context, lat, lng)
+            } else {
+                getFromLocationSync(context, lat, lng)
+            }
+            list?.firstOrNull()?.getAddressLine(0).orEmpty()
+        } catch (e: IOException) {
+            getFromLocationToGoogleMaps(lat, lng)
+        }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun getFromLocationSync(context: Context, lat: Double, lng: Double): List<Address>? =
+        Geocoder(context, Locale.getDefault()).getFromLocation(lat, lng, 1)
+
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    private suspend fun getFromLocationAsync(context: Context, lat: Double, lng: Double): List<Address> =
+        suspendCancellableCoroutine { cont ->
+            Geocoder(context, Locale.getDefault()).getFromLocation(
+                lat,
+                lng,
+                1,
+                object : Geocoder.GeocodeListener {
+                    override fun onGeocode(addresses: MutableList<Address>) {
+                        if (cont.isActive) {
+                            cont.resume(addresses)
+                        }
+                    }
+
+                    override fun onError(errorMessage: String?) {
+                        if (cont.isActive) {
+                            cont.resumeWithException(IOException(errorMessage ?: "Reverse geocoding failed"))
+                        }
+                    }
+                }
+            )
+        }
+
+    @Throws(IOException::class)
+    private fun getFromLocationToGoogleMaps(lat: Double, lng: Double): String {
+        val urlFormat = "https://maps.google.com/maps/api/geocode/json?latlng=%f,%f&ka&sensor=false"
+        val url = String.format(Locale.US, urlFormat, lat, lng)
+        val stringBuilder = StringBuilder()
+
+        val connection = URL(url).openConnection() as HttpURLConnection
+        try {
+            val stream = connection.inputStream
+            var b: Int
+            while (stream.read().also { b = it } != -1) {
+                stringBuilder.append(b.toChar())
+            }
+        } finally {
+            connection.disconnect()
+        }
+
+        return try {
+            val jsonObject = JSONObject(stringBuilder.toString())
+            (jsonObject.get("results") as JSONArray).getJSONObject(0).getString("formatted_address")
+        } catch (e: JSONException) {
+            ""
+        }
+    }
+
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     private suspend fun getFromLocationNameAsync(context: Context, address: String): List<Address> =
         suspendCancellableCoroutine { cont ->
