@@ -225,10 +225,19 @@ class ContactsMapFragment :
     }
 
     override fun onMarkerClick(marker: Marker): Boolean {
-        if (marker != longPressMarker) {
-            removeLongPressMarker()
+        if (marker == longPressMarker) {
+            return false
         }
-        return false
+
+        removeLongPressMarker()
+        markerContactHashMap[marker.hashCode()]?.let { contact ->
+            // Google Maps converts the InfoWindow view into an image while
+            // getInfoContents() is running. Load the contact photo before
+            // starting that conversion so the first tap can render it too.
+            contactPhotoLoader.loadThumbnail(contact.cid)
+        }
+        marker.showInfoWindow()
+        return true
     }
 
     private fun removeLongPressMarker() {
