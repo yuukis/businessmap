@@ -25,11 +25,14 @@ import android.provider.ContactsContract.Contacts
 import android.util.LruCache
 import java.io.FileNotFoundException
 
-class ContactPhotoLoader(context: Context) {
+class ContactPhotoLoader internal constructor(
+    private val photoReader: (Long) -> Bitmap?
+) {
 
-    private val contentResolver = context.applicationContext.contentResolver
     private val bitmapCache = LruCache<Long, Bitmap>(MAX_CACHE_ENTRIES)
     private val contactsWithoutPhoto = HashSet<Long>()
+
+    constructor(context: Context) : this(createPhotoReader(context))
 
     fun loadThumbnail(contactId: Long): Bitmap? {
         bitmapCache[contactId]?.let { return it }
@@ -37,15 +40,7 @@ class ContactPhotoLoader(context: Context) {
             return null
         }
 
-        val contactUri = ContentUris.withAppendedId(Contacts.CONTENT_URI, contactId)
-        val bitmap = try {
-            Contacts.openContactPhotoInputStream(contentResolver, contactUri, false)
-                ?.use(BitmapFactory::decodeStream)
-        } catch (_: FileNotFoundException) {
-            null
-        } catch (_: SecurityException) {
-            null
-        }
+        val bitmap = photoReader(contactId)
 
         if (bitmap == null) {
             contactsWithoutPhoto.add(contactId)
@@ -57,5 +52,20 @@ class ContactPhotoLoader(context: Context) {
 
     companion object {
         private const val MAX_CACHE_ENTRIES = 32
+
+        private fun createPhotoReader(context: Context): (Long) -> Bitmap? {
+            val contentResolver = context.applicationContext.contentResolver
+            return { contactId ->
+                val contactUri = ContentUris.withAppendedId(Contacts.CONTENT_URI, contactId)
+                try {
+                    Contacts.openContactPhotoInputStream(contentResolver, contactUri, false)
+                        ?.use(BitmapFactory::decodeStream)
+                } catch (_: FileNotFoundException) {
+                    null
+                } catch (_: SecurityException) {
+                    null
+                }
+            }
+        }
     }
 }
