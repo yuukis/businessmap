@@ -142,7 +142,9 @@ private fun AboutContent(
     onLicensesClick: () -> Unit,
     onPrivacyPolicyClick: () -> Unit
 ) {
-    val iconModifier = Modifier.size(72.dp)
+    val iconModifier = Modifier
+        .padding(vertical = 8.dp)
+        .size(72.dp)
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
