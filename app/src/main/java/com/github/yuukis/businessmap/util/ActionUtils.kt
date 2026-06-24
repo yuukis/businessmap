@@ -70,7 +70,7 @@ object ActionUtils {
             String.format(
                 Locale.US,
                 "google.navigation:///?ll=%f,%f&q=%s",
-                lat, lng, label
+                lat, lng, Uri.encode(label)
             )
         )
         val intent = Intent(Intent.ACTION_VIEW, uri)
