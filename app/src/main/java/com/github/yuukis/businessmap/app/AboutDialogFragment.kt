@@ -110,8 +110,10 @@ class AboutDialogFragment : DialogFragment() {
     }
 
     private fun drawableToBitmap(drawable: Drawable): Bitmap {
-        val width = drawable.intrinsicWidth.takeIf { it > 0 } ?: 432
-        val height = drawable.intrinsicHeight.takeIf { it > 0 } ?: 432
+        val context = requireContext()
+        val fallbackSizePx = (72f * context.resources.displayMetrics.density).toInt().coerceAtLeast(1)
+        val width = drawable.intrinsicWidth.takeIf { it > 0 } ?: fallbackSizePx
+        val height = drawable.intrinsicHeight.takeIf { it > 0 } ?: fallbackSizePx
         val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
         drawable.setBounds(0, 0, canvas.width, canvas.height)
