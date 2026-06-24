@@ -49,7 +49,6 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import kotlinx.coroutines.launch
-import java.io.IOException
 import java.util.Locale
 
 class ContactsMapFragment :
@@ -206,14 +205,10 @@ class ContactsMapFragment :
         marker.showInfoWindow()
 
         viewLifecycleOwner.lifecycleScope.launch {
-            val address = try {
-                GeocoderUtils.getFromLocation(requireContext(), latLng.latitude, latLng.longitude)
-            } catch (e: IOException) {
-                ""
-            }
+            val address = GeocoderUtils.getFromLocation(requireContext(), latLng.latitude, latLng.longitude)
             if (marker == longPressMarker) {
-                longPressAddress = address.ifEmpty { getString(R.string.message_no_data) }
-                marker.title = longPressAddress
+                longPressAddress = address
+                marker.title = address.ifEmpty { getString(R.string.message_geocoding_failed) }
                 if (marker.isInfoWindowShown) {
                     marker.showInfoWindow()
                 }

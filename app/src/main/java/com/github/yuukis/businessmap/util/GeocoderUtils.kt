@@ -54,7 +54,7 @@ object GeocoderUtils {
             }
             list?.firstOrNull()?.getAddressLine(0).orEmpty()
         } catch (e: IOException) {
-            getFromLocationToGoogleMaps(lat, lng)
+            ""
         }
     }
 
@@ -84,31 +84,6 @@ object GeocoderUtils {
                 }
             )
         }
-
-    @Throws(IOException::class)
-    private fun getFromLocationToGoogleMaps(lat: Double, lng: Double): String {
-        val urlFormat = "https://maps.google.com/maps/api/geocode/json?latlng=%f,%f&ka&sensor=false"
-        val url = String.format(Locale.US, urlFormat, lat, lng)
-        val stringBuilder = StringBuilder()
-
-        val connection = URL(url).openConnection() as HttpURLConnection
-        try {
-            val stream = connection.inputStream
-            var b: Int
-            while (stream.read().also { b = it } != -1) {
-                stringBuilder.append(b.toChar())
-            }
-        } finally {
-            connection.disconnect()
-        }
-
-        return try {
-            val jsonObject = JSONObject(stringBuilder.toString())
-            (jsonObject.get("results") as JSONArray).getJSONObject(0).getString("formatted_address")
-        } catch (e: JSONException) {
-            ""
-        }
-    }
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     private suspend fun getFromLocationNameAsync(context: Context, address: String): List<Address> =
