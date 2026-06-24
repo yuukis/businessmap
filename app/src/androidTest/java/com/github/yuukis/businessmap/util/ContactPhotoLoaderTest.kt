@@ -2,6 +2,7 @@ package com.github.yuukis.businessmap.util
 
 import android.graphics.Bitmap
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertSame
@@ -59,5 +60,20 @@ class ContactPhotoLoaderTest {
 
         assertEquals(0, result.getPixel(0, 0) ushr 24)
         assertEquals(0xff, result.getPixel(5, 5) ushr 24)
+    }
+
+    /**
+     * 非同期読み込みの完了後に、InfoWindowの再描画で利用できる画像がキャッシュされることを確認する。
+     */
+    @Test
+    fun cachesThumbnailLoadedAsynchronously() = runBlocking {
+        val expected = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
+        val loader = ContactPhotoLoader { expected }
+
+        assertNull(loader.getCachedThumbnail(1L))
+        loader.loadThumbnailAsync(1L)
+
+        assertSame(loader.getCachedThumbnail(1L), loader.loadThumbnail(1L))
+        assertEquals(true, loader.isLoadCompleted(1L))
     }
 }

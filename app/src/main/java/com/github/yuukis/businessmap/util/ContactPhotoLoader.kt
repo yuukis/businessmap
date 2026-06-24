@@ -28,6 +28,8 @@ import android.graphics.Paint
 import android.graphics.Shader
 import android.provider.ContactsContract.Contacts
 import android.util.LruCache
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.FileNotFoundException
 
 class ContactPhotoLoader internal constructor(
@@ -39,6 +41,18 @@ class ContactPhotoLoader internal constructor(
 
     constructor(context: Context) : this(createPhotoReader(context))
 
+    @Synchronized
+    fun getCachedThumbnail(contactId: Long): Bitmap? = bitmapCache[contactId]
+
+    @Synchronized
+    fun isLoadCompleted(contactId: Long): Boolean =
+        bitmapCache[contactId] != null || contactsWithoutPhoto.contains(contactId)
+
+    suspend fun loadThumbnailAsync(contactId: Long): Bitmap? = withContext(Dispatchers.IO) {
+        loadThumbnail(contactId)
+    }
+
+    @Synchronized
     fun loadThumbnail(contactId: Long): Bitmap? {
         bitmapCache[contactId]?.let { return it }
         if (contactsWithoutPhoto.contains(contactId)) {

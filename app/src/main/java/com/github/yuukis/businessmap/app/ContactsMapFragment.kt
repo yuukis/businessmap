@@ -175,12 +175,12 @@ class ContactsMapFragment :
                     }
 
                     override fun onFinish() {
-                        marker.showInfoWindow()
+                        showContactInfoWindow(marker)
                     }
                 }
             )
         } else {
-            marker.showInfoWindow()
+            showContactInfoWindow(marker)
         }
         return true
     }
@@ -230,14 +230,27 @@ class ContactsMapFragment :
         }
 
         removeLongPressMarker()
-        markerContactHashMap[marker.hashCode()]?.let { contact ->
-            // Google Maps converts the InfoWindow view into an image while
-            // getInfoContents() is running. Load the contact photo before
-            // starting that conversion so the first tap can render it too.
-            contactPhotoLoader.loadThumbnail(contact.cid)
-        }
-        marker.showInfoWindow()
+        showContactInfoWindow(marker)
         return true
+    }
+
+    private fun showContactInfoWindow(marker: Marker) {
+        marker.showInfoWindow()
+        loadContactPhotoAndRefreshInfoWindow(marker)
+    }
+
+    private fun loadContactPhotoAndRefreshInfoWindow(marker: Marker) {
+        val contact = markerContactHashMap[marker.hashCode()] ?: return
+        if (contactPhotoLoader.isLoadCompleted(contact.cid)) {
+            return
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            contactPhotoLoader.loadThumbnailAsync(contact.cid)
+            if (marker.isInfoWindowShown) {
+                marker.showInfoWindow()
+            }
+        }
     }
 
     private fun removeLongPressMarker() {
@@ -370,12 +383,15 @@ class ContactsMapFragment :
             }
 
             if (contacts != null) {
-                val photo = contactPhotoLoader.loadThumbnail(contacts.cid)
-                if (photo == null) {
+                val photo = contactPhotoLoader.getCachedThumbnail(contacts.cid)
+                if (photo != null) {
+                    contactPhoto.setImageBitmap(photo)
+                    contactPhoto.visibility = View.VISIBLE
+                } else if (contactPhotoLoader.isLoadCompleted(contacts.cid)) {
                     contactPhoto.setImageDrawable(null)
                     contactPhoto.visibility = View.GONE
                 } else {
-                    contactPhoto.setImageBitmap(photo)
+                    contactPhoto.setImageResource(R.drawable.contact_photo_placeholder)
                     contactPhoto.visibility = View.VISIBLE
                 }
 
