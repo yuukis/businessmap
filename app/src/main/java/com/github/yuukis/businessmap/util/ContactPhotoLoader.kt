@@ -28,6 +28,7 @@ import android.graphics.Paint
 import android.graphics.Shader
 import android.provider.ContactsContract.Contacts
 import android.util.LruCache
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.FileNotFoundException
@@ -38,35 +39,68 @@ class ContactPhotoLoader internal constructor(
 
     private val bitmapCache = LruCache<Long, Bitmap>(MAX_CACHE_ENTRIES)
     private val contactsWithoutPhoto = HashSet<Long>()
+    private val loadingContacts = HashMap<Long, CompletableDeferred<Bitmap?>>()
+    private val cacheLock = Any()
 
     constructor(context: Context) : this(createPhotoReader(context))
 
-    @Synchronized
-    fun getCachedThumbnail(contactId: Long): Bitmap? = bitmapCache[contactId]
-
-    @Synchronized
-    fun isLoadCompleted(contactId: Long): Boolean =
-        bitmapCache[contactId] != null || contactsWithoutPhoto.contains(contactId)
-
-    suspend fun loadThumbnailAsync(contactId: Long): Bitmap? = withContext(Dispatchers.IO) {
-        loadThumbnail(contactId)
+    fun getCachedThumbnail(contactId: Long): Bitmap? = synchronized(cacheLock) {
+        bitmapCache[contactId]
     }
 
-    @Synchronized
-    fun loadThumbnail(contactId: Long): Bitmap? {
-        bitmapCache[contactId]?.let { return it }
-        if (contactsWithoutPhoto.contains(contactId)) {
-            return null
+    fun isLoadCompleted(contactId: Long): Boolean = synchronized(cacheLock) {
+        bitmapCache[contactId] != null || contactsWithoutPhoto.contains(contactId)
+    }
+
+    suspend fun loadThumbnailAsync(contactId: Long): Bitmap? = withContext(Dispatchers.IO) {
+        val loadState = synchronized(cacheLock) {
+            bitmapCache[contactId]?.let { return@synchronized LoadState.Completed(it) }
+            if (contactsWithoutPhoto.contains(contactId)) {
+                return@synchronized LoadState.Completed(null)
+            }
+            loadingContacts[contactId]?.let { return@synchronized LoadState.InProgress(it, false) }
+
+            val deferred = CompletableDeferred<Bitmap?>()
+            loadingContacts[contactId] = deferred
+            LoadState.InProgress(deferred, true)
         }
 
-        val bitmap = photoReader(contactId)?.let(::cropToCircle)
+        when (loadState) {
+            is LoadState.Completed -> loadState.bitmap
+            is LoadState.InProgress -> {
+                if (!loadState.isOwner) {
+                    return@withContext loadState.result.await()
+                }
 
-        if (bitmap == null) {
-            contactsWithoutPhoto.add(contactId)
-        } else {
-            bitmapCache.put(contactId, bitmap)
+                try {
+                    val bitmap = photoReader(contactId)?.let(::cropToCircle)
+                    synchronized(cacheLock) {
+                        if (bitmap == null) {
+                            contactsWithoutPhoto.add(contactId)
+                        } else {
+                            bitmapCache.put(contactId, bitmap)
+                        }
+                        loadingContacts.remove(contactId)
+                    }
+                    loadState.result.complete(bitmap)
+                    bitmap
+                } catch (throwable: Throwable) {
+                    synchronized(cacheLock) {
+                        loadingContacts.remove(contactId)
+                    }
+                    loadState.result.completeExceptionally(throwable)
+                    throw throwable
+                }
+            }
         }
-        return bitmap
+    }
+
+    private sealed interface LoadState {
+        data class Completed(val bitmap: Bitmap?) : LoadState
+        data class InProgress(
+            val result: CompletableDeferred<Bitmap?>,
+            val isOwner: Boolean
+        ) : LoadState
     }
 
     companion object {

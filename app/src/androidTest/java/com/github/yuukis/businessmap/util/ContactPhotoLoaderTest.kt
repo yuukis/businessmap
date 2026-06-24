@@ -2,6 +2,8 @@ package com.github.yuukis.businessmap.util
 
 import android.graphics.Bitmap
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -16,7 +18,7 @@ class ContactPhotoLoaderTest {
      * 一度読み込んだ連絡先画像をキャッシュし、同じ連絡先で画像を再取得しないことを確認する。
      */
     @Test
-    fun cachesLoadedThumbnail() {
+    fun cachesLoadedThumbnail() = runBlocking {
         val expected = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
         var readCount = 0
         val loader = ContactPhotoLoader {
@@ -24,8 +26,8 @@ class ContactPhotoLoaderTest {
             expected
         }
 
-        val first = loader.loadThumbnail(1L)
-        val second = loader.loadThumbnail(1L)
+        val first = loader.loadThumbnailAsync(1L)
+        val second = loader.loadThumbnailAsync(1L)
 
         assertSame(first, second)
         assertEquals(1, readCount)
@@ -35,15 +37,15 @@ class ContactPhotoLoaderTest {
      * 画像未登録の連絡先も結果を記憶し、InfoWindowの再描画で問い合わせを繰り返さないことを確認する。
      */
     @Test
-    fun cachesMissingThumbnail() {
+    fun cachesMissingThumbnail() = runBlocking {
         var readCount = 0
         val loader = ContactPhotoLoader {
             readCount++
             null
         }
 
-        assertNull(loader.loadThumbnail(1L))
-        assertNull(loader.loadThumbnail(1L))
+        assertNull(loader.loadThumbnailAsync(1L))
+        assertNull(loader.loadThumbnailAsync(1L))
         assertEquals(1, readCount)
     }
 
@@ -73,7 +75,30 @@ class ContactPhotoLoaderTest {
         assertNull(loader.getCachedThumbnail(1L))
         loader.loadThumbnailAsync(1L)
 
-        assertSame(loader.getCachedThumbnail(1L), loader.loadThumbnail(1L))
+        assertSame(loader.getCachedThumbnail(1L), loader.loadThumbnailAsync(1L))
         assertEquals(true, loader.isLoadCompleted(1L))
+    }
+
+    /**
+     * 同じ連絡先の画像を同時に要求しても、Contacts Providerへの問い合わせが1回だけになることを確認する。
+     */
+    @Test
+    fun sharesConcurrentThumbnailLoad() = runBlocking {
+        val expected = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
+        var readCount = 0
+        val loader = ContactPhotoLoader {
+            synchronized(this) {
+                readCount++
+            }
+            Thread.sleep(100)
+            expected
+        }
+
+        val results = List(2) {
+            async { loader.loadThumbnailAsync(1L) }
+        }.awaitAll()
+
+        assertSame(results[0], results[1])
+        assertEquals(1, readCount)
     }
 }
