@@ -183,6 +183,7 @@ open class MainActivity : AppCompatActivity(),
 
     override fun onProgressCancelled() {
         viewModel.cancelContactsTask()
+        finish()
     }
 
     private fun mapFragment(): ContactsMapFragment? =

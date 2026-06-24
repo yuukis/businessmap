@@ -3,9 +3,13 @@ package com.github.yuukis.businessmap.app
 import android.os.Bundle
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.compose.ui.test.onNodeWithText
+import androidx.lifecycle.Lifecycle
 import androidx.test.core.app.ActivityScenario
+import androidx.test.espresso.Espresso.pressBackUnconditionally
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.fragment.app.FragmentActivity
 import org.junit.Assert.assertEquals
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -16,7 +20,12 @@ class ProgressDialogFragmentTest {
     @get:Rule
     val composeTestRule = createEmptyComposeRule()
 
-    private fun showDialog(activity: FakeProgressDialogListenerActivity, max: Int): ProgressDialogFragment {
+    @Before
+    fun grantRuntimePermissions() {
+        TestPermissions.grantContactsAndLocation()
+    }
+
+    private fun showDialog(activity: FragmentActivity, max: Int): ProgressDialogFragment {
         val fragment = ProgressDialogFragment.newInstance()
         fragment.arguments = Bundle().apply {
             putString(ProgressDialogFragment.TITLE, "Please wait")
@@ -67,6 +76,23 @@ class ProgressDialogFragmentTest {
             scenario.onActivity { activity ->
                 assertEquals(1, activity.cancelledCallbackCount)
             }
+        }
+    }
+
+    @Test
+    fun pressingBackOnProgressDialogFinishesMainActivity() {
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            scenario.onActivity { activity ->
+                showDialog(activity, max = 10)
+            }
+            composeTestRule.waitForIdle()
+
+            pressBackUnconditionally()
+
+            composeTestRule.waitUntil(timeoutMillis = 5_000) {
+                scenario.state == Lifecycle.State.DESTROYED
+            }
+            assertEquals(Lifecycle.State.DESTROYED, scenario.state)
         }
     }
 }
