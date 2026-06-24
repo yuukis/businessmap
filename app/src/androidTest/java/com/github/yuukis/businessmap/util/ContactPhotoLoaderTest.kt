@@ -86,8 +86,9 @@ class ContactPhotoLoaderTest {
     fun sharesConcurrentThumbnailLoad() = runBlocking {
         val expected = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
         var readCount = 0
+        val readCountLock = Any()
         val loader = ContactPhotoLoader {
-            synchronized(this) {
+            synchronized(readCountLock) {
                 readCount++
             }
             Thread.sleep(100)
