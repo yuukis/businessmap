@@ -111,7 +111,7 @@ object ActionUtils {
     }
 
     @JvmStatic
-    fun doRegisterContact(context: Context, lat: Double, lng: Double, address: String?) {
+    fun doRegisterContact(context: Context, address: String?) {
         val intent = Intent(Intent.ACTION_INSERT, Contacts.CONTENT_URI)
         intent.putExtra(Intents.Insert.POSTAL, address)
         intent.putExtra(Intents.Insert.POSTAL_TYPE, StructuredPostal.TYPE_WORK)

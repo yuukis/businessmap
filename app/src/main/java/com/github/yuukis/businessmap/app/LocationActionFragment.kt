@@ -83,7 +83,8 @@ class LocationActionFragment : BottomSheetDialogFragment() {
                 AppTheme {
                     Surface {
                         LocationActionContent(
-                            address = address.orEmpty(),
+                            title = address?.ifEmpty { stringResource(R.string.label_selected_location) }
+                                ?: stringResource(R.string.label_selected_location),
                             onActionClick = ::onActionClick
                         )
                     }
@@ -96,7 +97,7 @@ class LocationActionFragment : BottomSheetDialogFragment() {
         val context = requireActivity()
 
         when (itemId) {
-            ID_REGISTER_CONTACT -> ActionUtils.doRegisterContact(context, lat, lng, address)
+            ID_REGISTER_CONTACT -> ActionUtils.doRegisterContact(context, address)
             ID_DIRECTION -> ActionUtils.doShowDirections(context, lat, lng)
             ID_NAVIGATION -> ActionUtils.doStartDriveNavigation(context, lat, lng, address.orEmpty())
             ID_STREETVIEW -> ActionUtils.doShowStreetView(context, lat, lng)
@@ -135,12 +136,12 @@ class LocationActionFragment : BottomSheetDialogFragment() {
 
 @Composable
 private fun LocationActionContent(
-    address: String,
+    title: String,
     onActionClick: (itemId: Int) -> Unit
 ) {
     Column(modifier = Modifier.padding(bottom = 16.dp)) {
         Text(
-            text = address,
+            text = title,
             style = MaterialTheme.typography.titleLarge,
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.padding(start = 24.dp, top = 24.dp, end = 24.dp, bottom = 8.dp)

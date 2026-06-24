@@ -5,7 +5,9 @@ import android.location.Address
 import android.location.Geocoder
 import android.os.Build
 import androidx.annotation.RequiresApi
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -50,7 +52,7 @@ object GeocoderUtils {
             val list = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 getFromLocationAsync(context, lat, lng)
             } else {
-                getFromLocationSync(context, lat, lng)
+                withContext(Dispatchers.IO) { getFromLocationSync(context, lat, lng) }
             }
             list?.firstOrNull()?.getAddressLine(0).orEmpty()
         } catch (e: IOException) {

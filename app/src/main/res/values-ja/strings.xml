@@ -28,6 +28,7 @@
     <string name="message_no_data" translatable="false">(未登録)</string>
     <string name="message_geocoding_address" translatable="false">住所を取得しています&#8230;</string>
     <string name="message_geocoding_failed" translatable="false">住所の取得に失敗しました</string>
+    <string name="label_selected_location" translatable="false">選択した地点</string>
     <string name="message_no_contacts" translatable="false">このグループに連絡先はありません</string>
     <string name="message_other_items" translatable="false">他 %d 件</string>
     <string name="format_progress_count" translatable="false">%1$d/%2$d</string>
