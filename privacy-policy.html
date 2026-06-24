@@ -37,7 +37,9 @@
           <li><strong>Contacts</strong>: The App requests read access to your device contacts (name, address, phone number, etc.) via the READ_CONTACTS permission in order to display your contacts on a map. Contact data is processed only locally on your device while the App is running, and is never sent to or stored on any server operated by the Developer or any third party.</li>
           <li><strong>Location</strong>: The App uses approximate and precise location (ACCESS_COARSE_LOCATION / ACCESS_FINE_LOCATION) solely to show your current position on the map via the Google Maps SDK "My Location" feature. The App itself does not collect, store, or transmit your location.</li>
           <li><strong>Address geocoding</strong>: To convert the address registered for each contact into map coordinates (latitude/longitude), the address text is sent to the device's geocoding service or to the Google Geocoding API. The resulting coordinates are cached in a local database on your device to avoid repeated lookups; this cache does not contain any address or name information.</li>
+          <li><strong>Reverse geocoding</strong>: When you long-press a location on the map (for example, to register a new contact at that location), the App converts the tapped coordinates (latitude/longitude) into an address by sending them to the device's geocoding service. This reverse geocoding always uses the device's built-in geocoding service and does not fall back to any external HTTP API. The resulting address is shown only on screen and is not stored by the App.</li>
         </ul>
+        <p>When you choose to register a new contact from a long-pressed location, the App opens the device's standard Contacts app via an Android system intent, pre-filled with the address obtained above. The App itself does not write to your contacts and does not request the permission to do so; the new contact is created and stored by the Contacts app you choose.</p>
 
         <h4>2. Disclosure to Third Parties</h4>
         <p>The App uses Google Maps Platform (Google LLC) for map display and geocoding. As a result, address text and location data may be sent to Google. Please refer to Google's Privacy Policy for details on how Google handles this information.</p>
@@ -61,7 +63,8 @@
         <p>Developer: Yuuki Shimizu<br/>
         Email: <a href="mailto:yuuki@maxio.jp">yuuki@maxio.jp</a></p>
 
-        <p>Effective date: June 23, 2026</p>
+        <p>Effective date: June 23, 2026<br/>
+        Last updated: June 24, 2026</p>
 
         <hr/>
 
@@ -74,7 +77,9 @@
           <li><strong>連絡先情報</strong>：本アプリは、地図上に連絡先を表示する機能を提供するため、端末の連絡先（氏名・住所・電話番号等）への読み取りアクセス（READ_CONTACTS 権限）を要求します。連絡先情報は本アプリの実行中にのみ端末内で処理され、開発者または第三者のサーバーに送信・保存されることはありません。</li>
           <li><strong>位置情報</strong>：本アプリは、地図上に現在地を表示する機能のために、おおよその位置情報および正確な位置情報（ACCESS_COARSE_LOCATION・ACCESS_FINE_LOCATION 権限）を使用します。これは Google Maps SDK の現在地表示機能（マイロケーション）として利用されるものであり、本アプリが独自に位置情報を収集・保存・送信することはありません。</li>
           <li><strong>住所のジオコーディング</strong>：連絡先に登録された住所を地図上の座標（緯度・経度）に変換するため、住所の文字列を端末の位置情報サービスまたは Google のジオコーディング API に送信します。変換後の座標（緯度・経度）は、再変換の手間を省くため、端末内のデータベースにキャッシュとして保存されます。このキャッシュには住所や氏名等の連絡先情報は含まれません。</li>
+          <li><strong>逆ジオコーディング</strong>：地図上の地点を長押しした際（例：その地点を新規の連絡先として登録する場合など）、タップした座標（緯度・経度）を住所に変換するため、端末の位置情報サービスにその座標を送信します。この逆ジオコーディングは常に端末標準の位置情報サービスのみを利用し、外部のHTTP APIへフォールバックすることはありません。変換結果の住所は画面に表示するためにのみ使用され、本アプリが保存することはありません。</li>
         </ul>
+        <p>長押しした地点から新規連絡先を登録する場合、本アプリはAndroidの標準的なインテントを通じて端末の連絡先アプリを呼び出し、上記で取得した住所をあらかじめ入力した状態で連絡先の新規作成画面を開きます。本アプリ自身が連絡先データを書き込むことはなく、そのための権限も要求しません。新規連絡先の作成・保存は、利用者が選択した連絡先アプリによって行われます。</p>
 
         <h4>2. 第三者への提供</h4>
         <p>本アプリは地図表示およびジオコーディングのために Google Maps Platform（Google LLC）を利用しています。これに伴い、住所の文字列および位置情報が Google に送信される場合があります。Google における情報の取り扱いについては、Google のプライバシーポリシーをご確認ください。</p>
@@ -98,7 +103,8 @@
         <p>開発者：しみず ゆうき<br/>
         メールアドレス：<a href="mailto:yuuki@maxio.jp">yuuki@maxio.jp</a></p>
 
-        <p>制定日：2026年6月23日</p>
+        <p>制定日：2026年6月23日<br/>
+        最終更新日：2026年6月24日</p>
 
       </section>
     </div>
