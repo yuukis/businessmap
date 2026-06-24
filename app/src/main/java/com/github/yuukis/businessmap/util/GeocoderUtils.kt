@@ -21,7 +21,7 @@ object GeocoderUtils {
         val list = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             getFromLocationNameAsync(context, address)
         } else {
-            getFromLocationNameSync(context, address)
+            withContext(Dispatchers.IO) { getFromLocationNameSync(context, address) }
         }
         var lat = Double.NaN
         var lng = Double.NaN
