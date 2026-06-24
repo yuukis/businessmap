@@ -230,8 +230,11 @@ class ContactsMapFragment :
         }
 
         removeLongPressMarker()
-        showContactInfoWindow(marker)
-        return true
+        loadContactPhotoAndRefreshInfoWindow(marker)
+        // Let Google Maps perform its normal marker selection and initial
+        // InfoWindow display. Calling showInfoWindow() synchronously from this
+        // callback can race that internal processing and lose the first show.
+        return false
     }
 
     private fun showContactInfoWindow(marker: Marker) {
