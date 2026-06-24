@@ -16,6 +16,9 @@
             android:name="com.github.yuukis.businessmap.app.FakeMissingPermissionsMainActivity"
             android:exported="false" />
         <activity
+            android:name="com.github.yuukis.businessmap.app.FakeContactsGroupSelectListenerActivity"
+            android:exported="false" />
+        <activity
             android:name="com.github.yuukis.businessmap.app.FakeContactsSelectListenerActivity"
             android:exported="false" />
         <activity
