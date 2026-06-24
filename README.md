@@ -9,8 +9,9 @@ It is available on Google Play at https://play.google.com/store/apps/details?id=
 - Plots addresses from your phone's contacts on a Google Map
 - Groups contacts by their contact group and lets you filter the map by group
 - Shows contact details, directions, drive navigation, and Street View for a selected location
+- Long-press any point on the map to reverse-geocode it and register it as a new contact
 - Geocodes addresses and caches the results locally for faster, offline-friendly lookups
-- Creates a home screen shortcut for quick access to the map
+- Creates a home screen shortcut for a contact group, with an icon generated from the group's initial letter
 - Lists open source licenses used by the app
 
 ## Requirements
