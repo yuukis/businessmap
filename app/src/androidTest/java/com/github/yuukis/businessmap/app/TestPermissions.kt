@@ -24,16 +24,6 @@ internal object TestPermissions {
         }
     }
 
-    /**
-     * See grantContactsAndLocation(). Call this from @After so each test
-     * leaves the process in a clean state for whichever test runs next.
-     */
-    fun revokeContactsAndLocation() {
-        forEachPermission { permission ->
-            uiAutomation().revokeRuntimePermission(packageName(), permission)
-        }
-    }
-
     private fun forEachPermission(action: (String) -> Unit) {
         for (permission in listOf(
             Manifest.permission.READ_CONTACTS,
