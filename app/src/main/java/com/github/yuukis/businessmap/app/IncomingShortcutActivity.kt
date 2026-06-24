@@ -55,7 +55,7 @@ class IncomingShortcutActivity : FragmentActivity(), ContactsGroupDialogFragment
         shortcutIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         shortcutIntent.putExtra(MainActivity.KEY_CONTACTS_GROUP_ID, groupId)
 
-        val iconBitmap = IconUtils.createInitialIconBitmap(shortcutTitle)
+        val iconBitmap = IconUtils.createInitialIconBitmap(this, shortcutTitle)
         val shortcutInfo = ShortcutInfo.Builder(this, "contacts_group_$groupId")
             .setShortLabel(shortcutTitle)
             .setIcon(Icon.createWithBitmap(iconBitmap))
