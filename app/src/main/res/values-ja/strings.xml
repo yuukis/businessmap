@@ -11,7 +11,7 @@
     <string name="action_directions" translatable="false">経路を調べる</string>
     <string name="action_drive_navigation" translatable="false">ナビを開始</string>
     <string name="action_street_view" translatable="false">ストリートビュー</string>
-    <string name="action_register_contact" translatable="false">連絡先を登録</string>
+    <string name="action_register_contact" translatable="false">連絡先に登録</string>
     <string name="action_select_group" translatable="false">グループを選択</string>
     <string name="action_select_contacts" translatable="false">連絡先を選択</string>
     <string name="label_app_name" translatable="false">アプリケーション名</string>
