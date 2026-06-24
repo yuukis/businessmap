@@ -21,9 +21,13 @@ import android.app.Dialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.PackageManager.NameNotFoundException
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -39,8 +43,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
@@ -56,6 +62,7 @@ class AboutDialogFragment : DialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val activity = requireActivity()
         val version = getVersion()
+        val appIconBitmap = getRoundIconBitmap()
 
         val view = ComposeView(activity).apply {
             setContent {
@@ -63,6 +70,7 @@ class AboutDialogFragment : DialogFragment() {
                     Surface(color = Color.Transparent) {
                         AboutContent(
                             version = version,
+                            appIconBitmap = appIconBitmap,
                             onLicensesClick = { LicenseDialogFragment.showDialog(activity) },
                             onPrivacyPolicyClick = { openPrivacyPolicy(activity) }
                         )
@@ -95,6 +103,22 @@ class AboutDialogFragment : DialogFragment() {
         return version
     }
 
+    private fun getRoundIconBitmap(): ImageBitmap? {
+        val context = requireActivity()
+        val drawable = AppCompatResources.getDrawable(context, R.mipmap.ic_launcher_round) ?: return null
+        return drawableToBitmap(drawable).asImageBitmap()
+    }
+
+    private fun drawableToBitmap(drawable: Drawable): Bitmap {
+        val width = drawable.intrinsicWidth.takeIf { it > 0 } ?: 432
+        val height = drawable.intrinsicHeight.takeIf { it > 0 } ?: 432
+        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        drawable.setBounds(0, 0, canvas.width, canvas.height)
+        drawable.draw(canvas)
+        return bitmap
+    }
+
     companion object {
         private const val TAG = "AboutDialogFragment"
 
@@ -114,9 +138,12 @@ class AboutDialogFragment : DialogFragment() {
 @Composable
 private fun AboutContent(
     version: String,
+    appIconBitmap: ImageBitmap?,
     onLicensesClick: () -> Unit,
     onPrivacyPolicyClick: () -> Unit
 ) {
+    val iconModifier = Modifier.size(72.dp)
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
@@ -124,11 +151,14 @@ private fun AboutContent(
             .verticalScroll(rememberScrollState())
             .padding(16.dp)
     ) {
-        Image(
-            painter = painterResource(R.mipmap.ic_launcher_foreground),
-            contentDescription = stringResource(R.string.desc_appicon),
-            modifier = Modifier.size(108.dp)
-        )
+        if (appIconBitmap != null) {
+            Image(
+                bitmap = appIconBitmap,
+                contentDescription = stringResource(R.string.desc_appicon),
+                contentScale = ContentScale.Crop,
+                modifier = iconModifier
+            )
+        }
         AboutLabelValue(stringResource(R.string.label_app_name), stringResource(R.string.app_name))
         AboutLabelValue(stringResource(R.string.label_provider), stringResource(R.string.provider))
         AboutLabelValue(stringResource(R.string.label_version), version)
