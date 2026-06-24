@@ -21,6 +21,11 @@ import android.content.ContentUris
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.BitmapShader
+import android.graphics.Canvas
+import android.graphics.Matrix
+import android.graphics.Paint
+import android.graphics.Shader
 import android.provider.ContactsContract.Contacts
 import android.util.LruCache
 import java.io.FileNotFoundException
@@ -40,7 +45,7 @@ class ContactPhotoLoader internal constructor(
             return null
         }
 
-        val bitmap = photoReader(contactId)
+        val bitmap = photoReader(contactId)?.let(::cropToCircle)
 
         if (bitmap == null) {
             contactsWithoutPhoto.add(contactId)
@@ -52,6 +57,27 @@ class ContactPhotoLoader internal constructor(
 
     companion object {
         private const val MAX_CACHE_ENTRIES = 32
+
+        internal fun cropToCircle(source: Bitmap): Bitmap {
+            val size = minOf(source.width, source.height)
+            val result = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+            val shader = BitmapShader(source, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
+            val matrix = Matrix().apply {
+                setTranslate(
+                    (size - source.width) / 2f,
+                    (size - source.height) / 2f
+                )
+            }
+            shader.setLocalMatrix(matrix)
+
+            Canvas(result).drawCircle(
+                size / 2f,
+                size / 2f,
+                size / 2f,
+                Paint(Paint.ANTI_ALIAS_FLAG).apply { this.shader = shader }
+            )
+            return result
+        }
 
         private fun createPhotoReader(context: Context): (Long) -> Bitmap? {
             val contentResolver = context.applicationContext.contentResolver

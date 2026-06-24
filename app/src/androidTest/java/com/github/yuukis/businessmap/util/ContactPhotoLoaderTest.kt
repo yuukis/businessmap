@@ -23,8 +23,10 @@ class ContactPhotoLoaderTest {
             expected
         }
 
-        assertSame(expected, loader.loadThumbnail(1L))
-        assertSame(expected, loader.loadThumbnail(1L))
+        val first = loader.loadThumbnail(1L)
+        val second = loader.loadThumbnail(1L)
+
+        assertSame(first, second)
         assertEquals(1, readCount)
     }
 
@@ -42,5 +44,20 @@ class ContactPhotoLoaderTest {
         assertNull(loader.loadThumbnail(1L))
         assertNull(loader.loadThumbnail(1L))
         assertEquals(1, readCount)
+    }
+
+    /**
+     * 連絡先画像を円形に切り抜き、四隅が透明で中央に画像が残ることを確認する。
+     */
+    @Test
+    fun cropsThumbnailToCircle() {
+        val source = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888).apply {
+            eraseColor(0xffff0000.toInt())
+        }
+
+        val result = ContactPhotoLoader.cropToCircle(source)
+
+        assertEquals(0, result.getPixel(0, 0) ushr 24)
+        assertEquals(0xff, result.getPixel(5, 5) ushr 24)
     }
 }

@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:orientation="vertical" >
 
-    <com.google.android.material.imageview.ShapeableImageView
+    <ImageView
         android:id="@+id/contact_photo"
         android:layout_width="40dp"
         android:layout_height="40dp"
@@ -13,8 +12,7 @@
         android:layout_marginBottom="4dp"
         android:contentDescription="@null"
         android:scaleType="centerCrop"
-        android:visibility="gone"
-        app:shapeAppearanceOverlay="@style/ShapeAppearance.BusinessMap.Circle" />
+        android:visibility="gone" />
 
     <TextView
         android:id="@+id/title"
