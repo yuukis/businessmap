@@ -100,7 +100,7 @@ class ContactsActionFragmentTest {
             R.string.action_drive_navigation,
             allOf(
                 hasAction(Intent.ACTION_VIEW),
-                hasData(Uri.parse("google.navigation:///?ll=35.681236,139.767125&q=Taro Yamada")),
+                hasData(Uri.parse("google.navigation:///?ll=35.681236,139.767125&q=Taro%20Yamada")),
                 hasComponent(
                     ComponentName(
                         "com.google.android.apps.maps",
