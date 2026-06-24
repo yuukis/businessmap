@@ -30,9 +30,11 @@ import android.widget.Button
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import com.github.yuukis.businessmap.R
 import com.github.yuukis.businessmap.data.MapStatePreferences
 import com.github.yuukis.businessmap.model.ContactsItem
+import com.github.yuukis.businessmap.util.GeocoderUtils
 import com.github.yuukis.businessmap.view.OnInfoWindowElemTouchListener
 import com.github.yuukis.businessmap.widget.MapWrapperLayout
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -41,13 +43,21 @@ import com.google.android.gms.maps.GoogleMap.CancelableCallback
 import com.google.android.gms.maps.GoogleMap.InfoWindowAdapter
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import kotlinx.coroutines.launch
 import java.util.Locale
 
-class ContactsMapFragment : SupportMapFragment(), GoogleMap.OnInfoWindowClickListener, OnMapReadyCallback {
+class ContactsMapFragment :
+    SupportMapFragment(),
+    GoogleMap.OnInfoWindowClickListener,
+    GoogleMap.OnMapLongClickListener,
+    GoogleMap.OnMapClickListener,
+    GoogleMap.OnMarkerClickListener,
+    OnMapReadyCallback {
 
     private val viewModel: MainActivityViewModel by activityViewModels()
 
@@ -60,6 +70,8 @@ class ContactsMapFragment : SupportMapFragment(), GoogleMap.OnInfoWindowClickLis
     private val markerContactHashMap = SparseArray<ContactsItem>()
     private val latlngContactsHashMap = SparseArray<MutableList<ContactsItem>>()
     private lateinit var preferences: MapStatePreferences
+    private var longPressMarker: Marker? = null
+    private var longPressAddress: String? = null
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
@@ -170,8 +182,55 @@ class ContactsMapFragment : SupportMapFragment(), GoogleMap.OnInfoWindowClickLis
     }
 
     override fun onInfoWindowClick(marker: Marker) {
+        if (marker == longPressMarker) {
+            val position = marker.position
+            LocationActionFragment.showDialog(requireActivity(), position.latitude, position.longitude, longPressAddress)
+            return
+        }
         val contact = markerContactHashMap[marker.hashCode()] ?: return
         ContactsActionFragment.showDialog(requireActivity(), contact)
+    }
+
+    override fun onMapLongClick(latLng: LatLng) {
+        val currentMap = map ?: return
+        removeLongPressMarker()
+
+        val marker = currentMap.addMarker(
+            MarkerOptions()
+                .position(latLng)
+                .title(getString(R.string.message_geocoding_address))
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
+        ) ?: return
+        longPressMarker = marker
+        marker.showInfoWindow()
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            val address = GeocoderUtils.getFromLocation(requireContext(), latLng.latitude, latLng.longitude)
+            if (marker == longPressMarker) {
+                longPressAddress = address
+                marker.title = address.ifEmpty { getString(R.string.message_geocoding_failed) }
+                if (marker.isInfoWindowShown) {
+                    marker.showInfoWindow()
+                }
+            }
+        }
+    }
+
+    override fun onMapClick(latLng: LatLng) {
+        removeLongPressMarker()
+    }
+
+    override fun onMarkerClick(marker: Marker): Boolean {
+        if (marker != longPressMarker) {
+            removeLongPressMarker()
+        }
+        return false
+    }
+
+    private fun removeLongPressMarker() {
+        longPressMarker?.remove()
+        longPressMarker = null
+        longPressAddress = null
     }
 
     private fun getContactsList(): List<ContactsItem>? = viewModel.currentGroupContactsList.value
@@ -182,6 +241,9 @@ class ContactsMapFragment : SupportMapFragment(), GoogleMap.OnInfoWindowClickLis
         val position = preferences.getCameraPosition()
         currentMap.setInfoWindowAdapter(MyInfoWindowAdapter())
         currentMap.setOnInfoWindowClickListener(this)
+        currentMap.setOnMapLongClickListener(this)
+        currentMap.setOnMapClickListener(this)
+        currentMap.setOnMarkerClickListener(this)
         currentMap.isIndoorEnabled = false
         if (hasLocationPermission()) {
             currentMap.isMyLocationEnabled = true
@@ -279,6 +341,18 @@ class ContactsMapFragment : SupportMapFragment(), GoogleMap.OnInfoWindowClickLis
             val separator = view.findViewById<View>(R.id.separator)
             infoButtonListener?.setMarker(marker)
 
+            if (marker == longPressMarker) {
+                tvTitle.text = marker.title
+                tvCompanyName.visibility = View.GONE
+                tvSnippet.visibility = View.GONE
+                separator.visibility = View.GONE
+                tvNote.visibility = View.GONE
+                btnOtherCount?.visibility = View.GONE
+
+                mapWrapperLayout?.setMarkerWithInfoWindow(marker, view)
+                return view
+            }
+
             if (contacts != null) {
                 val title = marker.title
                 tvTitle.text = title
@@ -293,6 +367,7 @@ class ContactsMapFragment : SupportMapFragment(), GoogleMap.OnInfoWindowClickLis
 
                 val snippet = marker.snippet?.replace("[ 　]".toRegex(), "\n")
                 tvSnippet.text = snippet
+                tvSnippet.visibility = View.VISIBLE
 
                 val note = contacts.note
                 if (TextUtils.isEmpty(note)) {
