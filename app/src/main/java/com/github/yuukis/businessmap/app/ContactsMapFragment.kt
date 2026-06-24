@@ -43,6 +43,7 @@ import com.google.android.gms.maps.GoogleMap.CancelableCallback
 import com.google.android.gms.maps.GoogleMap.InfoWindowAdapter
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
@@ -199,6 +200,7 @@ class ContactsMapFragment :
             MarkerOptions()
                 .position(latLng)
                 .title(getString(R.string.message_geocoding_address))
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
         ) ?: return
         longPressMarker = marker
         marker.showInfoWindow()
