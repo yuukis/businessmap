@@ -125,9 +125,9 @@ private fun AboutContent(
             .padding(16.dp)
     ) {
         Image(
-            painter = painterResource(R.drawable.ic_launcher),
+            painter = painterResource(R.mipmap.ic_launcher_foreground),
             contentDescription = stringResource(R.string.desc_appicon),
-            modifier = Modifier.size(72.dp)
+            modifier = Modifier.size(108.dp)
         )
         AboutLabelValue(stringResource(R.string.label_app_name), stringResource(R.string.app_name))
         AboutLabelValue(stringResource(R.string.label_provider), stringResource(R.string.provider))
