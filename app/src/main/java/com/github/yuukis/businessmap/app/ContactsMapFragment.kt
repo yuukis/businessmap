@@ -27,6 +27,7 @@ import android.text.TextUtils
 import android.util.SparseArray
 import android.view.View
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.activityViewModels
@@ -34,6 +35,7 @@ import androidx.lifecycle.lifecycleScope
 import com.github.yuukis.businessmap.R
 import com.github.yuukis.businessmap.data.MapStatePreferences
 import com.github.yuukis.businessmap.model.ContactsItem
+import com.github.yuukis.businessmap.util.ContactPhotoLoader
 import com.github.yuukis.businessmap.util.GeocoderUtils
 import com.github.yuukis.businessmap.view.OnInfoWindowElemTouchListener
 import com.github.yuukis.businessmap.widget.MapWrapperLayout
@@ -70,12 +72,14 @@ class ContactsMapFragment :
     private val markerContactHashMap = SparseArray<ContactsItem>()
     private val latlngContactsHashMap = SparseArray<MutableList<ContactsItem>>()
     private lateinit var preferences: MapStatePreferences
+    private lateinit var contactPhotoLoader: ContactPhotoLoader
     private var longPressMarker: Marker? = null
     private var longPressAddress: String? = null
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         preferences = MapStatePreferences(requireActivity())
+        contactPhotoLoader = ContactPhotoLoader(requireContext())
         getMapAsync(this)
     }
 
@@ -334,6 +338,7 @@ class ContactsMapFragment :
 
             val view = infoWindow ?: return null
             val tvTitle = view.findViewById<TextView>(R.id.title)
+            val contactPhoto = view.findViewById<ImageView>(R.id.contact_photo)
             val tvCompanyName = view.findViewById<TextView>(R.id.company_name)
             val tvSnippet = view.findViewById<TextView>(R.id.snippet)
             val tvNote = view.findViewById<TextView>(R.id.note)
@@ -342,6 +347,8 @@ class ContactsMapFragment :
             infoButtonListener?.setMarker(marker)
 
             if (marker == longPressMarker) {
+                contactPhoto.setImageDrawable(null)
+                contactPhoto.visibility = View.GONE
                 tvTitle.text = marker.title
                 tvCompanyName.visibility = View.GONE
                 tvSnippet.visibility = View.GONE
@@ -354,6 +361,15 @@ class ContactsMapFragment :
             }
 
             if (contacts != null) {
+                val photo = contactPhotoLoader.loadThumbnail(contacts.cid)
+                if (photo == null) {
+                    contactPhoto.setImageDrawable(null)
+                    contactPhoto.visibility = View.GONE
+                } else {
+                    contactPhoto.setImageBitmap(photo)
+                    contactPhoto.visibility = View.VISIBLE
+                }
+
                 val title = marker.title
                 tvTitle.text = title
 
