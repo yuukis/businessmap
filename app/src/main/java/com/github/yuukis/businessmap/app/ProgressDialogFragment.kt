@@ -114,6 +114,7 @@ private fun ProgressContent(message: String, progress: Int, max: Int) {
     ) {
         Text(
             text = message,
+            color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 16.dp)
