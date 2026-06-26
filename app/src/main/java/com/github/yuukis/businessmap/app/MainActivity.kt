@@ -214,10 +214,9 @@ open class MainActivity : AppCompatActivity(),
         val args = intent.extras
 
         val savedNavigationIndex = savedInstanceState?.getInt(KEY_NAVIGATION_INDEX)
-        savedInstanceState
-            ?.getLong(KEY_OPENED_INFO_WINDOW_CONTACT_ID)
-            ?.takeIf { it != 0L }
-            ?.let { viewModel.setOpenedInfoWindowContactId(it) }
+        if (savedInstanceState?.containsKey(KEY_OPENED_INFO_WINDOW_CONTACT_ID) == true) {
+            viewModel.setOpenedInfoWindowContactId(savedInstanceState.getLong(KEY_OPENED_INFO_WINDOW_CONTACT_ID))
+        }
         val intentGroupId = if (savedInstanceState == null) {
             args?.takeIf { it.containsKey(KEY_CONTACTS_GROUP_ID) }?.getLong(KEY_CONTACTS_GROUP_ID)
         } else {

@@ -200,6 +200,7 @@ class ContactsMapFragment :
     override fun onMapLongClick(latLng: LatLng) {
         val currentMap = map ?: return
         removeLongPressMarker()
+        viewModel.setOpenedInfoWindowContactId(null)
 
         val marker = currentMap.addMarker(
             MarkerOptions()
