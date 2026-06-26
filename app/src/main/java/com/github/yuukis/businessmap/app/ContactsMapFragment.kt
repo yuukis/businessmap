@@ -162,6 +162,7 @@ class ContactsMapFragment :
             return false
         }
         val marker = contactMarkerHashMap[contact.hashCode()] ?: return false
+        removeLongPressMarker()
         if (animate) {
             currentMap.animateCamera(
                 CameraUpdateFactory.newCameraPosition(
