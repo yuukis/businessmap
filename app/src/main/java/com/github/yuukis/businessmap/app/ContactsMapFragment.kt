@@ -75,11 +75,13 @@ class ContactsMapFragment :
     private lateinit var contactPhotoLoader: ContactPhotoLoader
     private var longPressMarker: Marker? = null
     private var longPressAddress: String? = null
+    private var openedContactId: Long? = null
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         preferences = MapStatePreferences(requireActivity())
         contactPhotoLoader = ContactPhotoLoader(requireContext())
+        openedContactId = savedInstanceState?.getLong(KEY_OPENED_CONTACT_ID)?.takeIf { it != 0L }
         getMapAsync(this)
     }
 
@@ -98,6 +100,14 @@ class ContactsMapFragment :
             // failed) to draw markers for the current contacts list.
             // Draw them now that we actually have a map to draw on.
             notifyDataSetChanged()
+            restoreInfoWindowState()
+        }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        openedContactId?.let {
+            outState.putLong(KEY_OPENED_CONTACT_ID, it)
         }
     }
 
@@ -222,6 +232,7 @@ class ContactsMapFragment :
 
     override fun onMapClick(latLng: LatLng) {
         removeLongPressMarker()
+        openedContactId = null
     }
 
     override fun onMarkerClick(marker: Marker): Boolean {
@@ -240,6 +251,8 @@ class ContactsMapFragment :
     private fun showContactInfoWindow(marker: Marker) {
         marker.showInfoWindow()
         loadContactPhotoAndRefreshInfoWindow(marker)
+        val contact = markerContactHashMap[marker.hashCode()]
+        openedContactId = contact?.cid
     }
 
     private fun loadContactPhotoAndRefreshInfoWindow(marker: Marker) {
@@ -260,6 +273,14 @@ class ContactsMapFragment :
         longPressMarker?.remove()
         longPressMarker = null
         longPressAddress = null
+    }
+
+    private fun restoreInfoWindowState() {
+        val contactId = openedContactId ?: return
+        val contactsList = getContactsList() ?: return
+        val contact = contactsList.find { it.cid == contactId } ?: return
+        showMarkerInfoWindow(contact, false)
+        openedContactId = null
     }
 
     private fun getContactsList(): List<ContactsItem>? = viewModel.currentGroupContactsList.value
@@ -447,6 +468,8 @@ class ContactsMapFragment :
     }
 
     companion object {
+        private const val KEY_OPENED_CONTACT_ID = "opened_contact_id"
+
         private fun getPixelsFromDp(context: Context, dp: Float): Int {
             val scale = context.resources.displayMetrics.density
             return (dp * scale + 0.5f).toInt()
