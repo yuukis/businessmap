@@ -88,6 +88,11 @@ class ContactsMapFragment :
         getMapAsync(this)
     }
 
+    override fun onPause() {
+        saveCameraPosition()
+        super.onPause()
+    }
+
     override fun onMapReady(googleMap: GoogleMap) {
         if (map == null) {
             map = googleMap
@@ -102,12 +107,14 @@ class ContactsMapFragment :
     }
 
     override fun onDestroyView() {
-        map?.let {
-            val position = it.cameraPosition
-            preferences.setCameraPosition(position)
-        }
-
+        saveCameraPosition()
         super.onDestroyView()
+    }
+
+    private fun saveCameraPosition() {
+        map?.let {
+            preferences.setCameraPosition(it.cameraPosition)
+        }
     }
 
     fun notifyDataSetChanged() {
