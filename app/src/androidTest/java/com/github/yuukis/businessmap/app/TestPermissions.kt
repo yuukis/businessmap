@@ -2,8 +2,8 @@ package com.github.yuukis.businessmap.app
 
 import android.Manifest
 import android.os.Build
+import android.os.ParcelFileDescriptor
 import androidx.test.platform.app.InstrumentationRegistry
-import java.io.FileInputStream
 
 internal object TestPermissions {
 
@@ -36,10 +36,10 @@ internal object TestPermissions {
     }
 
     private fun executeShellCommand(command: String) {
-        uiAutomation().executeShellCommand(command).use { descriptor ->
-            FileInputStream(descriptor.fileDescriptor).use { stream ->
-                stream.readBytes()
-            }
+        ParcelFileDescriptor.AutoCloseInputStream(
+            uiAutomation().executeShellCommand(command)
+        ).use { stream ->
+            stream.readBytes()
         }
     }
 
