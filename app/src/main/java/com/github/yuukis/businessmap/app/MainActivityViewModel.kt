@@ -85,6 +85,9 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     private val _isContactsListVisible = MutableStateFlow(false)
     val isContactsListVisible: StateFlow<Boolean> = _isContactsListVisible.asStateFlow()
 
+    var openedInfoWindowContactId: Long? = null
+        private set
+
     private val _progress = MutableStateFlow<GeocodingProgress?>(null)
     val progress: StateFlow<GeocodingProgress?> = _progress.asStateFlow()
 
@@ -142,6 +145,10 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
 
     fun toggleContactsListVisible() {
         _isContactsListVisible.value = !_isContactsListVisible.value
+    }
+
+    fun setOpenedInfoWindowContactId(contactId: Long?) {
+        openedInfoWindowContactId = contactId
     }
 
     fun clearContactsListIfPermissionMissing() {
