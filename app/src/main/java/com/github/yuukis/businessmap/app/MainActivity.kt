@@ -121,6 +121,7 @@ open class MainActivity : AppCompatActivity(),
                     viewModel = viewModel,
                     fragmentManager = supportFragmentManager,
                     onAboutClick = { AboutDialogFragment.showDialog(this) },
+                    onGroupSelected = ::handleGroupSelected,
                     onContactClick = ::handleContactClick,
                 )
             }
@@ -188,6 +189,14 @@ open class MainActivity : AppCompatActivity(),
 
     private fun mapFragment(): ContactsMapFragment? =
         supportFragmentManager.findFragmentById(R.id.contacts_map) as? ContactsMapFragment
+
+    private fun handleGroupSelected(index: Int) {
+        val previousIndex = viewModel.selectedGroupIndex.value
+        viewModel.selectGroup(index)
+        if (viewModel.selectedGroupIndex.value != previousIndex) {
+            mapFragment()?.clearLongPressMarker()
+        }
+    }
 
     private fun handleContactClick(contact: ContactsItem) {
         val animate = true
@@ -287,6 +296,7 @@ private fun MainScreen(
     viewModel: MainActivityViewModel,
     fragmentManager: FragmentManager,
     onAboutClick: () -> Unit,
+    onGroupSelected: (Int) -> Unit,
     onContactClick: (ContactsItem) -> Unit,
 ) {
     val groupList by viewModel.groupList.collectAsState()
@@ -304,7 +314,7 @@ private fun MainScreen(
             MainTopAppBar(
                 groupList = groupList,
                 selectedGroupIndex = selectedGroupIndex,
-                onGroupSelected = viewModel::selectGroup,
+                onGroupSelected = onGroupSelected,
                 onToggleContactsList = viewModel::toggleContactsListVisible,
                 onAboutClick = onAboutClick,
             )

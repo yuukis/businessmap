@@ -186,6 +186,10 @@ class ContactsMapFragment :
         return true
     }
 
+    fun clearLongPressMarker() {
+        removeLongPressMarker()
+    }
+
     override fun onInfoWindowClick(marker: Marker) {
         if (marker == longPressMarker) {
             val position = marker.position
