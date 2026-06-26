@@ -76,12 +76,14 @@ class ContactsMapFragment :
     private var longPressMarker: Marker? = null
     private var longPressAddress: String? = null
     private var openedContactId: Long? = null
+    private var pendingRestoreContactId: Long? = null
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         preferences = MapStatePreferences(requireActivity())
         contactPhotoLoader = ContactPhotoLoader(requireContext())
         openedContactId = savedInstanceState?.getLong(KEY_OPENED_CONTACT_ID)?.takeIf { it != 0L }
+        pendingRestoreContactId = openedContactId
         getMapAsync(this)
     }
 
@@ -106,7 +108,7 @@ class ContactsMapFragment :
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        openedContactId?.let {
+        (openedContactId ?: pendingRestoreContactId)?.let {
             outState.putLong(KEY_OPENED_CONTACT_ID, it)
         }
     }
@@ -164,6 +166,7 @@ class ContactsMapFragment :
             }
         }
         removeMarkerMap.clear()
+        restoreInfoWindowState()
     }
 
     fun showMarkerInfoWindow(contact: ContactsItem?, animate: Boolean): Boolean {
@@ -233,6 +236,7 @@ class ContactsMapFragment :
     override fun onMapClick(latLng: LatLng) {
         removeLongPressMarker()
         openedContactId = null
+        pendingRestoreContactId = null
     }
 
     override fun onMarkerClick(marker: Marker): Boolean {
@@ -241,6 +245,10 @@ class ContactsMapFragment :
         }
 
         removeLongPressMarker()
+        markerContactHashMap[marker.hashCode()]?.let {
+            openedContactId = it.cid
+            pendingRestoreContactId = null
+        }
         loadContactPhotoAndRefreshInfoWindow(marker)
         // Let Google Maps perform its normal marker selection and initial
         // InfoWindow display. Calling showInfoWindow() synchronously from this
@@ -253,6 +261,7 @@ class ContactsMapFragment :
         loadContactPhotoAndRefreshInfoWindow(marker)
         val contact = markerContactHashMap[marker.hashCode()]
         openedContactId = contact?.cid
+        pendingRestoreContactId = null
     }
 
     private fun loadContactPhotoAndRefreshInfoWindow(marker: Marker) {
@@ -276,11 +285,10 @@ class ContactsMapFragment :
     }
 
     private fun restoreInfoWindowState() {
-        val contactId = openedContactId ?: return
+        val contactId = pendingRestoreContactId ?: return
         val contactsList = getContactsList() ?: return
         val contact = contactsList.find { it.cid == contactId } ?: return
         showMarkerInfoWindow(contact, false)
-        openedContactId = null
     }
 
     private fun getContactsList(): List<ContactsItem>? = viewModel.currentGroupContactsList.value
