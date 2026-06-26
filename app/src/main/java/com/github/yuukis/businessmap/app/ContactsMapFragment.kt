@@ -56,6 +56,7 @@ import java.util.Locale
 class ContactsMapFragment :
     SupportMapFragment(),
     GoogleMap.OnInfoWindowClickListener,
+    GoogleMap.OnInfoWindowCloseListener,
     GoogleMap.OnMapLongClickListener,
     GoogleMap.OnMapClickListener,
     GoogleMap.OnMarkerClickListener,
@@ -154,6 +155,7 @@ class ContactsMapFragment :
             }
         }
         removeMarkerMap.clear()
+        restoreInfoWindowState()
     }
 
     fun showMarkerInfoWindow(contact: ContactsItem?, animate: Boolean): Boolean {
@@ -195,9 +197,17 @@ class ContactsMapFragment :
         ContactsActionFragment.showDialog(requireActivity(), contact)
     }
 
+    override fun onInfoWindowClose(marker: Marker) {
+        val contact = markerContactHashMap[marker.hashCode()] ?: return
+        if (viewModel.openedInfoWindowContactId == contact.cid) {
+            viewModel.setOpenedInfoWindowContactId(null)
+        }
+    }
+
     override fun onMapLongClick(latLng: LatLng) {
         val currentMap = map ?: return
         removeLongPressMarker()
+        viewModel.setOpenedInfoWindowContactId(null)
 
         val marker = currentMap.addMarker(
             MarkerOptions()
@@ -222,6 +232,7 @@ class ContactsMapFragment :
 
     override fun onMapClick(latLng: LatLng) {
         removeLongPressMarker()
+        viewModel.setOpenedInfoWindowContactId(null)
     }
 
     override fun onMarkerClick(marker: Marker): Boolean {
@@ -230,6 +241,9 @@ class ContactsMapFragment :
         }
 
         removeLongPressMarker()
+        markerContactHashMap[marker.hashCode()]?.let {
+            viewModel.setOpenedInfoWindowContactId(it.cid)
+        }
         loadContactPhotoAndRefreshInfoWindow(marker)
         // Let Google Maps perform its normal marker selection and initial
         // InfoWindow display. Calling showInfoWindow() synchronously from this
@@ -240,6 +254,8 @@ class ContactsMapFragment :
     private fun showContactInfoWindow(marker: Marker) {
         marker.showInfoWindow()
         loadContactPhotoAndRefreshInfoWindow(marker)
+        val contact = markerContactHashMap[marker.hashCode()]
+        viewModel.setOpenedInfoWindowContactId(contact?.cid)
     }
 
     private fun loadContactPhotoAndRefreshInfoWindow(marker: Marker) {
@@ -252,6 +268,7 @@ class ContactsMapFragment :
             contactPhotoLoader.loadThumbnailAsync(contact.cid)
             if (marker.isInfoWindowShown) {
                 marker.showInfoWindow()
+                viewModel.setOpenedInfoWindowContactId(contact.cid)
             }
         }
     }
@@ -262,6 +279,13 @@ class ContactsMapFragment :
         longPressAddress = null
     }
 
+    private fun restoreInfoWindowState() {
+        val contactId = viewModel.openedInfoWindowContactId ?: return
+        val contactsList = getContactsList() ?: return
+        val contact = contactsList.find { it.cid == contactId } ?: return
+        showMarkerInfoWindow(contact, false)
+    }
+
     private fun getContactsList(): List<ContactsItem>? = viewModel.currentGroupContactsList.value
 
     @SuppressLint("MissingPermission")
@@ -270,6 +294,7 @@ class ContactsMapFragment :
         val position = preferences.getCameraPosition()
         currentMap.setInfoWindowAdapter(MyInfoWindowAdapter())
         currentMap.setOnInfoWindowClickListener(this)
+        currentMap.setOnInfoWindowCloseListener(this)
         currentMap.setOnMapLongClickListener(this)
         currentMap.setOnMapClickListener(this)
         currentMap.setOnMarkerClickListener(this)

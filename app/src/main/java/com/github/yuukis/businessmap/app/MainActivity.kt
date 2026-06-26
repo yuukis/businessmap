@@ -173,6 +173,9 @@ open class MainActivity : AppCompatActivity(),
 
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putInt(KEY_NAVIGATION_INDEX, viewModel.selectedGroupIndex.value)
+        viewModel.openedInfoWindowContactId?.let {
+            outState.putLong(KEY_OPENED_INFO_WINDOW_CONTACT_ID, it)
+        }
         super.onSaveInstanceState(outState)
     }
 
@@ -211,6 +214,9 @@ open class MainActivity : AppCompatActivity(),
         val args = intent.extras
 
         val savedNavigationIndex = savedInstanceState?.getInt(KEY_NAVIGATION_INDEX)
+        if (savedInstanceState?.containsKey(KEY_OPENED_INFO_WINDOW_CONTACT_ID) == true) {
+            viewModel.setOpenedInfoWindowContactId(savedInstanceState.getLong(KEY_OPENED_INFO_WINDOW_CONTACT_ID))
+        }
         val intentGroupId = if (savedInstanceState == null) {
             args?.takeIf { it.containsKey(KEY_CONTACTS_GROUP_ID) }?.getLong(KEY_CONTACTS_GROUP_ID)
         } else {
@@ -279,6 +285,7 @@ open class MainActivity : AppCompatActivity(),
     companion object {
         const val KEY_CONTACTS_GROUP_ID = "contacts_group_id"
         private const val KEY_NAVIGATION_INDEX = "navigation_index"
+        private const val KEY_OPENED_INFO_WINDOW_CONTACT_ID = "opened_info_window_contact_id"
     }
 }
 
