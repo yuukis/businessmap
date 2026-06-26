@@ -56,6 +56,7 @@ import java.util.Locale
 class ContactsMapFragment :
     SupportMapFragment(),
     GoogleMap.OnInfoWindowClickListener,
+    GoogleMap.OnInfoWindowCloseListener,
     GoogleMap.OnMapLongClickListener,
     GoogleMap.OnMapClickListener,
     GoogleMap.OnMarkerClickListener,
@@ -98,7 +99,6 @@ class ContactsMapFragment :
             // failed) to draw markers for the current contacts list.
             // Draw them now that we actually have a map to draw on.
             notifyDataSetChanged()
-            restoreInfoWindowState()
         }
     }
 
@@ -197,6 +197,13 @@ class ContactsMapFragment :
         ContactsActionFragment.showDialog(requireActivity(), contact)
     }
 
+    override fun onInfoWindowClose(marker: Marker) {
+        val contact = markerContactHashMap[marker.hashCode()] ?: return
+        if (viewModel.openedInfoWindowContactId == contact.cid) {
+            viewModel.setOpenedInfoWindowContactId(null)
+        }
+    }
+
     override fun onMapLongClick(latLng: LatLng) {
         val currentMap = map ?: return
         removeLongPressMarker()
@@ -261,6 +268,7 @@ class ContactsMapFragment :
             contactPhotoLoader.loadThumbnailAsync(contact.cid)
             if (marker.isInfoWindowShown) {
                 marker.showInfoWindow()
+                viewModel.setOpenedInfoWindowContactId(contact.cid)
             }
         }
     }
@@ -286,6 +294,7 @@ class ContactsMapFragment :
         val position = preferences.getCameraPosition()
         currentMap.setInfoWindowAdapter(MyInfoWindowAdapter())
         currentMap.setOnInfoWindowClickListener(this)
+        currentMap.setOnInfoWindowCloseListener(this)
         currentMap.setOnMapLongClickListener(this)
         currentMap.setOnMapClickListener(this)
         currentMap.setOnMarkerClickListener(this)
