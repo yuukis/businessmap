@@ -23,8 +23,8 @@ android {
         applicationId = "com.github.yuukis.businessmap"
         minSdk = 26
         targetSdk = 35
-        versionCode = 224
-        versionName = "1.4.0224"
+        versionCode = 493
+        versionName = "2.0.0493"
 
         manifestPlaceholders["mapsApiKey"] =
             localProperties.getProperty("MAPS_API_KEY", "")
