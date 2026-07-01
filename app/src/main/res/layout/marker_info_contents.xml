@@ -20,8 +20,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:ellipsize="end"
-        android:singleLine="true"
+        android:breakStrategy="high_quality"
+        android:maxWidth="@dimen/marker_info_window_text_max_width"
         android:textColor="#ff000000"
         android:textSize="16dp"
         android:textStyle="bold" />
@@ -34,6 +34,7 @@
         android:layout_marginBottom="2dp"
         android:background="@drawable/rounded_corner"
         android:ellipsize="end"
+        android:maxWidth="@dimen/marker_info_window_text_max_width"
         android:singleLine="true"
         android:textColor="#ff444444"
         android:textSize="10dp" />
@@ -47,7 +48,9 @@
             android:id="@+id/snippet"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:breakStrategy="high_quality"
             android:ellipsize="end"
+            android:maxWidth="@dimen/marker_info_window_text_max_width"
             android:textColor="#ff7f7f7f"
             android:textSize="14dp" />
 
@@ -63,6 +66,8 @@
             android:id="@+id/note"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:breakStrategy="high_quality"
+            android:maxWidth="@dimen/marker_info_window_text_max_width"
             android:textColor="#ff7f7f7f"
             android:textSize="14dp" />
     </LinearLayout>

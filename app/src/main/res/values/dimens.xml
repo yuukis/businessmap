@@ -2,5 +2,6 @@
 <resources>
 
     <dimen name="contacts_list_drawer_width">-1px</dimen>
+    <dimen name="marker_info_window_text_max_width">260dp</dimen>
 
 </resources>
