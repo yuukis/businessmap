@@ -446,8 +446,7 @@ class ContactsMapFragment :
                     tvCompanyName.visibility = View.VISIBLE
                 }
 
-                val snippet = marker.snippet?.replace("[ 　]".toRegex(), "\n")
-                tvSnippet.text = snippet
+                tvSnippet.text = marker.snippet
                 tvSnippet.visibility = View.VISIBLE
 
                 val note = contacts.note
